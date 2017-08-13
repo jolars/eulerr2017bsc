@@ -1,0 +1,14 @@
+Package: eulerrPaper
+Type: Package
+Title: Source Code for a Paper on Eulerr
+Version: 0.0.0.9000
+Authors@R: c(person("Johan", "Larsson", email = "johanlarsson@outlook.com",
+                    role = c("aut", "cre")),
+             person("Peter", "Gustafsson", email = "peter.gustafsson@stat.lu",
+                    role = c("aut")))
+Description: Source Code for a Paper on Eulerr
+License: GPL-3 + file LICENSE
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/jolars/eulerrPaper
+BugReports: https://github.com/jolars/eulerrPaper/issues
