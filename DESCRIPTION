@@ -10,5 +10,17 @@ Description: Source Code for a Paper on Eulerr
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Imports:
+  eulerr
+Suggests:
+  RConics,
+  lattice,
+  komadown,
+  knitr,
+  rmarkdown,
+  bookdown
 URL: https://github.com/jolars/eulerrPaper
 BugReports: https://github.com/jolars/eulerrPaper/issues
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
