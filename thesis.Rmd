@@ -111,7 +111,13 @@ can be rotated, they can succeed where circles fail (Figure \@ref(fig:impossible
 
 Elliptical Euler diagrams have been successfully implemented in the 
 **eulerAPE** software [@micallef_2014] but only for three sets that all
-need to intersect. It is implemented in
+need to intersect, the motivation for which being that euler diagrams
+with more than 3 sets are prone to lack good solutions and that their
+high complexity make implementations difficult [@micallef_2013].
+
+It is this difficulty that we have overcome with **eulerr**, which is the
+first software to provide elliptical euler diagrams for (theoretically) any
+quantity of sets.
 
 # Method
 
