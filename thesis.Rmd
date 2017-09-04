@@ -13,6 +13,8 @@ fontpack-libertine: yes
 classoption:
   - headsepline=true
   - headings=standardclasses
+biblatex: yes
+biblio-style: ieee
 header:
   - pos: ro
     next: eulerr
@@ -23,11 +25,12 @@ caption:
 setkomafont:
   - element: descriptionlabel
     commands: \normalfont\scshape\bfseries
-bibliography: eulerr.bib
+bibliography: "eulerr.bib"
 output:
   komadown::scrartcl:
     keep_tex: yes
     fig_caption: yes
+    pandoc_args: --biblatex
 vignette: >
   %\VignetteIndexEntry{eulerr: Area-Proportional Euler Diagrams with Ellipses}
   %\VignetteEngine{knitr::rmarkdown}
@@ -38,7 +41,7 @@ vignette: >
 knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
 
 knitr::opts_chunk$set(
-  echo = TRUE,
+  echo = FALSE,
   warning = FALSE,
   message = FALSE,
   fig.width = 3,
@@ -52,22 +55,26 @@ library(lattice)
 lattice.options(default.theme = list(fontsize = list(text = 8, points = 4)))
 
 set.seed(1)
+
+library(RConics)
+library(eulerr)
+source(file.path("R", "geometry.R"))
 ```
 
-# Introduction
+# Background
 
-Relationships between groups and sets are the focus in many scientific
+Relationships between groups and sets are the focus of many scientific
 disciplines. In biomedicine, for instance, the overlap between sets of genes
-may be of interest. In epidemiology, the interactions between
+is often of interest. In epidemiology, the interactions between
 diseases are frequently studied. Likewise, the social sciences are often
 involved in studying demographics where the commonalities between various
-groups are scrutinized.
+groups are analyzed.
 
 Visualizations of such relationships are central to understanding them.
 The commonest visualization is Venn diagrams. Venn diagrams are a 
 subset of Euler diagrams, which were originally proposed by Leonard Euler
 (1707--1783) [@euler_1802]. Whereas Venn diagrams require that all
-2^n^ possible intersection are present -- even if they are empty -- Euler
+$2^n$ possible intersection are present -- even if they are empty -- Euler
 diagrams stipulate no such requirement.
 
 Euler diagrams can be area-proportional, which is the case for non-Venn
@@ -92,6 +99,7 @@ A \cap B \cap C = 0.
 \end{gathered}
 \]
 There is no way to visualize this relationship perfectly with circles
+yet with ellipses there *is* in fact a perfect solution
 (Figure \@ref(fig:impossible3)).
 
 ```{r impossible3, fig.cap ="A set relationship depicted with circles and ellipses.", fig.width = 6}
@@ -103,25 +111,191 @@ p2 <- plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1),
 c(p1, p2)
 ```
 
-For four intersecting sets, circular Euler diagrams are in fact impossible since
-they require $2^4=16$ regions but four intersecting circles yield at most
-14 unique intersections. This is not, however, the case with ellipses being
-that they may intersect in up to 4, rather than 2, points. And because ellipses
-can be rotated, they can succeed where circles fail (Figure \@ref(fig:impossible3)).
+With four intersecting sets, circular Euler diagrams are actually impossible,
+given that $2^4=16$ regions are required but the circles can yield at most
+14 unique intersections. This is not, however, the case with ellipses in that
+they they may intersect in up to 4, rather than 2, points. All in all,
+circles have three degrees of freedom: x-coordinate, y-coordinate, and
+radius, whereas ellipses have five: x-coordinate, y-coordinate, semi-minor
+radius, semi-major radius, and rotation.
 
 Elliptical Euler diagrams have been successfully implemented in the 
-**eulerAPE** software [@micallef_2014] but only for three sets that all
-need to intersect, the motivation for which being that euler diagrams
-with more than 3 sets are prone to lack good solutions and that their
+**eulerAPE** software [@micallef_2014], yet only for three sets that moreover
+need to intersect, the motivation for which being that Euler diagrams
+with more than three sets often lack adequate solutions and that their
 high complexity make implementations difficult [@micallef_2013].
 
+As far as we know, analytical solutions to eulerr diagrams do not exist. All
+existing implementations are instead based on varying numerical methods. 
+Most of these use separate methods for the initial and final diagram
+configurations. For instance,
+@micallef_2013 uses uses a greedy algorithm, @wilkinson_2012 uses
+multi-dimensional scaling with jacobian distances -- a constrained version of
+which is used in @frederickson_2016 in combination with a greedy algorithm. The
+latter two work only on pairwise relationships between the sets while the first
+tries to optimize the three-way intersection between the three sets. All use
+circles for the initial layout.
+
+Diagrams with more than two sets require additional tuning, which is considered
+in a final configuration step. This is always an optimization procedure with
+a target loss function and an optimization procedure.
+
 It is this difficulty that we have overcome with **eulerr**, which is the
-first software to provide elliptical euler diagrams for (theoretically) any
-quantity of sets.
+first software to provide elliptical Euler diagrams for, theoretically, any
+number of sets.
+
+## Aim
+
+The aim of this thesis is to present a method and implementation for
+constructing and visualizing Euler diagrams for sets of any numbers with
+ellipses.
 
 # Method
 
-## Areas of overlapping ellipses
+Constructing a Euler diagram is in many ways analagous to fitting a
+statistical model, in that you need
+
+* data,
+* a model to fit the data on,
+* test to see that the model fits well, and
+* a presentation of the result.
+
+## Input
+
+Every Euler diagram begins with data that, in one way or another, is always
+a description of set relationships. **eulerr** tries to be as friendly as
+possible, catering to many forms of input that principally can be 
+divided into four different types (Table \@ref(tab:data)). 
+
+Table: (\#tab:data) Types of data.
+
+Form                                      Example
+-----------------------------------       ---------------------
+Intersections and relative complements    $A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$
+Unions and identities                     $A=4 \quad B=3 \quad A \cap B=1$
+Matrix of logicals or binaries            $$\begin{bmatrix}\bm{A} & \bm{B} & \bm{C} \\0 & 1 & 0 \\1 & 1 & 1 \\1 & 0 & 0 \\ \end{bmatrix}$$
+A list of sample spaces                   $$\begin{matrix} A = \{ab,\,bb,\,bc\}\\B = \{aa,\,bc,\,cc\}\\C = \{bb,\,bb,\,cc\} \end{matrix}$$
+
+
+## Initial configuration
+
+For our initial configuration, we work exclusively with circles. We begin by
+mapping the disjoint set combinations to areas and, given these, figure out the
+required pairwise distance between the sets to achieve a circle--circle overlap
+matching these disjoint set combinations. We do this numerically, using the 
+formula for a circle--circle overlap,
+
+\begin{multline}
+A = r_1^2\arccos\left(\frac{d^2 + r_1^2 - r_2^2}{2dr_1}\right) + 
+r_2^2\arccos\left(\frac{d^2 + r_2^2 - r_1^2}{2dr_2}\right) - \\
+\frac{1}{2}\sqrt{(-d + r_1 + r_2)(d + r_1 - r_2)(d - r_1 + r_2)(d + r_1 + r_2)},
+\end{multline}
+
+where $r_1$ and $r_2$ are the radii of the first and second circles
+respectively and *d* the distance between them.
+
+Although $r_1$ and $r_2$ are known, *d* is not, wherefore we approximate it
+numerically. Here, our loss function is
+the squared difference between *A* and the desired overlap, $(A-D)^2$,
+which we then ptimize using the **R**'s built-in `optimize()`: a
+"combination of golden section search and successive parabolic interpolation."
+Convergence is fast and neglible in relation to our later, more demanding,
+operations.
+
+Given these optimal pairwise distances, we can proceed to the next step,
+which is to position the circles representing the sets. This can be accomplished
+in many ways; **eulerr** uses a method from the **venn.js** script
+[@frederickson_2016], namely a constrained version of multi-dimensional scaling
+(MDS), which is based on a similar method from the **venneuler** package
+[@wilkinson_2012]. **venneuler** tries to place disjoint and subset exactly
+neck-in-neck and at the 
+exact midpoint of the set respectively. However, since we are indifferent about
+where in the space outside (or respectively inside) the sets are placed, that
+behavior becomes problematic since it might interfere with locations of other
+sets that need to use that space.
+
+The MDS algorithm from **venn.js** circumvents this by assigning a loss and gradient
+of 0 when, for instance, the set relationsships *and* the candidate ellipses are
+disjoint. Then, to optimize the pairwise relationsships between sets, **eulerr**
+uses the following loss and gradient functions.
+
+> \[\small
+> \text{loss} = \sum_i \sum_j { {\begin{cases}
+>     0 & \text{disjoint}(i, j)\\ 
+>     0 & \text{subset}(i, j)\\ 
+>     ((X_{i} - X_{j})^T(X_{i} - X_{j}) - D_{ij}^2) ^2  & \text{otherwise} \\ 
+> \end{cases}}}
+> \]
+>
+> \[\small
+> \nabla f(X_{i}) = \sum_j {\begin{cases}
+>      \vec{0} & \text{disjoint}(i, j)\\ 
+>      \vec{0} & \text{subset}(i, j)\\ 
+>      4 {((X_{i} - X_{j})^T(X_{i} - X_{j}) - D_{ij}^2)} (X_{i} -
+>      X_{j}) & \text{otherwise} \\ 
+> \end{cases}}\]
+> *Source: [Better Venn Diagrams](http://www.benfrederickson.com/better-venn-diagrams/)
+> by Ben Fredrickson, which includes a nice interactive demonstration.*
+
+Fredrickson uses the *Polak--Ribière Conjugate Gradient Method* to optimize
+the initial layout. In our experience this method occasionally runs into
+local minima, which is why
+we have opted to use `nlm()` from the **R** core package `stats`, which is a 
+translation from FORTRAN code developed by @schnabel_1985 and uses a mixture of
+algorithms (Newton and Quasi-Newton).
+
+This initial configuration will work perfectly for any 1--2 set combinations
+and as well as possible with 3 sets if we use circles but for all other
+combinations there is usually a need to fine tune the configuration.
+
+## Final configuration
+
+### Intersection between ellipses
+
+Splitting a conic
+
+```{r, fig.cap = "The process (from left to right) used to intersect two ellipses, here yielding 4 points.", fig.width = 6, fig.height = 2}
+C1 <- RConics::ellipseToConicMatrix(c(8, 2), c(0, 0), -pi/3)
+C2 <- RConics::ellipseToConicMatrix(c(5, 2), c(1, -2), pi/5)
+ll <- Re(degenerate_split_conics(C1, C2))
+
+ellipses <- data.frame(rbind(ellipse(c(8, 2), c(0, 0), -pi/3),
+                             ellipse(c(5, 2), c(1, -2), pi/5)))
+colnames(ellipses) <- c("x", "y")
+ellipses$fac <- rep(c("A", "B"), each = 201)
+pp <- intersectConicConic(C1, C2)
+
+p1 <- lattice::xyplot(y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
+                      xlab = NULL, ylab = NULL,
+                      scales = list(draw = FALSE, axes = FALSE),
+                      par.settings = list(axis.line = list(col = "transparent")),
+                      panel = function(x, y, ...) {
+                        panel.xyplot(x, y, ..., col = c("black", "steelblue3"))
+                      })
+p2 <- lattice::xyplot(y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
+                      xlab = NULL, ylab = NULL,
+                      scales = list(draw = FALSE, axes = FALSE),
+                      par.settings = list(axis.line = list(col = "transparent")),
+                      panel = function(x, y, ...) {
+                        panel.xyplot(x, y, ..., col = c("transparent", "steelblue3"))
+                        panel.abline(a = -ll[3, 1]/ll[2, 1], b = -ll[1, 1]/ll[2, 1])
+                        panel.abline(a = -ll[3, 2]/ll[2, 2], b = -ll[1, 2]/ll[2, 2])
+                      })
+p3 <- lattice::xyplot(y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
+                      xlab = NULL, ylab = NULL,
+                      scales = list(draw = FALSE, axes = FALSE),
+                      par.settings = list(axis.line = list(col = "transparent")),
+                      panel = function(x, y, ...) {
+                        panel.xyplot(x, y, ..., col = c("transparent", "steelblue3"))
+                        panel.abline(a = -ll[3, 1]/ll[2, 1], b = -ll[1, 1]/ll[2, 1])
+                        panel.abline(a = -ll[3, 2]/ll[2, 2], b = -ll[1, 2]/ll[2, 2])
+                        panel.points(t(pp[1:2, ]), col = 1)
+                      })
+c(p1, p2, p3, layout = c(3, 1))
+```
+
+
+### Areas of overlapping ellipses
 
 ## Visualization
 
@@ -136,106 +310,7 @@ quantity of sets.
 
 # Discussion
 
-
-**eulerr** relies on an extensive machinery to turn user input into a pretty
-Euler diagram. Little, or in fact none, of this requires any
-tinkering from the user. To make that happen, however, **eulerr** needs to make
-several well-formed decisions about the design of the diagram on behalf of the
-user, which is not a trivial task.
-
-This document outlines the implementation of **eulerr** from input to output.
-It is designed to an up-to-date paper on the innards of the program and
-is therefore likely to evolve as time goes on.
-
-# Input
-The main function of **eulerr** is `euler()`. To start with, we need input in
-the form of
-
-* a named numeric vector, such as `c(A = 10, B = 5, "A&B" = 3)`, where 
-ampersands define disjoint set combinations or unions, depending on the
-argument `input`,
-* a `data.frame` or `matrix` of logicals or binary indices where each row
-denotes the set relationships of
-  - either a single observation
-```{r}
-matrix(sample(c(TRUE, FALSE), 12, replace = TRUE),
-       ncol = 3,
-       dimnames = list(NULL, c("A", "B", "C")))
-```
-  - or of a unique set combination if a numeric vector is supplied to the
-    argument `weights`,
-```{r}
-matrix(c(TRUE, FALSE, FALSE,
-         TRUE, TRUE, FALSE,
-         FALSE, FALSE, TRUE),
-       ncol = 3,
-       dimnames = list(NULL, c("A", "B", "C")))
-```
-* a `table` (max 3 dimensions), 
-```{r}
-as.table(apply(Titanic, 2:4, sum))
-```
-* or a list of sample spaces, such as
-```{r}
-list(A = c("x", "xy", "xyz"),
-     B = c("xy"),
-     C = c("x", "xyz"))
-```
-
-If the `data.frame` or `matrix` form is used, the user additionally has the option
-to split the data set by a factor and compute separate euler diagrams for 
-each split. This is accomplished by supplying a factor variable to the 
-`by` arguments (see the documentation in `?base::by`).
-
 # Pre-processing
-**eulerr** organizes the input of the user into a matrix of binary
-indexes, which in **R** is represented as a matrix of logicals. For a three set 
-configuration, this looks like this,
-
-```{r}
-library(eulerr)
-eulerr:::bit_indexr(3)
-```
-
-and is accompanied by a vector of the *disjoint* areas of the set combinations.
-
-To provide a starting configuration, we work exclusively with circles and,
-given these areas, we figure out the required pairwise distance between
-the sets to achieve a circle--circle overlap that matches the
-set intersection between the sets. We do this numerically, using the 
-formula for a circle--circle overlap,
-
-\begin{multline}
-A = r_1^2\arccos\left(\frac{d^2 + r_1^2 - r_2^2}{2dr_1}\right) + 
-r_2^2\arccos\left(\frac{d^2 + r_2^2 - r_1^2}{2dr_2}\right) - \\
-\frac{1}{2}\sqrt{(-d + r_1 + r_2)(d + r_1 - r_2)(d - r_1 + r_2)(d + r_1 + r_2)},
-\end{multline}
-
-where *r~1~* and *r~2~* are the radii of the first and second circles
-respectively and *d* the distance between the circles.
-
-*r~1~* and *r~2~* are known but because *d* is not, we approximate it
-using one-dimensional numerical optimization. Our loss function is
-the squared difference between *A* and the desired overlap, which we then
-optimize using **R**'s `optimize()`, which is a "combination of golden section
-search and successive parabolic interpolation". 
-
-```{r}
-r1 <- 0.7 #radius of set 1
-r2 <- 0.9 #radius of set 2
-overlap <- 1 #area of overlap
-
-stats::optimize(eulerr:::discdisc, #computes the squared loss
-                interval = c(abs(r1 - r2), sum(r1, r2)),
-                r1 = r1,
-                r2 = r2,
-                overlap = overlap)
-
-# minimum is our required distance
-```
-
-Now that we have the distances, we can proceed to the next step: computing
-an initial configuration.
 
 # Initial configuration
 Our initial layout can be setup in a number of ways; **eulerr** uses one of the 
