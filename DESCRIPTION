@@ -7,7 +7,7 @@ Authors@R: c(person("Johan", "Larsson", email = "johanlarsson@outlook.com",
              person("Peter", "Gustafsson", email = "peter.gustafsson@stat.lu",
                     role = c("aut")))
 Description: Source Code for a Paper on Eulerr
-License: GPL-3 + file LICENSE
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports:
@@ -21,6 +21,5 @@ Suggests:
   bookdown
 URL: https://github.com/jolars/eulerrPaper
 BugReports: https://github.com/jolars/eulerrPaper/issues
-Suggests: knitr,
-    rmarkdown
+Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
