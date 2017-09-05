@@ -26,6 +26,8 @@ setkomafont:
   - element: descriptionlabel
     commands: \normalfont\scshape\bfseries
 bibliography: "eulerr.bib"
+header-includes:
+  - \usepackage[linesnumbered,lined,]{algorithm2e} 
 output:
   komadown::scrartcl:
     keep_tex: yes
@@ -46,19 +48,21 @@ knitr::opts_chunk$set(
   message = FALSE,
   fig.width = 3,
   fig.height = 3,
-  crop = TRUE
+  crop = FALSE
 )
 
 options(digits = 3)
 
+library(eulerrPaper)
 library(lattice)
+library(latticeExtra)
+library(gridExtra)
 lattice.options(default.theme = list(fontsize = list(text = 8, points = 4)))
 
 set.seed(1)
 
 library(RConics)
 library(eulerr)
-source(file.path("R", "geometry.R"))
 ```
 
 # Background
@@ -100,15 +104,10 @@ A \cap B \cap C = 0.
 \]
 There is no way to visualize this relationship perfectly with circles
 yet with ellipses there *is* in fact a perfect solution
-(Figure \@ref(fig:impossible3)).
+(Figure \@ref(fig:impossible)).
 
-```{r impossible3, fig.cap ="A set relationship depicted with circles and ellipses.", fig.width = 6}
-library(eulerr)
-library(latticeExtra)
-p1 <- plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1)))
-p2 <- plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1),
-                 shape = "ellipse"))
-c(p1, p2)
+```{r impossible, fig.cap ="A set relationship depicted with circles and ellipses, showing that ellipses sometimes prevail where circles fail.", fig.width = 6}
+fig_impossible()
 ```
 
 With four intersecting sets, circular Euler diagrams are actually impossible,
@@ -160,24 +159,47 @@ statistical model, in that you need
 * test to see that the model fits well, and
 * a presentation of the result.
 
-## Input
+## Inputting data
 
 Every Euler diagram begins with data that, in one way or another, is always
 a description of set relationships. **eulerr** tries to be as friendly as
-possible, catering to many forms of input that principally can be 
-divided into four different types (Table \@ref(tab:data)). 
+possible, catering to many forms of input:
 
-Table: (\#tab:data) Types of data.
+Intersections and relative complements
+:    $A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$
 
-Form                                      Example
------------------------------------       ---------------------
-Intersections and relative complements    $A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$
-Unions and identities                     $A=4 \quad B=3 \quad A \cap B=1$
-Matrix of logicals or binaries            $$\begin{bmatrix}\bm{A} & \bm{B} & \bm{C} \\0 & 1 & 0 \\1 & 1 & 1 \\1 & 0 & 0 \\ \end{bmatrix}$$
-A list of sample spaces                   $$\begin{matrix} A = \{ab,\,bb,\,bc\}\\B = \{aa,\,bc,\,cc\}\\C = \{bb,\,bb,\,cc\} \end{matrix}$$
+Unions and identities
+:    $A=4 \quad B=3 \quad A \cap B=1$
 
+A matrix of logicals or binaries
+:    $\begin{bmatrix}\bm{A} & \bm{B} & \bm{C} \\0 & 1 & 0 \\1 & 1 & 1 \\1 & 0 & 0 \\ \end{bmatrix}$
 
-## Initial configuration
+A list of sample spaces
+:    $\begin{matrix} A = \{ab,\,bb,\,bc\}\\B = \{aa,\,bc,\,cc\}\\C = \{bb,\,bb,\,cc\} \end{matrix}$
+
+A two- or three-way table[^1]
+:    \begin{tabular}{lrr} \toprule Survived? & No  & Yes \\   \midrule Child & 52.00 & 57.00 \\   Adult & 1438.00 & 654.00 \\    \bottomrule\end{tabular}
+
+[^1]: Data originally collected by the British Board of Trade in their investigation of the sinking of Titanic.
+
+Whichever type of input is used, **eulerr** will eventually always convert it
+to the first type, intersections and relative complements, since that is the
+form used to compute the loss of the later optimizers but in the interim use
+unions and identities, particularly when computing areas.
+
+As an additional feature for the matrix form, the user may supply an additional
+factor variable with which to split the data set before fitting a euler 
+diagram to each split. This is offered as a convenience function for the user
+since it may the case that the euler diagram solutions are relatively more
+well-behaved after such a split.
+
+## Fitting the euler diagram
+
+The euler diagram is fit in two steps: first, an initial configuration is
+formed with circles using only the sets' pairwise relationships. Second, this
+initial configuration is finalized, taking into account all relationships.
+
+### Initial configuration
 
 For our initial configuration, we work exclusively with circles. We begin by
 mapping the disjoint set combinations to areas and, given these, figure out the
@@ -242,150 +264,55 @@ the initial layout. In our experience this method occasionally runs into
 local minima, which is why
 we have opted to use `nlm()` from the **R** core package `stats`, which is a 
 translation from FORTRAN code developed by @schnabel_1985 and uses a mixture of
-algorithms (Newton and Quasi-Newton).
+algorithms (Newton and Quasi-Newton). `nlm()` uses the Hessian in addition
+to the gradient, which we presently compute numerically due to a bug
+in the update of the analytic gradient in the software implementation, which
+at the time of writing has only been fixed in the development version of **R**.
 
 This initial configuration will work perfectly for any 1--2 set combinations
 and as well as possible with 3 sets if we use circles but for all other
 combinations there is usually a need to fine tune the configuration.
 
-## Final configuration
+### Final configuration
 
-### Intersection between ellipses
+So far, we have only worked with pairwise relationships and areas. To 
+test and improve our layout, however, we now need to account for all
+relationships and consequently all the various intersections between the
+shapes we use in the diagram -- initially, we restriced ourselves to circles but
+we now extend our reach also to ellipses.
 
-Splitting a conic
+As it turns out, computing the overlaps of ellipses is not a trivial task.
+In fact, most of the methods we studied rely on
+approximations by, for instance, quad-tree
+binning [@wilkinson_2012] or polygon intersections [@kestler_2008]. These
+methods are both imperfect [@micallef_2013] and, given that the
+computations may have to run for vast numbers of iterations, prohibitive
+performance-wise.
 
-```{r, fig.cap = "The process (from left to right) used to intersect two ellipses, here yielding 4 points.", fig.width = 6, fig.height = 2}
-C1 <- RConics::ellipseToConicMatrix(c(8, 2), c(0, 0), -pi/3)
-C2 <- RConics::ellipseToConicMatrix(c(5, 2), c(1, -2), pi/5)
-ll <- Re(degenerate_split_conics(C1, C2))
+Other methods, however, use exact algorithms
+[@micallef_2013; @frederickson_2016]. Based on the fact that
+the overlap between ellipses can be represented as a convex polygon
+with elliptical segments on the fringes (Figure \@ref(fig:polyarea)), we are
+able to compute the area of the overlap to numerical precision. 
+Since the polygon section is always convex, it is trivial to find its area using
+the the triangle method.
 
-ellipses <- data.frame(rbind(ellipse(c(8, 2), c(0, 0), -pi/3),
-                             ellipse(c(5, 2), c(1, -2), pi/5)))
-colnames(ellipses) <- c("x", "y")
-ellipses$fac <- rep(c("A", "B"), each = 201)
-pp <- intersectConicConic(C1, C2)
-
-p1 <- lattice::xyplot(y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
-                      xlab = NULL, ylab = NULL,
-                      scales = list(draw = FALSE, axes = FALSE),
-                      par.settings = list(axis.line = list(col = "transparent")),
-                      panel = function(x, y, ...) {
-                        panel.xyplot(x, y, ..., col = c("black", "steelblue3"))
-                      })
-p2 <- lattice::xyplot(y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
-                      xlab = NULL, ylab = NULL,
-                      scales = list(draw = FALSE, axes = FALSE),
-                      par.settings = list(axis.line = list(col = "transparent")),
-                      panel = function(x, y, ...) {
-                        panel.xyplot(x, y, ..., col = c("transparent", "steelblue3"))
-                        panel.abline(a = -ll[3, 1]/ll[2, 1], b = -ll[1, 1]/ll[2, 1])
-                        panel.abline(a = -ll[3, 2]/ll[2, 2], b = -ll[1, 2]/ll[2, 2])
-                      })
-p3 <- lattice::xyplot(y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
-                      xlab = NULL, ylab = NULL,
-                      scales = list(draw = FALSE, axes = FALSE),
-                      par.settings = list(axis.line = list(col = "transparent")),
-                      panel = function(x, y, ...) {
-                        panel.xyplot(x, y, ..., col = c("transparent", "steelblue3"))
-                        panel.abline(a = -ll[3, 1]/ll[2, 1], b = -ll[1, 1]/ll[2, 1])
-                        panel.abline(a = -ll[3, 2]/ll[2, 2], b = -ll[1, 2]/ll[2, 2])
-                        panel.points(t(pp[1:2, ]), col = 1)
-                      })
-c(p1, p2, p3, layout = c(3, 1))
+```{r polyarea, fig.cap="The overlap area between three ellipses is the sum of a convex polygon (in grey) and 2--3 ellipse segments (in blue).", fig.height = 2.4}
+fig_polyarea()
 ```
 
 
-### Areas of overlapping ellipses
-
-## Visualization
-
-# Results
-
-## Consistency
-
-## Accuracy
-
-## Performance
-
-
-# Discussion
-
-# Pre-processing
-
-# Initial configuration
-Our initial layout can be setup in a number of ways; **eulerr** uses one of the 
-methods from Fredrickson's [venn.js](https://github.com/benfred/venn.js/), which
-features a constrained version of multi-dimensional scaling (MDS) based on that 
-of Wilkinson's **R** package 
-[venneuler](https://CRAN.R-project.org/package=venneuler) [@wilkinson_2012]. 
-**venneuler** tries to place disjoint and subset exactly neck-in-neck and at the 
-exact midpoint of the set respectively. However, since we are indifferent about
-where in the space outside (or respectively inside) the sets are placed, that
-behavior becomes problematic since it might interfere with locations of other
-sets that need to occupy some of that space.
-
-The MDS algorithm from **venn.js** circumvents this by assigning a loss and gradient
-of 0 when, for instance, the set relationsships *and* the candidate ellipses are
-disjoint. Then, to optimize the pairwise relationsships between sets, **eulerr**
-uses the following loss and gradient functions.
-
-> \[\small
-> \text{loss} = \sum_i \sum_j { {\begin{cases}
->     0 & \text{disjoint}(i, j)\\ 
->     0 & \text{subset}(i, j)\\ 
->     ((X_{i} - X_{j})^T(X_{i} - X_{j}) - D_{ij}^2) ^2  & \text{otherwise} \\ 
-> \end{cases}}}
-> \]
->
-> \[\small
-> \nabla f(X_{i}) = \sum_j {\begin{cases}
->      \vec{0} & \text{disjoint}(i, j)\\ 
->      \vec{0} & \text{subset}(i, j)\\ 
->      4 {((X_{i} - X_{j})^T(X_{i} - X_{j}) - D_{ij}^2)} (X_{i} -
->      X_{j}) & \text{otherwise} \\ 
-> \end{cases}}\]
-> *Source: [Better Venn Diagrams](http://www.benfrederickson.com/better-venn-diagrams/)
-> by Ben Fredrickson, which includes a nice interactive demonstration.*
-
-Fredrickson uses the *Polak--Ribière Conjugate Gradient Method* to optimize
-the initial layout. In our experience this method occasionally ends
-up in local minima, which is why
-we have opted to use `nlm()` from the **R** core package `stats`, which is a 
-translation from FORTRAN code developed by @schnabel_1985 and uses a mixture of
-algorithms (Newton and Quasi-Newton).
-
-This initial configuration will work perfectly for any 1--2 set combinations
-and as well as possible with 3 sets if we use circles but for all other
-combinations there is usually a need to fine tune the configuration.
-
-# Final configuration
-In order to finalize the configuration we need to be able to compute the areas
-of the overlaps of the sets, which as it turns out, is *not* trivial. In fact,
-most of methods rely on approximations of the areas by, for instance, quad-tree
-binning (**venneuler**) or polygon intersections (**VennMaster**
-[@kestler_2008]). These methods yield reasonable estimates but, given that the
-computation may have to run for a vast number of iterations, are usually
-prohibitive in terms of performance.
-
-**venn.js** and **eulerAPE** both, however, use exact algorithms. Based on the
-fact that any intersection of ellipses can be represented as a convex polygon
-with elliptical segments on the fringes, it is possible to arrive at exact area
-calculations.
-
-## Intersections
-
-Finding the areas of the overlaps exactly requires that we first know the points
-at which the different ellipses intersect. **eulerr**'s approach to this is based
-on a method outlined by @richter-gebert_2011.
-**eulerr** owes significant debt to the **R** package **RConics**
-[@huber_2014], which has been tremendously helpful
+This method, however, necessiates that we know the points
+at which the ellipses intersect. **eulerr**'s approach to this is based
+on a method outlined by @richter-gebert_2011 and moreover owes owes significant
+debt to the **R** package **RConics** [@huber_2014], in which has been tremendously helpful
 in developing and, especially, debugging the algorithm. Some parts of the code
 are in fact straight-up translations to C++ from the code in **RConics**.
 
 The method is based in *projective geometry* (rather than euclidean). To find
-the intersection points, the algorithm first
+the intersection points, we first
 
-* converts the two ellipses from canonical form to matrix notation. The 
+* convert the two ellipses from canonical form to matrix notation. The 
 canonical form of a rotated ellipse is given by
 \[
 \frac{((x-h)\cos(\phi)+(y-k)\sin(\phi))^2}{a^2}+\frac{((x-h) \sin(A)-(y-k)
@@ -401,13 +328,15 @@ E = \begin{bmatrix}A & B/2 & D/2 \\
     \end{bmatrix},
 \]
 which may be used to represent any conic. We then
-* split one of the ellipses (conics) into a pencil of two lines, and subsequently
-* intersect the remaining conic with these two lines, which will yield between
-0 and 4 intersection points.
+* form a degenerate conic from the solution to the system of these two conics,
+* split this conic into a pencil of two lines, and finally
+* intersect the remaining conic with this pencil, yielding 0 to 4 intersection
+points (\@ref(fig:intersection)).
 
----
-TODO: Add some illustrations of this.
----
+
+```{r intersection, fig.cap = "The process (from left to right) used to intersect two ellipses, here yielding 4 points.", fig.width = 6, fig.height = 2}
+fig_intersection()
+```
 
 ## Areas
 The next step is to calculate the area of overlap between all the
@@ -444,6 +373,24 @@ of circles) -- nevertheless, we're profitting immensely from the implementation
 in the C++ programming language through **Rcpp** [@eddelbuettel_2011] and its
 plugin for the linear algebra library **Armadillo** [@eddelbuettel_2014] which
 ends up making the code much faster than the java-based **venneuler**.
+
+Splitting a conic
+
+
+## Goodness of fit
+
+## Visualization
+
+# Results
+
+## Consistency
+
+## Accuracy
+
+## Performance
+
+
+# Discussion
 
 # Layout
 Since the optimization steps are unconstrained, we run the risk of
