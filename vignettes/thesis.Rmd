@@ -180,7 +180,8 @@ A list of sample spaces
 A two- or three-way table[^1]
 :    \begin{tabular}{lrr} \toprule Survived? & No  & Yes \\   \midrule Child & 52.00 & 57.00 \\   Adult & 1438.00 & 654.00 \\    \bottomrule\end{tabular}
 
-[^1]: Data originally collected by the British Board of Trade in their investigation of the sinking of Titanic.
+[^1]: Data originally collected by the *British Board of Trade* in their
+      investigation of the sinking of Titanic.
 
 Whichever type of input is used, **eulerr** will eventually always convert it
 to the first type, intersections and relative complements, since that is the
@@ -195,7 +196,7 @@ well-behaved after such a split.
 
 ## Fitting the euler diagram
 
-The euler diagram is fit in two steps: first, an initial configuration is
+The Euler diagram is fit in two steps: first, an initial configuration is
 formed with circles using only the sets' pairwise relationships. Second, this
 initial configuration is finalized, taking into account all relationships.
 
@@ -228,10 +229,10 @@ Given these optimal pairwise distances, we can proceed to the next step,
 which is to position the circles representing the sets. This can be accomplished
 in many ways; **eulerr** uses a method from the **venn.js** script
 [@frederickson_2016], namely a constrained version of multi-dimensional scaling
-(MDS), which is based on a similar method from the **venneuler** package
+(MDS), which in turn is an upgrade to a method from the **venneuler** package
 [@wilkinson_2012]. **venneuler** tries to place disjoint and subset exactly
 neck-in-neck and at the 
-exact midpoint of the set respectively. However, since we are indifferent about
+exact midpoint of the set respectively. Yet because we are indifferent about
 where in the space outside (or respectively inside) the sets are placed, that
 behavior becomes problematic since it might interfere with locations of other
 sets that need to use that space.
@@ -262,15 +263,15 @@ uses the following loss and gradient functions.
 Fredrickson uses the *Polak--Ribière Conjugate Gradient Method* to optimize
 the initial layout. In our experience this method occasionally runs into
 local minima, which is why
-we have opted to use `nlm()` from the **R** core package `stats`, which is a 
-translation from FORTRAN code developed by @schnabel_1985 and uses a mixture of
-algorithms (Newton and Quasi-Newton). `nlm()` uses the Hessian in addition
+we have opted to use `nlm()` from the **R** core package `stats`: a 
+translation from FORTRAN code developed by @schnabel_1985, which uses a mix
+of Newton and Quasi-Newton algorithms. `nlm()` uses the Hessian in addition
 to the gradient, which we presently compute numerically due to a bug
-in the update of the analytic gradient in the software implementation, which
-at the time of writing has only been fixed in the development version of **R**.
+in the software implementation wherein the analytic Hessian is updated
+incorrectly.
 
 This initial configuration will work perfectly for any 1--2 set combinations
-and as well as possible with 3 sets if we use circles but for all other
+and as well as possible with 3 sets (if we use circles). But for all other
 combinations there is usually a need to fine tune the configuration.
 
 ### Final configuration
@@ -289,28 +290,13 @@ methods are both imperfect [@micallef_2013] and, given that the
 computations may have to run for vast numbers of iterations, prohibitive
 performance-wise.
 
-Other methods, however, use exact algorithms
-[@micallef_2013; @frederickson_2016]. Based on the fact that
-the overlap between ellipses can be represented as a convex polygon
-with elliptical segments on the fringes (Figure \@ref(fig:polyarea)), we are
-able to compute the area of the overlap to numerical precision. 
-Since the polygon section is always convex, it is trivial to find its area using
-the the triangle method.
-
-```{r polyarea, fig.cap="The overlap area between three ellipses is the sum of a convex polygon (in grey) and 2--3 ellipse segments (in blue).", fig.height = 2.4}
-fig_polyarea()
-```
-
-
-This method, however, necessiates that we know the points
-at which the ellipses intersect. **eulerr**'s approach to this is based
-on a method outlined by @richter-gebert_2011 and moreover owes owes significant
-debt to the **R** package **RConics** [@huber_2014], in which has been tremendously helpful
-in developing and, especially, debugging the algorithm. Some parts of the code
-are in fact straight-up translations to C++ from the code in **RConics**.
-
-The method is based in *projective geometry* (rather than euclidean). To find
-the intersection points, we first
+Other methods [@micallef_2013; @frederickson_2016], however, use algorithms
+that compute the overlap areas exactly. But unlike most approximative
+types, all the exact methods require that we first find the points
+of intersection between the ellipses. **eulerr**'s approach to this is based
+on a method outlined by @richter-gebert_2011, which is based in 
+*projective geometry* rather than euclidean. Then, to find the 
+intersections, we
 
 * convert the two ellipses from canonical form to matrix notation. The 
 canonical form of a rotated ellipse is given by
@@ -329,81 +315,64 @@ E = \begin{bmatrix}A & B/2 & D/2 \\
 \]
 which may be used to represent any conic. We then
 * form a degenerate conic from the solution to the system of these two conics,
-* split this conic into a pencil of two lines, and finally
+* split this degenerate conic into a pencil of two lines, and finally
 * intersect the remaining conic with this pencil, yielding 0 to 4 intersection
 points (\@ref(fig:intersection)).
-
 
 ```{r intersection, fig.cap = "The process (from left to right) used to intersect two ellipses, here yielding 4 points.", fig.width = 6, fig.height = 2}
 fig_intersection()
 ```
 
-## Areas
-The next step is to calculate the area of overlap between all the
-possible combinations of ellipses. The solution to this was discovered,
-as far as I know, by Fredrickson who explains it beautifully in a 
-[blog post](http://www.benfrederickson.com/calculating-the-intersection-of-3-or-more-circles/).
-It relies on finding all the intersection points between the currently
-examined sets that are also within these sets. It is then trivial to find the
-area of the convex polygon that these vertices make up. Finding the 
-rest of the area, which is made up of the ellipse segments between
-subsequent points, requires a bit of trigonometry. 
+After we have discovered all of the intersection points between the ellipses,
+we find the area of their overlap by examining the subset of intersection
+points that were formed from the presently examined ellipses that are also
+within all of these ellipses. These intersection points form a convex polygon
+plus elliptical segments (Figure \@ref(fig:polyarea).
 
-Here, we have used an algorithm from @eberly_area_2016, which
-computes circle integral between the points on the ellipse minus the 
-area of the triangle made up of the center of the ellipse: 
-\[
+```{r polyarea, fig.cap="The overlap area between three ellipses is the sum of a convex polygon (in grey) and 2--3 ellipse segments (in blue).", fig.height = 2.4}
+fig_polyarea()
+```
+
+Since the polygon section is always convex, it is trivial to find its area using
+the the triangle method. To find the areas of the elliptical segments, we use
+an algorithm developed from @eberly_area_2016, in which we
+integrate the ellipse between the two points making up the start and end of
+the elliptical segment. This gives us the elliptical sector from which we
+subtract the triangle part to find the segment area
+(Equation \@ref(eq:segmentArea)).
+\begin{equation}
 A(\theta_0, \theta_1) = F(\theta_1) - F(\theta_1) -
 \frac{1}{2}|x_1y_0 - x_0y_1|,
-\]
+(\#eq:segmentArea)
+\end{equation}
 \[
 \text{where } F(\theta) = \frac{a}{b}\left[ \theta -
 \arctan{\left(\frac{(b - a)\sin{2\theta}}{b + a +(b - a )\cos{2\theta}} \right)}
 \right]
 \]
+To our knowledge, this method was first published for circles in a blog post 
+[@frederickson_2013] and has been extended in **eulerr** to also work for
+all ellipses.
 
-As our loss function, we use the sum of squared differences between the 
-disjoint set intersections and the areas we have computed and again use the `nlm()`
-optimizer to layout the set. 
+With this in place, we are now able to compute the areas of all the set
+intersections and their relative complements up to numerical precision, which we
+take advantage of in the final step of the configuration. 
 
-This optimization step is the bottleneck of the overall computations in terms of
-performance, being that 
-we're optimizing over 5 parameters for every ellipse (or 3 in the case
-of circles) -- nevertheless, we're profitting immensely from the implementation
-in the C++ programming language through **Rcpp** [@eddelbuettel_2011] and its
-plugin for the linear algebra library **Armadillo** [@eddelbuettel_2014] which
-ends up making the code much faster than the java-based **venneuler**.
-
-Splitting a conic
-
+We now feed the initial layout computed in [Initial configuration] to the
+`nlm()` optimizer. We proceed to let the ellipses rotate and relax the
+criterion that the semi-major and semi-minor axes are the same (as in a circle).
+This gives us five parameters to optimize per set. For each iteration of the
+optimizer, the areas of the intersections are analyzed and a measure of 
+loss computed. A a loss function, we use the sum of squared differences
+between the set intersections plus their relative complements and
+the respective areas of the diagram (Equation \@ref(eq:loss)).
+\begin{equation}
+\sum_{i=1}^{n} (A_i-\omega_i)^2
+(\#eq:loss)
+\end{equation}
 
 ## Goodness of fit
 
-## Visualization
-
-# Results
-
-## Consistency
-
-## Accuracy
-
-## Performance
-
-
-# Discussion
-
-# Layout
-Since the optimization steps are unconstrained, we run the risk of
-ending up with dispersed layouts. To fix this, we use the SKYLINE-BL 
-rectangle packing algorithm [@jylanki_2010] to pack the disjoint clusters of
-ellipses (in case there are any) into a heuristically chosen bin.
-
-At the time of writing this algorithm is crudely implemented -- for 
-instance, it does not attempt to rotate the rectangles (boundaries for the
-ellipses) or attempt to use. Since we're dealing with a rather simple version
-of the rectangle packing problem, however, it seems to do the trick.
-
-# Output
 Before we get to plotting the solution, it is useful to know how well the
 fit from **eulerr** matches the input. Sometimes euler diagrams are just not
 feasible, particular for combinations with many sets, in which case we should
@@ -449,25 +418,12 @@ Much better.
 
 [TODO]: # What is a high and low diag_error?
 
-# Plotting
-Let's face it: euler diagrams are naught without visualization. Here, **eulerr**
+## Visualization
+
+Euler diagrams are naught without visualization. Here, **eulerr**
 interfaces the elegant Lattice graphics system [@sarkar_2008] to grant the
 user extensive control over the output, and allow for facetted plots in
 case such a design was used in fitting the euler configuration.
-
-## Labelling
-Most users will want to label their euler diagrams. One option is to simply 
-add a legend
-
-```{r, fig.cap = "A simple plot."}
-plot(euler(c(A = 2, B = 3, "A&B" = 1)), auto.key = TRUE)
-```
-
-but many will want to label their diagrams directly, perhaps with counts.
-
-```{r, fig.cap = "A plot with counts."}
-plot(euler(c(A = 2, B = 3, "A&B" = 1)), counts = TRUE)
-```
 
 In this case, layout out the diagram becomes considerably more involved. Finding
 a reasonable spot for the text inside the diagram only lends itself to an
@@ -527,5 +483,34 @@ The color palette has been generated from
 [qualpalr](https://CRAN.R-project.org/package=qualpalr)
 (developed by the author), which automatically generates qualitative color
 palettes based on a model of color perception.
+
+# Results
+
+## Consistency
+
+## Accuracy
+
+## Performance
+
+Being that we're optimizing over 5 parameters for every ellipse (or 3 in the case
+of circles) -- nevertheless, we profit from our implementation
+in the C++ programming language via the **R** packages **Rcpp**
+[@eddelbuettel_2011] and **RcppArmadillo** [@eddelbuettel_2014].
+
+# Discussion
+
+# Layout
+Since the optimization steps are unconstrained, we run the risk of
+ending up with dispersed layouts. To fix this, we use the SKYLINE-BL 
+rectangle packing algorithm [@jylanki_2010] to pack the disjoint clusters of
+ellipses (in case there are any) into a heuristically chosen bin.
+
+At the time of writing this algorithm is crudely implemented -- for 
+instance, it does not attempt to rotate the rectangles (boundaries for the
+ellipses) or attempt to use. Since we're dealing with a rather simple version
+of the rectangle packing problem, however, it seems to do the trick.
+
+## Labelling
+
 
 # References
