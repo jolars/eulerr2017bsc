@@ -13,8 +13,11 @@ fontpack-libertine: yes
 classoption:
   - headsepline=true
   - headings=standardclasses
+header-includes:
+  - \newtheorem{mydef}{Definition}
 biblatex: yes
 biblio-style: ieee
+bibliography: "eulerr.bib"
 header:
   - pos: ro
     next: eulerr
@@ -25,9 +28,6 @@ caption:
 setkomafont:
   - element: descriptionlabel
     commands: \normalfont\scshape\bfseries
-bibliography: "eulerr.bib"
-header-includes:
-  - \usepackage[linesnumbered,lined,]{algorithm2e} 
 output:
   komadown::scrartcl:
     keep_tex: yes
@@ -154,16 +154,16 @@ ellipses.
 Constructing a Euler diagram is in many ways analagous to fitting a
 statistical model, in that you need
 
-* data,
-* a model to fit the data on,
-* test to see that the model fits well, and
-* a presentation of the result.
+1. data,
+2. a model to fit the data on,
+3. test to assess the model fit, and
+4. a presentation of the result.
 
 ## Inputting data
 
-Every Euler diagram begins with data that, in one way or another, is always
-a description of set relationships. **eulerr** tries to be as friendly as
-possible, catering to many forms of input:
+The data for a Euler diagram is always
+a description of set relationships. **eulerr** allows several varities of
+this data -- namely,
 
 Intersections and relative complements
 :    $A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$
@@ -183,47 +183,66 @@ A two- or three-way table[^1]
 [^1]: Data originally collected by the *British Board of Trade* in their
       investigation of the sinking of Titanic.
 
-Whichever type of input is used, **eulerr** will eventually always convert it
-to the first type, intersections and relative complements, since that is the
-form used to compute the loss of the later optimizers but in the interim use
-unions and identities, particularly when computing areas.
+Whichever type is used, **eulerr** translates it
+to the first type, *intersections and relative complements* (Definition
+\@ref(def:omega)), which is the
+form used later in the loss functions of the initial and final optimizers.
 
-As an additional feature for the matrix form, the user may supply an additional
+\begin{mydef}
+\label{def:omega}
+For a family of $n$ sets, $F = A, B, \dots, N$, we define $\omega$ as the
+intersections and their relative complements of these sets, such that
+\begin{align*}
+  \omega_{ij \cdots n}   & = \bigcap_{i=1}^n F_i  \\
+  \omega_{ij \cdots n-1} & = \bigcap_{i=1}^{n-1}F_i \setminus \bigcap_{i=1}^{n}F_i \\
+                  & \vdotswithin{=} \\
+                \omega_i & = A \setminus \bigcup_{i=2}^{n-1}F_i
+\end{align*}
+with
+\[
+  \omega_S = \sum_{i = 1}^n \omega_i + \omega_j + \cdots +  \omega_{ij} + \cdots + \omega_{ij\cdots n} =  \bigcup_{i=1}^n F_i
+\]
+\end{mydef}
+
+---
+TODO: Scrap the following paragraph?
+---
+
+As an additional feature for the matrix form, the user may supply a
 factor variable with which to split the data set before fitting a euler 
 diagram to each split. This is offered as a convenience function for the user
 since it may the case that the euler diagram solutions are relatively more
 well-behaved after such a split.
 
-## Fitting the euler diagram
+## Fitting the Euler diagram
 
 The Euler diagram is fit in two steps: first, an initial configuration is
-formed with circles using only the sets' pairwise relationships. Second, this
-initial configuration is finalized, taking into account all relationships.
+formed with circles using only the sets' pairwise relationships. Second, this 
+configuration is fine tuned taking all $2^n-1$ overlaps into account and
+optionally using ellipses instead of circles.
 
 ### Initial configuration
 
 For our initial configuration, we work exclusively with circles. We begin by
-mapping the disjoint set combinations to areas and, given these, figure out the
+mapping $\omega$ to areas and, given these, figure out the
 required pairwise distance between the sets to achieve a circle--circle overlap
-matching these disjoint set combinations. We do this numerically, using the 
-formula for a circle--circle overlap,
-
+matching $\omega$ (Definition \@ref(def:omega)). We accomplish this numerically, using the 
+formula for a circle--circle overlap \@ref(eq:circleOverlap),
 \begin{multline}
-A = r_1^2\arccos\left(\frac{d^2 + r_1^2 - r_2^2}{2dr_1}\right) + 
-r_2^2\arccos\left(\frac{d^2 + r_2^2 - r_1^2}{2dr_2}\right) - \\
-\frac{1}{2}\sqrt{(-d + r_1 + r_2)(d + r_1 - r_2)(d - r_1 + r_2)(d + r_1 + r_2)},
+A_{ij} = r_i^2\arccos\left(\frac{d^2 + r_i^2 - r_j^2}{2dr_i}\right) + 
+r_j^2\arccos\left(\frac{d^2 + r_j^2 - r_i^2}{2dr_j}\right) - \\
+\frac{1}{2}\sqrt{(-d + r_i + r_j)(d + r_i - r_j)(d - r_i + r_j)(d + r_i + r_j)},
+(\#eq:circleOverlap)
 \end{multline}
+where $r_i$ and $r_j$ are the radii of the circles representing the $i$:th and
+$j$:th sets respectively and *d* the distance between them.
 
-where $r_1$ and $r_2$ are the radii of the first and second circles
-respectively and *d* the distance between them.
-
-Although $r_1$ and $r_2$ are known, *d* is not, wherefore we approximate it
+Although $r_i$ and $r_j$ are known, $d$ is not, wherefore we approximate it
 numerically. Here, our loss function is
-the squared difference between *A* and the desired overlap, $(A-D)^2$,
-which we then ptimize using the **R**'s built-in `optimize()`: a
+the squared difference between *A* and the desired overlap, $(A \cap B - \omega)^2$,
+which we then optimize using **R**'s built-in `optimize()`: a
 "combination of golden section search and successive parabolic interpolation."
-Convergence is fast and neglible in relation to our later, more demanding,
-operations.
+Convergence is fast---neglible next to our later optimization.
 
 Given these optimal pairwise distances, we can proceed to the next step,
 which is to position the circles representing the sets. This can be accomplished
@@ -237,97 +256,105 @@ where in the space outside (or respectively inside) the sets are placed, that
 behavior becomes problematic since it might interfere with locations of other
 sets that need to use that space.
 
-The MDS algorithm from **venn.js** circumvents this by assigning a loss and gradient
-of 0 when, for instance, the set relationsships *and* the candidate ellipses are
-disjoint. Then, to optimize the pairwise relationsships between sets, **eulerr**
-uses the following loss and gradient functions.
+The MDS algorithm from **venn.js** circumvents this by assigning a loss and
+gradient of zero when the pairwise set intersection *and* the candidate circles
+are disjoint or subset. In other cases, the loss function
+is the normal sums of squares between the areas from
+\@ref(eq:circleOverlap) and $\omega$ (Definition \@ref(def:omega))
+uses the following loss \@ref(eq:initLoss) and gradient
+\@ref(eq:initGrad) functions.
+\begin{equation}
+\mathcal{L}(X) = \sum_{i=1}^{n-1} \sum_{j=i+1}^{n}
+\begin{cases}
+  0 & I \cap J = \emptyset \wedge A_{ij} = \emptyset\\ 
+  0 & (I \subseteq J) \vee (I \supseteq J) \wedge A_{ij}=\emptyset\\ 
+  ((X_i - X_j)^T(X_i - X_j) - D_{ij}^2) ^2  & \text{otherwise} \\ 
+\end{cases}
+(\#eq:initLoss)
+\end{equation}
+\begin{equation}
+\vec{\nabla} f(X_i) = \sum_{j=1}^n
+\begin{cases}
+  \vec{0} & I \cap J = \emptyset \wedge A_{ij} = \emptyset\\ 
+  \vec{0} & (I \subseteq J) \vee (I \supseteq J) \wedge A_{ij}=\emptyset\\ 
+  4 \big((X_i - X_j)^T(X_i - X_j) - D_{ij}^2\big) (X_i - X_j) & \text{otherwise} \\ 
+\end{cases}
+(\#eq:initGrad)
+\end{equation}
+where \[X_i = \begin{bmatrix}x_i \\ y_i \end{bmatrix}\]
 
-> \[\small
-> \text{loss} = \sum_i \sum_j { {\begin{cases}
->     0 & \text{disjoint}(i, j)\\ 
->     0 & \text{subset}(i, j)\\ 
->     ((X_{i} - X_{j})^T(X_{i} - X_{j}) - D_{ij}^2) ^2  & \text{otherwise} \\ 
-> \end{cases}}}
-> \]
->
-> \[\small
-> \nabla f(X_{i}) = \sum_j {\begin{cases}
->      \vec{0} & \text{disjoint}(i, j)\\ 
->      \vec{0} & \text{subset}(i, j)\\ 
->      4 {((X_{i} - X_{j})^T(X_{i} - X_{j}) - D_{ij}^2)} (X_{i} -
->      X_{j}) & \text{otherwise} \\ 
-> \end{cases}}\]
-> *Source: [Better Venn Diagrams](http://www.benfrederickson.com/better-venn-diagrams/)
-> by Ben Fredrickson, which includes a nice interactive demonstration.*
+The optimizer transverses over $\binom{n}{2}$ combinations, making the
+complexity of the task (what?)
 
-Fredrickson uses the *Polak--Ribière Conjugate Gradient Method* to optimize
-the initial layout. In our experience this method occasionally runs into
-local minima, which is why
-we have opted to use `nlm()` from the **R** core package `stats`: a 
-translation from FORTRAN code developed by @schnabel_1985, which uses a mix
-of Newton and Quasi-Newton algorithms. `nlm()` uses the Hessian in addition
-to the gradient, which we presently compute numerically due to a bug
-in the software implementation wherein the analytic Hessian is updated
-incorrectly.
+@frederickson_2016 uses the *Polak--Ribière Conjugate Gradient Method* to optimize
+the initial layout. The method, however, occasionally encounters local minima,
+which is why they run several restarts of the initial 
+configuration (in addition to forming a layout using a greedy method). In our
+case, however, we have opted to instead use the
+nonlinear optimizer `nlm()` from the **R** core package `stats`, which is a 
+translation from FORTRAN code developed by @schnabel_1985 that uses a mix
+of Newton and Quasi-Newton algorithms. It also uses the Hessian, which we 
+presently compute numerically[^2] 
 
-This initial configuration will work perfectly for any 1--2 set combinations
-and as well as possible with 3 sets (if we use circles). But for all other
-combinations there is usually a need to fine tune the configuration.
+[^2]: A bug in the current version of the package leads the analytic
+Hessian to be updated incorrectly.
+
+This initial configuration will work perfectly two-set combinations
+and optimally for three-set combinations (if we use circles). But for all other
+combinations there is almost always a need to fine tune the configuration.
 
 ### Final configuration
 
 So far, we have only worked with pairwise relationships and areas. To 
-test and improve our layout, however, we now need to account for all
+test and improve our layout, however, we need to account for all
 relationships and consequently all the various intersections between the
-shapes we use in the diagram -- initially, we restriced ourselves to circles but
+shapes we use in the diagram. Initially, we restriced ourselves to circles but
 we now extend our reach also to ellipses.
 
-As it turns out, computing the overlaps of ellipses is not a trivial task.
-In fact, most of the methods we studied rely on
-approximations by, for instance, quad-tree
+Computing the overlaps of ellipses is not trivial and most methods rely on
+approximations such as quad-tree
 binning [@wilkinson_2012] or polygon intersections [@kestler_2008]. These
-methods are both imperfect [@micallef_2013] and, given that the
-computations may have to run for vast numbers of iterations, prohibitive
-performance-wise.
+are both imperfect [@micallef_2013] and slow, given that the
+computations may have to run for vast numbers of iterations.
 
 Other methods [@micallef_2013; @frederickson_2016], however, use algorithms
 that compute the overlap areas exactly. But unlike most approximative
 types, all the exact methods require that we first find the points
 of intersection between the ellipses. **eulerr**'s approach to this is based
 on a method outlined by @richter-gebert_2011, which is based in 
-*projective geometry* rather than euclidean. Then, to find the 
-intersections, we
+*projective geometry* rather than euclidean.
 
-* convert the two ellipses from canonical form to matrix notation. The 
-canonical form of a rotated ellipse is given by
+We consider two ellipses at a time. The canonical form of a rotated
+ellipse is given by
 \[
 \frac{((x-h)\cos(\phi)+(y-k)\sin(\phi))^2}{a^2}+\frac{((x-h) \sin(A)-(y-k)
   \cos(\phi))^2}{b^2} = 1,
 \]
-where *phi* is the counter-clockwise angle from the positive x axis to the 
-semi-major axis *a*. *b* is the semi-minor axis whilst *(h, k)* is the center
-of the ellipse. This is then converted to the matrix form
+where *phi* is the counter-clockwise angle from the positive x-axis to the 
+semi-major axis *a*. *b* is the semi-minor axis and *(h, k)* is the center
+of the ellipse. We convert these ellipses to the matrix form
 \[
 E = \begin{bmatrix}A & B/2 & D/2 \\
                    B/2 & C & E/2 \\
                    D/2 & E/2 & F
     \end{bmatrix},
 \]
-which may be used to represent any conic. We then
+which is a generalization of the ellipse that can definy any conic. We then
+
 * form a degenerate conic from the solution to the system of these two conics,
 * split this degenerate conic into a pencil of two lines, and finally
 * intersect the remaining conic with this pencil, yielding 0 to 4 intersection
-points (\@ref(fig:intersection)).
+points (Figure \@ref(fig:intersection)).
 
 ```{r intersection, fig.cap = "The process (from left to right) used to intersect two ellipses, here yielding 4 points.", fig.width = 6, fig.height = 2}
 fig_intersection()
 ```
 
 After we have discovered all of the intersection points between the ellipses,
-we find the area of their overlap by examining the subset of intersection
-points that were formed from the presently examined ellipses that are also
+we find the area of the overlaps by examining the subset of intersection
+points that were formed from the presently examined ellipses that are contained
 within all of these ellipses. These intersection points form a convex polygon
-plus elliptical segments (Figure \@ref(fig:polyarea).
+plus elliptical segments (Figure \@ref(fig:polyarea)).
 
 ```{r polyarea, fig.cap="The overlap area between three ellipses is the sum of a convex polygon (in grey) and 2--3 ellipse segments (in blue).", fig.height = 2.4}
 fig_polyarea()
@@ -339,7 +366,7 @@ an algorithm developed from @eberly_area_2016, in which we
 integrate the ellipse between the two points making up the start and end of
 the elliptical segment. This gives us the elliptical sector from which we
 subtract the triangle part to find the segment area
-(Equation \@ref(eq:segmentArea)).
+ \@ref(eq:segmentArea).
 \begin{equation}
 A(\theta_0, \theta_1) = F(\theta_1) - F(\theta_1) -
 \frac{1}{2}|x_1y_0 - x_0y_1|,
@@ -350,147 +377,196 @@ A(\theta_0, \theta_1) = F(\theta_1) - F(\theta_1) -
 \arctan{\left(\frac{(b - a)\sin{2\theta}}{b + a +(b - a )\cos{2\theta}} \right)}
 \right]
 \]
-To our knowledge, this method was first published for circles in a blog post 
-[@frederickson_2013] and has been extended in **eulerr** to also work for
-all ellipses.
+This method was first published for circles in a blog post 
+[@frederickson_2013] and in a scholarly paper for up to three ellipses
+[@micaleff_2013] but has to  
+our knowledge not previously been extended to any number of ellipses.
 
-With this in place, we are now able to compute the areas of all the set
-intersections and their relative complements up to numerical precision, which we
-take advantage of in the final step of the configuration. 
-
-We now feed the initial layout computed in [Initial configuration] to the
-`nlm()` optimizer. We proceed to let the ellipses rotate and relax the
-criterion that the semi-major and semi-minor axes are the same (as in a circle).
-This gives us five parameters to optimize per set. For each iteration of the
-optimizer, the areas of the intersections are analyzed and a measure of 
-loss computed. A a loss function, we use the sum of squared differences
-between the set intersections plus their relative complements and
-the respective areas of the diagram (Equation \@ref(eq:loss)).
+With this in place, we are now able to compute the areas of all
+intersections and their relative complements up to numerical precision.
+We feed the initial layout computed in [Initial configuration]
+to the optimizer, this time allowing the ellipses rotate and the relation
+between the semiaxes vary, altogether rendering five parameters to optimize per
+set and ellipse. For each iteration of the
+optimizer, the areas of all intersections are analyzed and a measure of 
+loss returned. The loss we use is the sum of squared errors
+between the ideal sizes ($\omega$ from Definition \@ref(def:omega)) and
+the respective areas of the diagram,
 \begin{equation}
-\sum_{i=1}^{n} (A_i-\omega_i)^2
+\sum_\omega  (A_i-\omega_i)^2
 (\#eq:loss)
 \end{equation}
 
 ## Goodness of fit
 
-Before we get to plotting the solution, it is useful to know how well the
-fit from **eulerr** matches the input. Sometimes euler diagrams are just not
-feasible, particular for combinations with many sets, in which case we should
-stop here and look for another design to visualize the set relationships.
+When there is no perfect solution **eulerr** generates
+an approximation, which may or may not fit well. It is not, however, obvious
+what it means for it to "fit well". The loss metric\~\@ref(eq:loss) we used in
+the optimizer does measure this but not in a standadized way. 
+@wilkinson_2012 uses the *stress* metric~\@ref(eq:stress),
+\begin{equation}
+\frac{\sum_{i=1}^n (y_i - \hat{y}_i) ^ 2}{\sum_{i=1}^n y_i^2}
+(\#eq:stress)
+\end{equation}
+where $\hat{y}_i$ is the ordinary least squares estimate from obtained by
+regressing the fitted areas on the original areas through the 
+origin. It is not, however, clear what the
 
-It is not, however, obvious what it means for a euler diagram to "fit well". 
-**venneuler** uses a metric called *stress*, which is defined as
-\[
-\frac{\sum_{i=1}^{n} (y_i - \hat{y}_i) ^ 2}{\sum_{i=1}^{n} y_i ^ 2}
-\]
-where $\hat{y}_i$ is an ordinary least squares estimate from the regression of
-the fitted areas on the original areas that is being explored during
-optimization.
-
-Meanwhile, **eulerAPE** [@micallef_2014] uses *diagError*:
-\[
+@micallef_2014, on the other hand, uses *diagError*~(\@ref(eq:diagError),
+\begin{equation}
 \max_{i = 1, 2, \dots, n} \left| \frac{y_i}{\sum y_i} -
-  \frac{\hat{y}_i}{\sum \hat{y}_i} \right|
-\]
+  \frac{\hat{y}_i}{\sum \hat{y}_i} \right|.
+(\#eq:diagError)
+\end{equation}
 
-Both metrics are given the user after the diagram has been fit, together
-with a table of residuals.
+---
+TODO: Should we develop our own measure?
+TODO: Talk about other measures (vennmaster etc.)
+TODO: What is a high and low diag_error?
+---
 
-```{r, fig.cap = "A plot with circles."}
-combo <- c("A" = 1, "B" = 1, "C" = 1,
-           "A&B" = 0.5, "A&C" = 0.5, "C&B" = 0.5)
-
-fit1 <- euler(combo)
-fit1
-plot(fit1, counts = TRUE)
-```
-
-It is clear that this is not a good fit, which we can find out just by
-looking at the plot. This is a good example of when ellipses come in handy.
-
-```{r, fig.cap = "A plot with ellipses."}
-fit2 <- euler(combo, shape = "ellipse")
-fit2
-plot(fit2, counts = TRUE)
-```
-
-Much better.
-
-[TODO]: # What is a high and low diag_error?
+Eulerr adopts both measures and lets the user decide which is more appropriate.
 
 ## Visualization
 
-Euler diagrams are naught without visualization. Here, **eulerr**
-interfaces the elegant Lattice graphics system [@sarkar_2008] to grant the
-user extensive control over the output, and allow for facetted plots in
-case such a design was used in fitting the euler configuration.
+After we have have ascertained that our Euler diagram is adequate, we turn
+to visualizing the solution. **eulerr**
+leverages the Lattice graphics system [@sarkar_2008] for **R** to offer the
+user exhaustive control over the output.
 
-In this case, layout out the diagram becomes considerably more involved. Finding
-a reasonable spot for the text inside the diagram only lends itself to an
-easy solution if the shape of the intersection has a center-of-gravity inside
-ellipse, in which case an average of some of the points might suffice. This
-is often not the case, however, and we need a better solution. Specifically,
-what we need is a method to find the point inside the circle overlap for the
-counts and circle complement to the intersection for our labels.
+Plotting the ellipses is straightforward. Often, however, we would like to label
+the ellipses and their intersections with text and this is more involved. The
+reason is that the intersections are often concave and lack a well-defined 
+center. 
 
-So far, we have not been able to derive at an analyitcal solution for
-finding a good point, or for that matter a reliable way of finding *any* point
-that is in the required intersection or complement. As is often the case,
-the next-best thing turns out to be a numerical one. First, we locate a 
+We know of no analytical solution to this problem. As usual, however,
+the next-best thing turns out to be a numerical such. First, we locate a 
 point that is inside the required region by spreading points across one of the
-discs involed in the set combination. To spread points uniformly, we use
-*Vogel's method* [@arthur_2015; @vogel_1979]
-\[
+discs involed in the set combination. To spread points uniformly, we use a
+modification of *Vogel's method*~[@arthur_2015; @vogel_1979] adapted to
+ellipses~\@ref(eq:vogel).
+\begin{equation}
 \left( p_k = (\rho_k, \theta_k) = \left( r \sqrt{\frac{k}{n}},\, \pi (3 - \sqrt{5})(k - 1) \right) \right)_{k=1}^n,
-\]
-which is actually based on the golden angle.
+(\#eq:vogel)
+\end{equation}
+Our modification involes stretching, scaling, and rotating the points
+after they have been formed. 
 
-```{r, fig.cap = "Spreading points on a disc with Vogel's method."}
-n <- 500
-seqn <- seq(1, n, 1)
-theta <- seqn*pi*(3 - sqrt(5))
-rad <- sqrt(seqn/n)
-x <- rad*cos(theta)
-y <- rad*sin(theta)
+After we spread our points throughout the ellipse and find one point, $X$, that
+matches our desired intersection, we then proceed to optimize
+its position numerically. We look for a position inside the intersection that
+maximizes the smallest distance to all the ellipses in our diagram to provide
+as much spacing as possible for the label. This is a maximin problem with
+a loss function equal to
+\begin{equation}
+\max{\min{(X-E_i)}},\quad i=0,1, \dots, n,
+(\#eq:lossDist)
+\end{equation}
+where $E$ represent the ellipses. 
 
-xyplot(x ~ y, aspect = "iso", pch = 20, xlab = "", ylab = "",
-       col = 1,
-       par.settings = list(axis.line = list(col = "transparent")),
-       scales = list(draw = FALSE))
+The method for computing the distance from a point to an ellipses has
+been described in @eberly_x and involves a bisection optimizer.
+
+To optimize this, we employ a version of the
+*Nelder--Mead Method* [@nelder_1965] which is translated from Matlab
+code by @kelley_1999 and adapted for **eulerr** to ensure that convergence
+is fast and that
+the simplex remains within the intersection boundarie (since we want
+the local maximum). The method is visualized in Figure~\@ref(fig:vogel).
+
+```{r vogel, fig.cap = "The method **eulerr** uses to locate an optimal position for a label in three steps from left to right: first, we spread sample points on one of the ellipses and pick one inside the intersection of interest, then we begin moving it numerically, and finally place our label.", fig.width = 6}
+fig_vogel()
 ```
 
-After this, we scale, translate,
-and rotate the points so that they fit the desired ellipse.
+## Layout
 
----
-TODO: Visualize this step.
----
+A side effect of running an unconstrained optimizer is that we almost invariably
+produce overdispersed layouts if there are disjoint clusters of ellipses. To
+solve this, we use a SKYLINE-BL rectangle packing algorithm [@jylanki_2010]
+which is designed specifically for **eulerr**. In it, we surround each
+ellipse cluster with a bounding box and pack these boxes into a bin with asn
+appropriate size and aspect ratio of the golden rule.
 
-After we've spread our points throughout the ellipse and found one that
-matches our desired combination of ellipses/sets, we then proceed to optimize
-its position numerically. For this, we use version of the
-*Nelder--Mead Method* [@nelder_1965] which we've translated from Matlab
-code by @kelley_1999 and customized for **eulerr**
-(in particular to make sure that
-the simplex does not escape the intersection boundaries since we for this
-problem *want* the local minimum).
+```{r skyline, fig.cap = "The SKYLINE-BL rectangle packer"}
+fig_skyline()
+```
 
-## Coloring
-Per default, the ellipses are filled with colors. The default option is to
-use an adaptive scheme in which colors are chosen to provide a balance
-between dinstinctiveness, beauty, and consideration for the color deficient.
-The color palette has been generated from
-[qualpalr](https://CRAN.R-project.org/package=qualpalr)
-(developed by the author), which automatically generates qualitative color
-palettes based on a model of color perception.
+## Aesthetics
+
+Euler diagrams display both quantitative and qualitative aspects of data.
+The quantitative aspect is covered by the areas of the sets and their
+intersections, which is the main focus of this paper. The qualitative aspect
+is the mapping of each set to a quality or category such as the membership of a
+group or the ownership of a certain gene.
+
+In the diagram, these qualities needs to be separated through qualities such
+as
+
+* color,
+* border type,
+* text labelling, 
+* transperancy,
+* patterns,
+
+or a combination of these. The main purpose of these aethetics is to 
+separate out the different ellipses so that the audience can interpret the
+diagram with ease and clarity.
+
+The most common choice among aesthetics is color, which provides useful 
+information without extraneous chart junk [@tufte_x]. The issue with color,
+however, is that it cannot be perceived perfectly by rought 10% of the
+population. Moreover, color is often a premium in scientific publications and 
+adds nothing to a diagram of two diagrams.
+
+For these reasons, **eulerr** by default distinguishes ellipses with color 
+using a color palette generated via the **R** package **qualpalr**
+[@larsson_2016], which automatically generates qualitative color
+palettes based on a perceptual model of color vision that optionally caters
+to color vision deficiency. This palette has been manually modified slightly to
+fullfil our other objectives of avoiding using colors for two sets.
 
 # Results
 
+Our focus in this paper is software for the **R** language. These results were
+computed on a PC laptop with Intel Core i5 8gb memory on R 3.4.1.
+
+## Case studies
+
+We begin our examination of **eulerr** by studying a difficult set relationship
+from @wilkinson_2012
+\begin{gather*}
+A = 4 \quad B = 6 \quad C = 3 \quad D = 2 \quad E = 7 \quad F = 3\\
+A\& B = 2 \quad A\&F = 2 \quad B \& C = 2 \quad B\&D = 1 \quad B \& F = 2 \quad C\&D = 1 \quad D\& E = 1 \quad E \&F = 1\\
+A\&B\&F = 1 \quad B\&C\&D = 1
+\end{gather*}
+where we use the $\&$ operator analogously to $\omega$ in Definition \@ref(def:omega). 
+
+```{r venneulerHard, fig.cap = "A comparison of a Euler diagram generated by **venneuler** with two generated from eulerr with circles and ellipses respectively. The set relationship is taken from.", fig.width = 6}
+fig_venneulerHard()
+```
+
+---
+TODO: Use real examples of euler diagrams from other studies or papers about euler diagrams.
+---
+
 ## Consistency
+
+---
+TODO: Randomly generate ellipses, compute their areas, fit with eulerr
+---
 
 ## Accuracy
 
+---
+TODO: Randomly generate euler diagram setups and measure accuracy and compare with other software
+---
+
 ## Performance
+
+The performance of the **eulerr** method is bottlenecked by the final optimizer,
+which converges in $\mathcal{O}(2^n)$ time. @wilkinson_2012 report convergence
+in $\mathcal{O}(n)$ time.
+
 
 Being that we're optimizing over 5 parameters for every ellipse (or 3 in the case
 of circles) -- nevertheless, we profit from our implementation
@@ -498,19 +574,6 @@ in the C++ programming language via the **R** packages **Rcpp**
 [@eddelbuettel_2011] and **RcppArmadillo** [@eddelbuettel_2014].
 
 # Discussion
-
-# Layout
-Since the optimization steps are unconstrained, we run the risk of
-ending up with dispersed layouts. To fix this, we use the SKYLINE-BL 
-rectangle packing algorithm [@jylanki_2010] to pack the disjoint clusters of
-ellipses (in case there are any) into a heuristically chosen bin.
-
-At the time of writing this algorithm is crudely implemented -- for 
-instance, it does not attempt to rotate the rectangles (boundaries for the
-ellipses) or attempt to use. Since we're dealing with a rather simple version
-of the rectangle packing problem, however, it seems to do the trick.
-
-## Labelling
 
 
 # References
