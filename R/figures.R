@@ -178,9 +178,12 @@ fig_vogel <- function() {
     par.settings = list(axis.line = list(col = "transparent")),
     scales = list(draw = FALSE),
     panel = function(x, y, ...) {
-      lattice::panel.points(t(p0[1:2, !inside]), pch = 19, col = "grey80", cex = 0.5)
-      lattice::panel.points(t(p0[1:2, inside]), pch = 19, col = "steelblue2", cex = 0.5)
-      lattice::panel.points(t(p0[1:2, !inside][, 14]), pch = 19, col = 1, cex = 0.5)
+      lattice::panel.points(t(p0[1:2, !inside]), pch = 19, col = "grey80",
+                            cex = 0.5)
+      lattice::panel.points(t(p0[1:2, inside]), pch = 19, col = "steelblue2",
+                            cex = 0.5)
+      lattice::panel.points(t(p0[1:2, !inside][, 14]), pch = 19, col = 1,
+                            cex = 0.5)
       lattice::panel.polygon(RConics::ellipse(c(a[1], b[1]),
                                               c(h[1], k[1]),
                                               phi[1]))
@@ -202,7 +205,8 @@ fig_vogel <- function() {
       lattice::panel.arrows(p0[1, !inside][14], p0[2, !inside][14],
                             centers[1, 1], centers[2, 1],
                             length = 0.05, col = "grey70")
-      lattice::panel.points(t(p0[1:2, !inside][, 14]), pch = 19, col = 1)
+      lattice::panel.points(t(p0[1:2, !inside][, 14]), pch = 19, col = 1,
+                            cex = 0.5)
 
       lattice::panel.polygon(RConics::ellipse(c(a[1], b[1]),
                                               c(h[1], k[1]),
@@ -251,9 +255,9 @@ fig_venneulerHard <- function() {
            "A&B" = 2, "A&F" = 2, "B&C" = 2, "B&D" = 1,
            "B&F" = 2, "C&D" = 1, "D&E" = 1, "E&F" = 1,
            "A&B&F" = 1, "B&C&D" = 1)
-  p1 <- plot(venneuler::venneuler(set), main = "stress = 0.006")
-  p2 <- plot(eulerr::euler(set), main = "stress = 0.004")
-  p3 <- plot(eulerr::euler(set, shape = "ellipse"), main = "stress = 0")
+  plot(venneuler::venneuler(set), sub = "Stress = 0.006")
+  plot(eulerr::euler(set), sub = "Stress = 0.004")
+  plot(eulerr::euler(set, shape = "ellipse"), sub = "Stress = 0")
 
-  gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+  #gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 }
