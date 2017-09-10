@@ -21,7 +21,8 @@ Suggests:
   knitr,
   rmarkdown,
   bookdown,
-  gridExtra
+  gridExtra,
+  venneuler
 URL: https://github.com/jolars/eulerrPaper
 BugReports: https://github.com/jolars/eulerrPaper/issues
 VignetteBuilder: knitr
