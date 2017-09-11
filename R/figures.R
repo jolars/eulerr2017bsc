@@ -261,3 +261,20 @@ fig_venneulerHard <- function() {
 
   #gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 }
+
+#' Plot results of consistency tests
+#'
+#' @return A multipanelled figure.
+#' @export
+fig_consistency <- function() {
+  p <- lattice::xyplot(
+    stress ~ it | sets + software,
+    ylab = "Stress",
+    xlab = "",
+    data = data_consistency,
+    type = "h"
+  )
+
+  latticeExtra::useOuterStrips(p)
+}
+
