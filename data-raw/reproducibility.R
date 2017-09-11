@@ -28,7 +28,6 @@ for (i in 2:10) {
       names(config)[k] <- paste0(LETTERS[1:i][ids[k, ]], collapse = "&")
     }
 
-
     s1 <- venneuler::venneuler(config)$stress
     s2 <- eulerr::euler(config)$stress
 
@@ -38,12 +37,8 @@ for (i in 2:10) {
 
 data_consistency <-
   tidyr::gather(out, key = "software", "stress", -sets, -it) %>%
-  dplyr::mutate(software = as.factor(software), sets = as.fa)
+  dplyr::mutate(software = as.factor(software),
+                sets = as.factor(sets))
+levels(data_consistency$sets) <- paste(levels(data_consistency$sets), "sets")
 
-p <- lattice::xyplot(stress ~ it | sets + software,
-                     data = data_consistency, auto.key = list(lines = TRUE, points = FALSE),
-                     type = "h")
-
-latticeExtra::useOuterStrips(p)
-
-usethis::use_data(data_consistency, internal = TRUE)
+usethis::use_data(data_consistency, overwrite = TRUE)
