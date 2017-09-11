@@ -1,20 +1,22 @@
 library(eulerr)
 library(venneuler)
-# library(VennDiagram)
+library(VennDiagram)
+library(Vennerable)
 
 set.seed(1)
 
-
 # Look at consistency for circles first
 
-out <- data.frame(venneuler = double(),
-                  eulerr = double(),
+out <- data.frame(it = integer(),
                   sets = integer(),
-                  it = integer())
+                  software = character(),
+                  stress = double(),
+                  diag_error = double())
 
-# Place 2 to 10 sets
-for (i in 2:10) {
+# Place 3 to 10 circles
+for (i in 3:10) {
   for (j in 1:100) {
+    # Sample some random circles
     r <- runif(i, 0.3, 0.6)
     x <- runif(i, 0, 1)
     y <- runif(i, 0, 1)
@@ -28,17 +30,23 @@ for (i in 2:10) {
       names(config)[k] <- paste0(LETTERS[1:i][ids[k, ]], collapse = "&")
     }
 
-    s1 <- venneuler::venneuler(config)$stress
-    s2 <- eulerr::euler(config)$stress
+    out <- rbind(out, cbind(it = j,
+                            sets = i,
+                            software = "venneuler",
+                            stress = venneuler::venneuler(config)$stress,
+                            diag_error = 0))
+    out <- rbind(out, cbind(it = j,
+                            sets = i,
+                            software = "eulerr",
+                            stress = eulerr::euler(config)$stress,
+                            diag_error = 0))
+    if (i <= 3) {
 
-    out <- rbind(out, cbind(venneuler = s1, eulerr = s2, sets = i, it = j))
+    }
   }
 }
 
 data_consistency <-
-  tidyr::gather(out, key = "software", "stress", -sets, -it) %>%
-  dplyr::mutate(software = as.factor(software),
-                sets = as.factor(sets))
-levels(data_consistency$sets) <- paste(levels(data_consistency$sets), "sets")
+  dplyr::mutate(out, software = as.factor(software), sets = as.factor(sets))
 
 usethis::use_data(data_consistency, overwrite = TRUE)
