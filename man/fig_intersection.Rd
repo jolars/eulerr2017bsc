@@ -8,7 +8,7 @@ fig_intersection()
 }
 \value{
 Plot three diagrams side-by-side showing the process of intersecting
-  three ellipses.
+three ellipses.
 }
 \description{
 The process of intersecting two ellipses

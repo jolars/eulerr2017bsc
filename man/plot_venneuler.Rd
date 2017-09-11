@@ -22,7 +22,7 @@ plot_venneuler(x, col, col.fn = function(col) hcl(col * 360, 130, 60),
 
 \item{col.txt}{ignored}
 
-\item{...}{Passed on to [plot.euler]}
+\item{...}{Passed on to \link{plot.euler}}
 }
 \value{
 Plots a venneuler diagram using eulerr methods.
