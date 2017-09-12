@@ -29,7 +29,7 @@ degenerate_split_conics <- function(C1, C2) {
 #' @param n Number of vertices
 #' @param rng Range of the arc to return.
 #'
-#' @return
+#' @return Points on the arc of an ellipse.
 #' @export
 ellipse_arc <- function(saxes = c(1, 1),
                         loc = c(0, 0),
