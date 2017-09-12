@@ -18,6 +18,9 @@ ellipse_arc(saxes = c(1, 1), loc = c(0, 0), theta = 0, n = 200,
 
 \item{rng}{Range of the arc to return.}
 }
+\value{
+Points on the arc of an ellipse.
+}
 \description{
 Ellipse arcs
 }

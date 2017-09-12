@@ -15,6 +15,9 @@ gof(obj, orig)
 \arguments{
 \item{obj}{A fit euler diagram}
 }
+\value{
+Returns a list of goodness-of-fit tests
+}
 \description{
-Goodness of fit tests for euler diagram
+stress and diagError
 }
