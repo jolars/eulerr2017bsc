@@ -527,8 +527,21 @@ fullfil our other objectives of avoiding using colors for two sets.
 
 # Results
 
-Our focus in this paper is software for the **R** language. These results were
-computed on a PC laptop with Intel Core i5 8gb memory on R 3.4.1.
+The only **R** packages that feature area-proportional Euler diagrams are
+**eulerr**, **venneuler**, **Vennerable**, and **d3VennR**. The latter is an
+interface to the **venn.js** script that has been discussed previously, but 
+because it features an outdated version and since it only produces
+images as html, we refrain from using it in our results. Only **eulerr** and 
+**venneuler** support more than 3 sets, which is why there are only 3--set
+results for **Vennerable**.
+
+These results were computed on a PC with the following specs and software
+configuration:
+
+* Microsoft Windows Pro 10 x64
+* Intel Core^TM^ i7-4500U CPU @ 1.80GHz, 2 cores
+* 8gb memory on R 3.4.1.
+* R 3.4.1, x64
 
 ## Case studies
 
