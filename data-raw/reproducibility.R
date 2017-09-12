@@ -17,6 +17,7 @@ out <- data.frame(it = integer(),
 # Place 3 to 10 circles
 for (i in 3:8) {
   for (j in 1:100) {
+    if (j %% 10 == 0) cat("i=", i, "; j=", j, "\n", sep = "")
     # Sample some random circles
     r <- runif(i, 0.3, 0.6)
     x <- runif(i, 0, 1)
@@ -78,6 +79,7 @@ for (i in 3:8) {
 # Place 3 to 10 ellipses
 for (i in 3:8) {
   for (j in 1:100) {
+    if (j %% 10 == 0) cat("i = ", i, "; j = ", j, "\n")
     # Sample some random ellipses
     a <- runif(i, 0.2, 0.8)
     b <- runif(i, 0.2, 0.8)
