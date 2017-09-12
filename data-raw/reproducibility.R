@@ -16,6 +16,7 @@ out <- data.frame(it = integer(),
 
 # Place 3 to 10 circles
 for (i in 3:8) {
+  ids <- eulerr:::bit_indexr(i)
   for (j in 1:100) {
     if (j %% 10 == 0) cat("i=", i, "; j=", j, "\n", sep = "")
     # Sample some random circles
@@ -26,7 +27,6 @@ for (i in 3:8) {
     pars <- as.vector(matrix(c(x, y, r), nrow = 3, byrow = TRUE))
 
     config <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
-    ids <- eulerr:::bit_indexr(i)
 
     for (k in 1:nrow(ids)) {
       names(config)[k] <- paste0(LETTERS[1:i][ids[k, ]], collapse = "&")
@@ -78,6 +78,7 @@ for (i in 3:8) {
 
 # Place 3 to 10 ellipses
 for (i in 3:8) {
+  ids <- eulerr:::bit_indexr(i)
   for (j in 1:100) {
     if (j %% 10 == 0) cat("i = ", i, "; j = ", j, "\n")
     # Sample some random ellipses
@@ -90,7 +91,6 @@ for (i in 3:8) {
     pars <- as.vector(matrix(c(x, y, a, b, phi), nrow = 5, byrow = TRUE))
 
     config <- as.vector(eulerr:::intersect_ellipses(pars, circles = FALSE))
-    ids <- eulerr:::bit_indexr(i)
 
     for (k in 1:nrow(ids)) {
       names(config)[k] <- paste0(LETTERS[1:i][ids[k, ]], collapse = "&")
