@@ -2,6 +2,7 @@ library(eulerr)
 library(venneuler)
 library(VennDiagram)
 library(Vennerable)
+library(magrittr)
 
 set.seed(1)
 
@@ -109,10 +110,17 @@ for (i in 3:8) {
 
 data_consistency <-
   dplyr::mutate(out,
+                it = as.integer(it),
                 software = as.factor(software),
+                stress = as.numeric(as.character(stress)),
+                diag_error = as.numeric(as.character(diag_error)),
                 sets = as.factor(sets),
-                shape = as.factor(shape))
+                shape = as.factor(shape)) %>%
+  tidyr::gather(metric, loss, diag_error, stress) %>%
+  dplyr::mutate(metric = as.factor(metric))
 
 levels(data_consistency$sets) <- paste(levels(data_consistency$sets), "sets")
+names(data_consistency$it) <- NULL
+levels(data_consistency$metric) <- c("diagError", "Stress")
 
 usethis::use_data(data_consistency, overwrite = TRUE)
