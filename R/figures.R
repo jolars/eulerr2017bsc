@@ -9,7 +9,7 @@ fig_impossible <- function() {
     eulerr::euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1),
                   shape = "ellipse"))
 
-  gridExtra::grid.arrange(p1, p2, ncol = 2)
+  gridExtra::grid.arrange(p1, p2, ncol = 1)
 }
 
 #' Example of overlap computation for ellipses
@@ -132,7 +132,7 @@ fig_intersection <- function() {
       lattice::panel.abline(a = -ll[3, 2]/ll[2, 2], b = -ll[1, 2]/ll[2, 2])
       lattice::panel.points(t(pp[1:2, ]), col = 1, pch = 19)
     })
-  gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+  gridExtra::grid.arrange(p1, p2, p3, ncol = 1)
 }
 
 #' Show how to label ellipses.
@@ -233,7 +233,7 @@ fig_vogel <- function() {
                                               phi[2]))
     })
 
-  gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+  gridExtra::grid.arrange(p1, p2, p3, ncol = 1)
 }
 
 
@@ -255,11 +255,11 @@ fig_venneulerHard <- function() {
            "A&B" = 2, "A&F" = 2, "B&C" = 2, "B&D" = 1,
            "B&F" = 2, "C&D" = 1, "D&E" = 1, "E&F" = 1,
            "A&B&F" = 1, "B&C&D" = 1)
-  plot(venneuler::venneuler(set), sub = "Stress = 0.006")
-  plot(eulerr::euler(set), sub = "Stress = 0.004")
-  plot(eulerr::euler(set, shape = "ellipse"), sub = "Stress = 0")
+  p1 <- plot_venneuler(venneuler::venneuler(set))
+  p2 <- plot(eulerr::euler(set))
+  p3 <- plot(eulerr::euler(set, shape = "ellipse"))
 
-  #gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
+  gridExtra::grid.arrange(p1, p2, p3, ncol = 3)
 }
 
 #' Plot results of consistency tests
@@ -267,14 +267,20 @@ fig_venneulerHard <- function() {
 #' @return A multipanelled figure.
 #' @export
 fig_consistency <- function() {
-  p <- lattice::xyplot(
-    stress ~ it | sets + software,
-    ylab = "Stress",
-    xlab = "",
-    data = data_consistency,
-    type = "h"
-  )
-
-  latticeExtra::useOuterStrips(p)
+  data_consistency %>%
+    spread(metric, loss) %>%
+    mutate(success = diagError < 0.01, sets = as.integer(sets)) %>%
+    select(sets, success, shape, software) %>%
+    group_by(sets, shape, software) %>%
+    summarise(success_rate = mean(success, na.rm = TRUE)) %>%
+    mutate(success_rate = success_rate*100) %>%
+    ggplot(aes(x = sets, y = success_rate, group = software, color = software)) +
+    xlab("Sets") +
+    ylab("Success rate (%)") +
+    geom_point() +
+    geom_line() +
+    facet_grid(~shape) +
+    theme_bw() +
+    theme(legend.title = element_blank(), legend.position = "top")
 }
 
