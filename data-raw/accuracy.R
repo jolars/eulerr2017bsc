@@ -12,10 +12,10 @@ Stress <- double(0)
 diagError <- double(0)
 Sets <- integer(0)
 
-for (i in 3:4) {
-  for (j in 1:2) {
-    ids <- eulerr:::bit_indexr(i)
-
+for (i in 3:8) {
+  ids <- eulerr:::bit_indexr(i)
+  for (j in 1:100) {
+    if (j %% 10 == 0) cat("i=", i, "; j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
     for (k in 1:NROW(ids)) {
@@ -68,7 +68,6 @@ for (i in 3:4) {
       Sets <- c(Sets, i)
       Stress <- c(Stress, vennerable_gof$stress)
       diagError <- c(diagError, vennerable_gof$diag_error)
-
     }
   }
 }
