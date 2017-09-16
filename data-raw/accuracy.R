@@ -48,6 +48,28 @@ for (i in 3:4) {
                    eulerr_circles$diag_error,
                    eulerr_ellipses$diag_error,
                    venneuler_gof$diag_error)
+
+    if (i == 3) {
+      # Fit the areas using vennerable if 3 sets
+      vest <- Vennerable::Venn(SetNames = LETTERS[1:i],
+                               Weight = c(0, as.numeric(combinations)))
+
+      vennerable_gof <- list(stress = NA, diag_error = NA)
+
+      tryCatch({
+        vennerable_fit <- Vennerable::compute.Venn(vest,
+                                                   doWeights = TRUE,
+                                                   doEuler = TRUE,
+                                                   type = "circles")
+        vennerable_gof <- gof(vennerable_fit, combinations)
+      }, error = function(e) {})
+
+      Software <- c(Software, "Vennerable")
+      Sets <- c(Sets, i)
+      Stress <- c(Stress, vennerable_gof$stress)
+      diagError <- c(diagError, vennerable_gof$diag_error)
+
+    }
   }
 }
 
