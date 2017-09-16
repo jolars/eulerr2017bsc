@@ -1,0 +1,16 @@
+# LaTeX temporary files
+*.aux
+*.log
+*.toc
+
+# Latexmk
+*.fdb_latexmk
+
+# BibTeX
+*.bbl
+*.blg
+*-blx.bib
+
+# Other
+*.xml
+*.bcf
