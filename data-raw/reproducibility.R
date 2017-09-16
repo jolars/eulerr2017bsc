@@ -69,7 +69,7 @@ for (i in 3:8) {
       out <- rbind(out, cbind(it = j,
                               shape = "circle",
                               sets = i,
-                              software = "vennerable",
+                              software = "Vennerable",
                               stress = vennerable_gof$stress,
                               diag_error = vennerable_gof$diag_error))
     }
