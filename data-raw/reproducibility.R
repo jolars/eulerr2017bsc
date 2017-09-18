@@ -1,8 +1,9 @@
 library(eulerr)
 library(venneuler)
-library(VennDiagram)
 library(Vennerable)
-library(magrittr)
+library(tidyr)
+library(dplyr)
+library(tibble)
 
 set.seed(1)
 

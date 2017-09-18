@@ -123,7 +123,7 @@ groups are analyzed.
 Visualizations of such relationships are central to understanding them.
 The commonest visualization is Venn diagrams. Venn diagrams are a
 subset of Euler diagrams, which were originally proposed by Leonard Euler
-(1707--1783) \citep{euler_1802}. Whereas Venn diagrams require that all
+(1707--1783)~\citep{euler_1802}. Whereas Venn diagrams require that all
 $2^n$ possible intersection are present---even if they are empty -- Euler
 diagrams stipulate no such requirement.
 
@@ -144,7 +144,7 @@ accurate representations. Consider, for instance the combination
 \[
 \begin{gathered}
 A = B = C = 2,\\
-A \cap B = A \cap C = B \cap C = 1, \text{ and}\\
+A \cap B = A \cap C = B \cap C = 1\\
 A \cap B \cap C = 0.
 \end{gathered}
 \]

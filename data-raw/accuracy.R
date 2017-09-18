@@ -35,6 +35,7 @@ for (i in 3:8) {
 
     eulerr_circles <- euler(combinations)
     eulerr_ellipses <- euler(combinations, shape = "ellipse")
+
     venneuler_fit <- venneuler(combinations)
     venneuler_gof <- gof(venneuler_fit, combinations)
 
@@ -55,13 +56,16 @@ for (i in 3:8) {
                                Weight = c(0, as.numeric(combinations)))
 
       vennerable_gof <- list(stress = NA, diag_error = NA)
+      vennerable_fit <- NA
 
       tryCatch({
         vennerable_fit <- Vennerable::compute.Venn(vest,
                                                    doWeights = TRUE,
                                                    doEuler = TRUE,
                                                    type = "circles")
-        vennerable_gof <- gof(vennerable_fit, combinations)
+        if (is.list(vennerable_fit)) {
+          vennerable_gof <- gof(vennerable_fit, combinations)
+        }
       }, error = function(e) {})
 
       Software <- c(Software, "Vennerable")
@@ -77,5 +81,6 @@ data_accuracy <- tibble(Sets, Software, Stress, diagError) %>%
   gather("Metric", "Loss", Stress, diagError)
 
 usethis::use_data(data_accuracy, overwrite = TRUE)
+
 
 
