@@ -4,6 +4,7 @@ library(tibble)
 library(eulerrPaper)
 library(eulerr)
 library(venneuler)
+library(Vennerable)
 
 set.seed(1)
 
@@ -15,7 +16,7 @@ Sets <- integer(0)
 for (i in 3:8) {
   ids <- eulerr:::bit_indexr(i)
   for (j in 1:100) {
-    if (j %% 10 == 0) cat("i=", i, "; j=", j, "\n", sep = "")
+    if (j %% 100 == 0) cat("i=", i, "; j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
     for (k in 1:NROW(ids)) {
@@ -63,7 +64,7 @@ for (i in 3:8) {
                                                    doWeights = TRUE,
                                                    doEuler = TRUE,
                                                    type = "circles")
-        if (is.list(vennerable_fit)) {
+        if (isTRUE(class(vennerable_fit) == "VennDrawing")) {
           vennerable_gof <- gof(vennerable_fit, combinations)
         }
       }, error = function(e) {})
