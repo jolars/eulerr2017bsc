@@ -31,10 +31,16 @@ gof.VennDrawing <- function(obj, orig) {
   y <- center[, 2]
 
   pars <- as.vector(matrix(c(x, y, r), nrow = 3, byrow = TRUE))
-  fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
 
-  stress <- eulerr:::venneuler_stress(orig, fit)
-  diag_error <- max(abs(fit/sum(fit) - orig/sum(orig)))
+  if (2^length(x) - 1 != length(orig)) {
+    stress <- NA
+    diag_error <- NA
+  } else {
+    fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
+
+    stress <- eulerr:::venneuler_stress(orig, fit)
+    diag_error <- max(abs(fit/sum(fit) - orig/sum(orig)))
+  }
 
   list(stress = stress, diag_error = diag_error)
 }
