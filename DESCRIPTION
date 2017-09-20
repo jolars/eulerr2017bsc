@@ -18,11 +18,13 @@ Imports:
   microbenchmark
 Suggests:
   komadown,
+  tidyverse,
   knitr,
   rmarkdown,
   bookdown,
   gridExtra,
-  venneuler
+  venneuler,
+  pBrackets
 URL: https://github.com/jolars/eulerrPaper
 BugReports: https://github.com/jolars/eulerrPaper/issues
 VignetteBuilder: knitr
