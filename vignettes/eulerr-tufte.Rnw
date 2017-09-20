@@ -64,6 +64,10 @@
 <<setup, include = FALSE>>=
 knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
 
+mtime <- function(files) {
+  lapply(Sys.glob(files), function(x) file.info(x)$mtime)
+}
+
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -71,11 +75,15 @@ knitr::opts_chunk$set(
   fig.width = 2.1,
   fig.height = 2.1,
   crop = TRUE,
-  fig.path = "figure/graphics-",
-  cache.path = "cache/graphics-",
   fig.align = "center",
   fig.show = "hold",
-  cache = TRUE
+  cache = TRUE,
+  fig.path = "figure/graphics-",
+  cache.path = "cache/graphics-",
+  cache.extra = mtime(c(file.path("data", "data_acc.rda"),
+                        file.path("data", "data_consistency.rda"),
+                        file.path("data", "data_performance.rda"))),
+  autodep = TRUE
 )
 
 options(digits = 3)
@@ -83,13 +91,24 @@ options(digits = 3)
 library(eulerrPaper)
 library(gridExtra)
 library(tidyverse)
+library(ggthemes)
 library(RConics)
 library(eulerr)
+library(lattice)
+library(latticeExtra)
+library(gridExtra)
+
+lattice.options(
+  default.theme = tactile::tactile.theme(fontsize = c(8, 4)))
+
+trellis.par.set(tactile::tactile.theme(fontsize = c(8, 4)))
+
+theme_set(theme_tufte(base_size = 8, base_family = "serif"))
 
 set.seed(1)
 
-lattice::lattice.options(
-  default.theme = tactile::tactile.theme(fontsize = c(8, 4)))
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+                 "#0072B2", "#D55E00", "#CC79A7")
 @
 
 \begin{titlepage}
@@ -113,27 +132,41 @@ lattice::lattice.options(
 \end{titlepage}
 
 \section{Background}
-Relationships between groups and sets are the focus of many scientific
-disciplines. In biomedicine, for instance, the overlap between sets of genes
-is often of interest. In epidemiology, the interactions between
-diseases are frequently studied. Likewise, the social sciences are often
-involved in studying demographics where the commonalities between various
-groups are analyzed.
+The visual display of quantitative information is often most intuitive
+presentation of data. If done right, visualizations possess
+the  potential to convey intricate relationships that a single statistic or
+table of numbers never could. This is because data visualizations
+map abstract quantities to concrete aesthetics, such as shape or color,
+which lets the observer take a multi-dimensional approach to interpret the
+presentation.
 
-Visualizations of such relationships are central to understanding them.
-The commonest visualization is Venn diagrams. Venn diagrams are a
-subset of Euler diagrams, which were originally proposed by Leonard Euler
-(1707--1783)~\citep{euler_1802}. Whereas Venn diagrams require that all
-$2^n$ possible intersection are present---even if they are empty -- Euler
-diagrams stipulate no such requirement.
+Such aesthetics, however, are only informative in relation to other shapes.
+For instance, a disc with a radius of 1~cm and label of \emph{diabetes} says
+nothing by itself---yet juxtapose it with 2~cm radius disc and label it
+\emph{overweight} and the graphic starts to become informative. If we then
+intersect the two discs, thereby generating a visible overlap, we have
+managed to explain both the relative sizes of two separate categories
+and their intersection. The diagram we have constructed is a
+\emph{Euler diagram}, which, incidentally, serves as the topic of this paper.
 
-Euler diagrams can be area-proportional, which is the case for non-Venn
-diagrams. Area-proportional diagrams are most easily understood as their
-interpretations do not depend on any numbers. This paper will henceforth be
-concerned only with such designs and the term \emph{Euler diagram} will be
-considered to refer to area-proportional diagrams.
+% Insert a figure of the setup above?
 
-Euler diagrams may be fashioned with any conceivable closed shape.
+The Euler diagram, originally proposed by Leonard Euler~\citep{euler_1802},
+is the superset of the obiquiteous Venn diagram: a staple introductory
+text books in statistics and scientific disciplines such as
+bioinformatics and geology. The difference between Venn and Euler diagrams is
+that the former require that all $2^n-1$ possible intersections are
+present---even if they are empty---whilst Euler diagrams do not.
+
+Euler diagrams may be area-proportional, which is to say that each separate
+surface of the diagram is proportional to the quantity it intends to measure.
+(This was the case with the diagram with defined in the second paragraph.)
+This is the most natural and rational form of a Euler diagram being that only
+its shapes are necessary to interpreting it, letting us, for instance,
+discard numbers without crucial loss of information---the same could not be
+said for a Venn diagram.
+
+Euler diagrams may be fashioned out of any conceivable closed shape.
 Solutions have been developed for triangles~\citep{swinton_2011},
 rectangles~\citep{swinton_2011}, ellipses~\citep{micallef_2014},
 smooth curves, polygons~\citep{swinton_2011}, and
@@ -148,11 +181,15 @@ A \cap B = A \cap C = B \cap C = 1\\
 A \cap B \cap C = 0.
 \end{gathered}
 \]
-There is no way to visualize this relationship perfectly with circles
-yet with ellipses there \emph{is} in fact a perfect solution~(\cref{fig:impossible}).
+There is no way to visualize this relationship perfectly with circles,
+yet with ellipses there \emph{is}~(\cref{fig:impossible}).
 \begin{marginfigure}
-<<impossible, out.width="\\linewidth", fig.height=4>>=
-fig_impossible()
+<<impossible, out.width="\\linewidth", fig.height=4, fig.width=2.3>>=
+p1 <- plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1)))
+p2 <- plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1),
+                 shape = "ellipse"))
+
+grid.arrange(p1, p2, ncol = 1)
 @
 \caption{A set relationship depicted with circles and ellipses, showing that ellipses sometimes prevail where circles fail.}
 \label{fig:impossible}
@@ -172,7 +209,7 @@ need to intersect, the motivation for which being that Euler diagrams
 with more than three sets often lack adequate solutions and that their
 high complexity make implementations difficult~\citep{micallef_2013}.
 
-As far as we know, analytical solutions to eulerr diagrams do not exist. All
+As far as we know, analytical solutions to Euler diagrams do not exist. All
 existing implementations are instead based on varying numerical methods.
 Most of these use separate methods for the initial and final diagram
 configurations. For instance, \citet{micallef_2013} uses uses a greedy
@@ -188,7 +225,7 @@ in a final configuration step. This is always an optimization procedure with
 a target loss function and an optimization procedure.
 
 It is this difficulty that we have overcome with \pkg{eulerr}, which is the
-first software to provide elliptical Euler diagrams for, theoretically, any
+first software to generalize elliptical Euler diagrams to any
 number of sets.
 
 \subsection{Aims}
@@ -196,6 +233,20 @@ number of sets.
 The aim of this thesis is to present a method and implementation for
 constructing and visualizing Euler diagrams for sets of any numbers with
 ellipses.
+
+\section{Method}
+
+Constructing a Euler diagram is analagous to fitting a
+statistical model in that you need
+\begin{enumerate}
+\item data,
+\item a model to fit the data on,
+\item test to assess the model fit, and
+\item a presentation of the result.
+\end{enumerate}
+
+In the following sections, we will explain how \pkg{eulerr} deals with
+each of these steps in order to develop an accurate diagram.
 
 \subsection{Input}
 
@@ -211,16 +262,6 @@ this data---namely,
 \item A two- or three-way table \sidenote[][1ex]{\begin{tabular}{lrr} \toprule Survived? & No  & Yes \\   \midrule Child & 52.00 & 57.00 \\   Adult & 1438.00 & 654.00 \\    \bottomrule\end{tabular}}
 \end{itemize}
 
-\section{Method}
-
-Constructing a Euler diagram is in many ways analagous to fitting a
-statistical model, in that you need
-\begin{enumerate}
-\item data,
-\item a model to fit the data on,
-\item test to assess the model fit, and
-\item a presentation of the result.
-\end{enumerate}
 Whichever type is used, \pkg{eulerr} translates it
 to the first type, \emph{intersections and relative complements}~(\cref{def:omega}),
 which is the form used later in the loss functions of the initial and final optimizers.
@@ -343,35 +384,37 @@ relationships and consequently all the various intersections between the
 shapes we use in the diagram. Initially, we restriced ourselves to circles but
 we now extend our reach also to ellipses.
 
-Computing the overlaps of ellipses is not trivial and most methods rely on
-approximations such as quad-tree
-binning~\citep{wilkinson_2012} or polygon intersections~\citep{kestler_2008}. These
-are both imperfect~\citep{micallef_2013} and slow, given that the
-computations may have to run for vast numbers of iterations.
+Computing the overlaps of ellipses is not trivial, which is evident in that
+most methods resort to approximations such as quad-tree
+binning~\citep{wilkinson_2012} or polygon intersections~\citep{kestler_2008}.
+In addition to being imperfect~\citep{micallef_2013}, and as we shall see in
+\cref{sec:performance}, sometimes perform poorly.
 
 Other methods~\citep{micallef_2013,frederickson_2016}, however, use algorithms
 that compute the overlap areas exactly. But unlike most approximative
 types, all the exact methods require that we first find the points
-of intersection between the ellipses. \pkg{eulerr}'s approach to this is based
-on a method outlined by \citet{richter-gebert_2011}, which is based in
-\emph{projective geometry} rather than euclidean.
+of intersection between the ellipses. \pkg{eulerr}'s approach to this is that of
+a method outlined by \citet{richter-gebert_2011}, which is based in
+projective, rather than euclidean, geometry.
 
-We consider two ellipses at a time. The canonical form of a rotated
-ellipse is given by
+We only need to consider two ellipses at a time. The canonical form of these
+is given by
 \[
 \frac{((x-h)\cos(\phi)+(y-k)\sin(\phi))^2}{a^2}+\frac{((x-h) \sin(A)-(y-k)
-  \cos(\phi))^2}{b^2} = 1,
+  \cos(\phi))^2}{b^2} = 1.
 \]
 where $\phi$ is the counter-clockwise angle from the positive x-axis to the
-semi-major axis $a$. $b$ is the semi-minor axis and $(h, k)$ is the center
-of the ellipse. We convert these ellipses to the matrix form
+semi-major axis $a$, $b$ is the semi-minor axis, and $(h, k)$ is the center
+of the ellipse. For our following algorithms to work, we wneed to convert each
+ellipse to its matrix form,
 \[
 E = \begin{bmatrix}A & B/2 & D/2 \\
                    B/2 & C & E/2 \\
                    D/2 & E/2 & F
     \end{bmatrix},
 \]
-which is a generalization of the ellipse that can definy any conic. We then
+which represents a generalization of the ellipse that can be used to define any
+conic (circle, ellipse, parabola, or hyperbola). Following  this, we then
 \begin{enumerate}
 \item form a degenerate conic from the solution to the system of these two conics,
 \item split this degenerate conic into a pencil of two lines, and finally
@@ -381,57 +424,199 @@ points (\cref{fig:intersection}).
 
 \begin{marginfigure}%[-20\baselineskip]
 <<intersection, fig.height = 6, out.width="\\linewidth">>=
-fig_intersection()
+C1 <- ellipseToConicMatrix(c(8, 2), c(0, 0), -pi/3)
+C2 <- ellipseToConicMatrix(c(5, 2), c(1, -2), pi/5)
+ll <- Re(degenerate_split_conics(C1, C2))
+
+ellipses <- data.frame(rbind(ellipse(c(8, 2), c(0, 0), -pi/3),
+                             ellipse(c(5, 2), c(1, -2), pi/5)))
+colnames(ellipses) <- c("x", "y")
+ellipses$fac <- rep(c("A", "B"), each = 201)
+pp <- intersectConicConic(C1, C2)
+
+p1 <- xyplot(
+  y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
+  xlab = NULL, ylab = NULL,
+  scales = list(draw = FALSE, axes = FALSE),
+  par.settings = list(axis.line = list(col = "transparent")),
+  panel = function(x, y, ...) {
+    panel.xyplot(x, y, ..., col = c("black", "steelblue3"))
+})
+p2 <- xyplot(y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
+  xlab = NULL, ylab = NULL,
+  scales = list(draw = FALSE, axes = FALSE),
+  par.settings = list(axis.line = list(col = "transparent")),
+  panel = function(x, y, ...) {
+    panel.xyplot(x, y, ..., col = c("transparent", "steelblue3"))
+    panel.abline(a = -ll[3, 1]/ll[2, 1], b = -ll[1, 1]/ll[2, 1])
+    panel.abline(a = -ll[3, 2]/ll[2, 2], b = -ll[1, 2]/ll[2, 2])
+})
+p3 <- xyplot(
+  y ~ x, data = ellipses, type = "l", groups = fac, asp = 1,
+  xlab = NULL, ylab = NULL,
+  scales = list(draw = FALSE, axes = FALSE),
+  par.settings = list(axis.line = list(col = "transparent")),
+  panel = function(x, y, ...) {
+    panel.xyplot(x, y, ..., col = c("transparent", "steelblue3"))
+    panel.abline(a = -ll[3, 1]/ll[2, 1], b = -ll[1, 1]/ll[2, 1])
+    panel.abline(a = -ll[3, 2]/ll[2, 2], b = -ll[1, 2]/ll[2, 2])
+    panel.points(t(pp[1:2, ]), col = 1, pch = 21, fill = "white")
+})
+grid.arrange(p1, p2, p3, ncol = 1)
 @
 \caption{The process (from top to bottom) used to intersect two ellipses, here yielding 4 points.}
 \label{fig:intersection}
 \end{marginfigure}
 
-After we have discovered all of the intersection points between the ellipses,
-we find the area of the overlaps by examining the subset of intersection
-points that were formed from the presently examined ellipses that are contained
-within all of these ellipses. These intersection points form a convex polygon
-plus elliptical segments (\cref{fig:polyarea}).
+After we have discovered all the intersection points,
+we find the area of a overlap by examining the subset of
+intersection points that were formed from the ellipses that we are currently
+exploring that are simultaneously contained within all of these ellipses. These
+intersection points will form a convex polygon plus elliptical
+segments~(\cref{fig:polyarea}).
 
 \begin{figure}[hbtp!]
-<<polyarea, fig.height = 3, fig.width = 4>>=
-fig_polyarea()
+<<polyarea, fig.height = 4.2, fig.width = 4.2>>=
+x <- c(0, -0.3, 0.2)
+y <- c(0, 0.1, 0.3)
+ra <- a <- c(0.3, 0.5, 0.4)
+rb <- b <- c(0.3, 0.3, 0.6)
+phi <- c(-pi/6, 2, -2)
+
+ee <- data.frame(x, y, ra, rb, phi)
+
+tx <- atan2(-b*tan(phi), a)
+ty <- atan2(b*tan(pi/2L - phi), a)
+
+xlim <- range(x + a*cos(tx)*cos(phi) - b*sin(tx)*sin(phi),
+              x + a*cos(tx + pi)*cos(phi) - b*sin(tx + pi)*sin(phi))
+ylim <- range(y + b*sin(ty)*cos(phi) + a*cos(ty)*sin(phi),
+              y + b*sin(ty + pi)*cos(phi) + a*cos(ty + pi)*sin(phi))
+
+pp <- matrix(NA, ncol = 4, nrow = 0)
+
+for (i in 1:2) {
+  for (j in (i + 1):3) {
+    e1 <- ellipseToConicMatrix(c(ra[i], rb[i]), c(x[i], y[i]), phi[i])
+    e2 <- ellipseToConicMatrix(c(ra[j], rb[j]), c(x[j], y[j]), phi[j])
+    pp <- rbind(pp, cbind(t(intersectConicConic(e1, e2)[1:2, ]), i, j))
+  }
+}
+
+sel <- logical(nrow(pp))
+for (k in 1:nrow(pp)) {
+  in_which <- ((pp[k, 1] - x)*cos(phi) + (pp[k, 2] - y)*sin(phi))^2/ra^2 +
+    ((pp[k, 1] - x)*sin(phi) - (pp[k, 2] - y)*cos(phi))^2/rb^2 <= 1 + 0.1
+  sel[k] <- all(in_which)
+}
+
+pp <- pp[sel, ]
+mid <- cbind(mean(pp[, 1]), mean(pp[, 2]))
+seglines <- matrix(NA, ncol = 2, nrow = 0)
+
+ang <- atan2(pp[, 1] - mid[1], pp[, 2] - mid[2])
+ord <- order(ang)
+
+pp <- pp[ord, ]
+
+j <- nrow(pp)
+for (i in 1:nrow(pp)) {
+  k <- intersect(pp[i, 3:4], pp[j, 3:4])
+  start <- atan2(pp[j, 2] - y[k], pp[j, 1] - x[k])
+  stop <- atan2(pp[i, 2] - y[k], pp[i, 1] - x[k])
+  arc <- ellipse_arc(c(a[k], b[k]), c(x[k], y[k]), theta = phi[k],
+                     rng = c(start, stop))
+  seglines <- rbind(seglines, arc)
+  j <- i
+}
+
+xyplot(
+  y ~ x, data = ee, asp = "iso",
+  xlim = extendrange(xlim, f = 0.01), ylim = extendrange(ylim, f = 0.01),
+  scales = list(draw = FALSE), xlab = NULL, ylab = NULL,
+  par.settings = list(axis.line = list(col = "transparent")),
+  panel = function(x, y, ...) {
+    panel.euler.ellipses(x, y, ra, rb, phi, ...)
+    panel.polygon(seglines, col = "slategray2")
+    panel.polygon(pp[, 1:2], col = "grey90")
+    panel.points(mid, pch = 4, col = 1)
+    panel.points(pp[, 1:2, drop = FALSE], col = 1, pch = 21, fill = "white")
+  }
+)
 @
 \label{fig:polyarea}
 \caption{The overlap area between three ellipses is the sum of a convex polygon (in \textcolor{grey}{grey}) and 2--3 ellipse segments (in \textcolor{blue}{blue}).}
 \setfloatalignment{b}
 \end{figure}
 
-Since the polygon section is always convex, it is trivial to find its area using
-the the triangle method. To find the areas of the elliptical segments, we use
-an algorithm developed from \citet{eberly_area_2016}, in which we
-integrate the ellipse between the two points making up the start and end of
-the elliptical segment. This gives us the elliptical sector from which we
-subtract the triangle part to find the segment area \eqref{eq:segmentArea}.
-\begin{equation}
+Since the polygon section is always convex, it is easy to find its area using
+the the \emph{triangle method}. To find the areas of the elliptical segments,
+we use an algorithm presented in \citet{eberly_area_2016} in which we begin
+centering the ellipse on $[0, 0]$ and normalizing its rotation, which is not
+needed to compute the area. We then integrate the ellipse between the two points
+making up the start and end of
+the elliptical segment. This gives us the \emph{elliptical sector} from which we
+subtract the triangle part to find the segment area~\eqref{eq:segmentArea}.
+\begin{equation*}
 A(\theta_0, \theta_1) = F(\theta_1) - F(\theta_1) -
 \frac{1}{2}|x_1y_0 - x_0y_1|,
 \label{eq:segmentArea}
-\end{equation}
+\end{equation*}
 \[
 \text{where } F(\theta) = \frac{a}{b}\left[ \theta -
 \arctan{\left(\frac{(b - a)\sin{2\theta}}{b + a +(b - a )\cos{2\theta}} \right)}
 \right]
 \]
-This method was first published for circles in a blog post
-\citep{frederickson_2013} and in a scholarly paper for up to three ellipses
-\citep{micaleff_2013} but has to
-our knowledge not previously been extended to any number of ellipses.
+An illustration is given in~\cref{fig:ellipsesegment}.
+
+\begin{marginfigure}
+<<ellipsesegment, out.width = "\\linewidth", fig.width = 2.2, fig.height = 2.2>>=
+ellipse <- ellipse(c(1, 0.6), c(0, 0), 0)
+i0 <- 15
+i1 <- 45
+
+tri <- rbind(cbind(0, 0),
+             ellipse[i0, , drop = FALSE],
+             ellipse[i1, , drop = FALSE])
+
+xyplot(1~1, xlim = c(-1.2, 1.2), ylim = c(-0.8, 0.8), asp = "iso",
+       xlab = NULL, ylab = NULL,
+       par.settings = list(axis.line = list(col = "transparent")),
+       scales = list(draw = FALSE),
+       panel = function(x, y, ...) {
+         panel.grid(x = 0, y = 0, h = 1,v = 1)
+         panel.lines(ellipse, col = "grey60")
+         panel.polygon(ellipse[i0:i1, ], col = "steelblue2", alpha = 0.5)
+         panel.polygon(tri, col = "grey95")
+         panel.points(ellipse[c(i0, i1), ], col = 1, pch = 21, fill = "white")
+         panel.text(ellipse[c(i0, i1), ],
+                    adj = c(-0.5, -0.5),
+                    labels = c(expression(theta[0]), expression(theta[1])))
+         pBrackets::grid.brackets(1, 0, 0, 0, col = "grey50", h = 0.05,
+                                  type = 1)
+         pBrackets::grid.brackets(0, 0, 0, 0.6, col = "grey50", h = 0.04)
+         panel.text(0.5, unit(-0.05, "npc"), labels = "a", font = 3, pos = 1)
+         panel.text(-0.05, unit(0.3, "native"), labels = "b", font = 3, pos = 2)
+       })
+@
+\caption{The elliptical segment in \textcolor{blue}{blue} is found by first subtracting the elliptical sector from $[a, 0]$ to $\theta_0$ from the one from $[a, 0]$ to $\theta_1$ and then subtracting the triangle part (in \textcolor{grey}{grey}).}
+\label{fig:ellipsesegment}
+\end{marginfigure}
+
+This method was first published for circles in a blog
+post~\citep{frederickson_2013} and in a scholarly paper for up to three
+ellipses~\citep{micaleff_2013} but has to
+our knowledge not previously been generalized to any number of ellipses.
 
 With this in place, we are now able to compute the areas of all
 intersections and their relative complements up to numerical precision.
-We feed the initial layout computed in \cref{sec:initConfig}
+We feed the initial layout computed in~\cref{sec:initConfig}
 to the optimizer, this time allowing the ellipses rotate and the relation
 between the semiaxes vary, altogether rendering five parameters to optimize per
 set and ellipse. For each iteration of the
 optimizer, the areas of all intersections are analyzed and a measure of
 loss returned. The loss we use is the sum of squared errors
-between the ideal sizes ($\omega$ from \cref{def:omega}) and
+between the ideal sizes ($\omega$ from~\cref{def:omega}) and
 the respective areas of the diagram,
 \begin{equation}
 \sum_\omega  (A_i-\omega_i)^2
@@ -442,9 +627,9 @@ the respective areas of the diagram,
 
 When there is no perfect solution \pkg{eulerr} generates
 an approximation, which may or may not fit well. It is not, however, obvious
-what it means for it to "fit well". The loss metric \eqref{eq:loss} we used in
+what it means for it to "fit well". The loss metric~\eqref{eq:loss} we used in
 the optimizer does measure this but not in a standadized way.
-\citet{wilkinson_2012} uses the \emph{stress} metric \eqref{eq:stress},
+\citet{wilkinson_2012} uses the \emph{stress} metric~\eqref{eq:stress},
 \begin{equation}
 \frac{\sum_{i=1}^n (y_i - \hat{y}_i) ^ 2}{\sum_{i=1}^n y_i^2}
 \label{eq:stress}
@@ -479,7 +664,7 @@ the next-best thing turns out to be a numerical such. First, we locate a
 point that is inside the required region by spreading points across one of the
 discs involed in the set combination. To spread points uniformly, we use a
 modification of \emph{Vogel's method}~\citep{arthur_2015,vogel_1979} adapted to
-ellipses \cref{eq:vogel}.
+ellipses~\cref{eq:vogel}.
 \begin{equation}
 \left( p_k = (\rho_k, \theta_k) = \left( r \sqrt{\frac{k}{n}},\, \pi (3 - \sqrt{5})(k - 1) \right) \right)_{k=1}^n,
 \label{eq:vogel}
@@ -504,13 +689,88 @@ been described in \citet{eberly_x} and involves a bisection optimizer.
 
 To optimize this, we employ a version of the
 \emph{Nelder--Mead Method}~\citep{nelder_1965} which is translated from Matlab
-code by \citet{kelley_1999} and adapted for \pkg{eulerr} to ensure that convergence
-is fast and that
+code by \citet{kelley_1999} and adapted for \pkg{eulerr} to ensure that
+convergence is fast and that
 the simplex remains within the intersection boundarie (since we want
-the local maximum). The method is visualized in \cref{fig:vogel}.
+the local maximum). The method is visualized in~\cref{fig:vogel}.
 \begin{marginfigure}
 <<vogel, out.width="\\linewidth", fig.height = 6>>=
-fig_vogel()
+h <- c(0.2, 0.6)
+k <- c(0.4, 0.4)
+a <- c(0.4, .5)
+b <- c(0.3, 0.6)
+phi <- c(2.5, -1)
+n <- 250
+seqn <- seq(1, n, 1)
+theta <- seqn*pi*(3 - sqrt(5))
+rad <- sqrt(seqn/n)
+x <- rad*cos(theta)
+y <- rad*sin(theta)
+p <- rbind(x, y, 1)
+
+# Scale, rotate and translate to match the ellipse
+p0 <- translation(c(h[1], k[1])) %*%
+   rotation(-phi[1]) %*%  scaling(c(a[1], b[1])) %*% p
+
+inside <- ((p0[1, ] - h[2])*cos(phi[2]) + (p0[2, ] - k[2])*sin(phi[2]))^2/a[2]^2 +
+  ((p0[1, ] - h[2])*sin(phi[2]) - (p0[2, ] - k[2])*cos(phi[2]))^2/b[2]^2 <= 1
+
+# Set up limits
+tx <- atan2(-b*tan(phi), a)
+ty <- atan2(b*tan(pi/2L - phi), a)
+
+xlim <- range(h + a*cos(tx)*cos(phi) - b*sin(tx)*sin(phi),
+              h + a*cos(tx + pi)*cos(phi) - b*sin(tx + pi)*sin(phi))
+ylim <- range(k + b*sin(ty)*cos(phi) + a*cos(ty)*sin(phi),
+              k + b*sin(ty + pi)*cos(phi) + a*cos(ty + pi)*sin(phi))
+
+p1 <- xyplot(
+  x ~ y, aspect = "iso", pch = 20, xlab = "", ylab = "",
+  col = 1,
+  xlim = extendrange(xlim, f = 0.01),
+  ylim = extendrange(ylim, f = 0.01),
+  par.settings = list(axis.line = list(col = "transparent")),
+  scales = list(draw = FALSE),
+  panel = function(x, y, ...) {
+    panel.points(t(p0[1:2, !inside]), pch = 19, col = "grey80", cex = 0.5)
+    panel.points(t(p0[1:2, inside]), pch = 19, col = "steelblue2", cex = 0.5)
+    panel.points(t(p0[1:2, !inside][, 14]), pch = 19, col = 1, cex = 0.5)
+    panel.polygon(ellipse(c(a[1], b[1]), c(h[1], k[1]), phi[1]))
+    panel.polygon(ellipse(c(a[2], b[2]), c(h[2], k[2]), phi[2]))
+  })
+
+centers <- eulerr:::locate_centers(h, k, a, b, phi, 1:2)
+
+p2 <- xyplot(
+  x ~ y, aspect = "iso", pch = 19, xlab = "", ylab = "",
+  col = 1,
+  xlim = extendrange(xlim, f = 0.01),
+  ylim = extendrange(ylim, f = 0.01),
+  par.settings = list(axis.line = list(col = "transparent")),
+  scales = list(draw = FALSE),
+  panel = function(x, y, ...) {
+    panel.arrows(p0[1, !inside][14], p0[2, !inside][14],
+                 centers[1, 1], centers[2, 1],
+                 length = 0.05, col = "grey70")
+    panel.points(t(p0[1:2, !inside][, 14]), pch = 19, col = 1, cex = 0.5)
+    panel.polygon(ellipse(c(a[1], b[1]), c(h[1], k[1]), phi[1]))
+    panel.polygon(ellipse(c(a[2], b[2]), c(h[2], k[2]), phi[2]))
+  })
+
+p3 <- xyplot(
+  x ~ y, aspect = "iso", pch = 19, xlab = "", ylab = "",
+  col = 1,
+  xlim = extendrange(xlim, f = 0.01),
+  ylim = extendrange(ylim, f = 0.01),
+  par.settings = list(axis.line = list(col = "transparent")),
+  scales = list(draw = FALSE),
+  panel = function(x, y, ...) {
+    panel.text(t(centers[1:2, 1]), labels = "42")
+    panel.polygon(ellipse(c(a[1], b[1]), c(h[1], k[1]), phi[1]))
+    panel.polygon(ellipse(c(a[2], b[2]), c(h[2], k[2]), phi[2]))
+  })
+
+grid.arrange(p1, p2, p3, ncol = 1)
 @
 \caption{The method eulerr uses to locate an optimal position for a label in three steps from top to bottom: first, we spread sample points on one of the ellipses and pick one inside the intersection of interest, then we begin moving it numerically, and finally place our label.}
 \label{fig:vogel}
@@ -525,8 +785,6 @@ solve this, we use a SKYLINE-BL rectangle packing algorithm~\citep{jylanki_2010}
 which is designed specifically for \pkg{eulerr}. In it, we surround each
 ellipse cluster with a bounding box and pack these boxes into a bin with asn
 appropriate size and aspect ratio of the golden rule.
-
-INSERT FIGURE HERE
 
 \subsection{Aesthetics}
 \label{sec:aesthetics}
@@ -588,23 +846,31 @@ configuration:
 \subsection{Case studies}
 \label{sec:caseStudies}
 
-We begin our examination of \pkg{eulerr} by studying a difficult set relationship
-from \citet{wilkinson_2012},
+We begin our examination of \pkg{eulerr} by studying a difficult set
+relationship from \citet{wilkinson_2012},
 \begin{gather*}
 A = 4 \quad B = 6 \quad C = 3 \quad D = 2 \quad E = 7 \quad F = 3\\
 A\& B = 2 \quad A\&F = 2 \quad B\& C = 2 \quad B\&D = 1 \\
 B\& F = 2 \quad C\&D = 1 \quad D\& E = 1 \quad E\&F = 1 \\
 A\&B\&F = 1 \quad B\&C\&D = 1,\end{gather*}
-where we use the $\&$ operator analogously to $\omega$ in \cref{def:omega}. We
+where we use the $\&$ operator analogously to $\omega$ in~\cref{def:omega}. We
 fit this specification with \pkg{venneuler} and \pkg{eulerr}, in the latter
-case using both circles and ellipses~(\cref{fig:venneuler_hard}).
+case using both circles and ellipses~(\cref{fig:venneulerHard}).
 
 This example showcases the improvement gained from using ellipses and also the
-small benefit that \pkg{eulerr} achieves relative to \pkg{venneuler}.
+small benefit that \pkg{eulerr} offers relative to \pkg{venneuler}.
 
 \begin{figure*}[hbtp!]%[-35\baselineskip]
-<<venn, fig.height = 2.7, fig.width = 6>>=
-fig_venneulerHard()
+<<venneulerHard, fig.height = 2.8, fig.width = 6.6>>=
+set <- c(A = 4, B = 6, C = 3, D = 2, E = 7, F = 3,
+         "A&B" = 2, "A&F" = 2, "B&C" = 2, "B&D" = 1,
+         "B&F" = 2, "C&D" = 1, "D&E" = 1, "E&F" = 1,
+         "A&B&F" = 1, "B&C&D" = 1)
+p1 <- plot_venneuler(venneuler::venneuler(set))
+p2 <- plot(euler(set))
+p3 <- plot(euler(set, shape = "ellipse"))
+
+grid.arrange(p1, p2, p3, ncol = 3)
 @
 \label{fig:venneulerHard}
 \caption{A comparison of a Euler diagram generated with \pkg{venneuler} with two generated from \pkg{eulerr} with circles and ellipses respectively. The stress of the solutions are 0.006, 0.004, and 0.000 respectively.}
@@ -621,7 +887,7 @@ r_i     & \sim \mathcal{U}(0.3, 0.6)\\
 x_i,y_i & \sim \mathcal{U}(0, 1).
 \end{align*}
 We run this simulation through 100 iterations for each $i$. Next, we compute the
-required areas, $\omega$ (from \cref{def:omega}), for each iteration and
+required areas, $\omega$ (from~\cref{def:omega}), for each iteration and
 fit a Euler diagram using the aforementioned packages. Finally,
 we compute and return \emph{diagError}~\eqref{eq:diagError} and score each
 diagram as a \emph{success} if its \emph{diagError} is lower than 0.01, that is,
@@ -630,9 +896,28 @@ input; note that this is theoretically achievable since our Euler diagrams are
 formed from sampled circles that all have perfect solutions. The left panel of
 \cref{fig:consistency} shows the results of our simulation.
 %
-<<consistency, fig.cap = "Reproducibility test of 100 iterations of 3 to 8 circles each.", fig.height = 3, fig.width = 6>>=
-fig_consistency()
+\begin{figure}[hbtp!]
+<<consistency, fig.height = 2.3, fig.width = 4.25, out.width = "\\linewidth">>=
+data_consistency %>%
+  spread(metric, loss) %>%
+  mutate(success = diagError < 0.01, sets = as.integer(sets)) %>%
+  select(sets, success, shape, software) %>%
+  group_by(sets, shape, software) %>%
+  summarise(success_rate = mean(success, na.rm = TRUE)) %>%
+  mutate(success_rate = success_rate*100) %>%
+  ggplot(aes(x = sets, y = success_rate, group = software, color = software, fill = software)) +
+    xlab("Sets") +
+    ylab("Success rate (%)") +
+    scale_color_manual(values = cbPalette) +
+    scale_fill_manual(values = cbPalette) +
+    geom_line() +
+    geom_point(size = 2, shape = 21, colour = "white", stroke = 1) +
+    facet_grid(~shape) +
+    theme(legend.title = element_blank(), legend.position = "top")
 @
+\caption{Reproducibility tests for ellipses and circles generated from the distributions in \cref{sec:consistency}. Note that \pkg{Vennerable} only supports Euler diagrams for three sets, which is why its data is absent for the other cases.}
+\label{fig:consistency}
+\end{figure}
 %
 Next, we repeat this experiment with ellipses instead of
 circles, this time with semiaxes ($a_i$ and $b_i$), coordinates
@@ -642,24 +927,66 @@ x_i,y_i & \sim \mathcal{U}(0, 1)\\
 a_i     & \sim \mathcal{U}(0.2, 0.8)\\
 b_i     & \sim \mathcal{U}(0.2, 0.8)\\\
 phi     & \sim \mathcal{U}(0, 2\pi).
-\end{align*}. We plot this in the right panel of \cref{fig:consistency}.
+\end{align*}
+We plot this in the right panel of~\cref{fig:consistency}.
 
 \section{Accuracy}
 \label{sec:accuracy}
 
-Insert accuracy tests here for random configurations.
+\begin{figure*}[hbtp!]
+<<accuracy, fig.height = 3, fig.width = 6.6, out.width = "\\linewidth">>=
+data_acc %>%
+  filter(!is.na(Loss)) %>%
+  mutate(Sets = as.factor(Sets)) %>%
+  ggplot(aes(x = Sets, y = Loss, fill = Software, color = Software)) +
+  geom_tufteboxplot(median.type = "line", whisker.type = "line", width = 6,
+                    hoffset = 0, voffset = 0.005,
+                    position = position_dodge(width = 0.5)) +
+  scale_color_manual(values = cbPalette) +
+  scale_fill_manual(values = cbPalette) +
+  ylab(NULL) +
+  facet_grid(Metric ~ ., scales = "free", switch = "y") +
+  theme(legend.title = element_blank(), legend.position = "right",
+        strip.placement = "outside")
+@
+\caption{Accuracy tests of set relationships that may or may not have perfect solutions}
+\label{fig:accuracy}
+\end{figure*}
 
 \section{Performance}
 \label{sec:performance}
 
-The performance of the \pkg{eulerr} method is bottlenecked by the final optimizer,
-which converges in $\mathcal{O}(2^n)$ time. Meanwhile \citet{wilkinson_2012} report
-convergence in $\mathcal{O}(n)$ time. The redeeming quality of \pkg{eulerr} lies
-in its implementation in the C++ programming language via the \pkg{R} packages
-\pkg{Rcpp}~\citep{eddelbuettel_2011} and \pkg{RcppArmadillo}~\citep{eddelbuettel_2014}.
+\begin{figure*}[hbtp!]
+<<performance, fig.height = 2.5, fig.width = 6.6, out.width = "\\linewidth">>=
+data_performance %>%
+  filter(!is.na(Time)) %>%
+  mutate(Sets = as.factor(Sets), Time = log(Time)) %>%
+  ggplot(aes(x = Sets, y = Time, fill = Software, color = Software)) +
+  geom_tufteboxplot(median.type = "line", whisker.type = "line", width = 6,
+                    hoffset = 0, voffset = 0.005,
+                    position = position_dodge(width = 0.5)) +
+  scale_fill_manual(values = cbPalette) +
+  scale_color_manual(values = cbPalette) +
+  ylab(expression(log[e](time[ns]))) +
+  theme(legend.title = element_blank())
+@
+\caption{Performance tests.}
+\label{fig:performance}
+\end{figure*}
 
 \section{Discussion}
 \label{sec:discussion}
+
+In terms of performance, we saw that..
+
+The performance of \pkg{eulerr} is bottlenecked by the final optimizer because
+it has to examine every possible intersection when the areas are computed, thus
+converging in $\mathcal{O}(2^n)$ time. \citet{wilkinson_2012}, meanwhile, report
+convergence in $\mathcal{O}(n)$ time.
+
+The redeeming quality of \pkg{eulerr} lies
+in its implementation in the C++ programming language via the \pkg{R} packages
+\pkg{Rcpp}~\citep{eddelbuettel_2011} and \pkg{RcppArmadillo}~\citep{eddelbuettel_2014}.
 
 \bibliography{eulerr}
 \bibliographystyle{unsrtnat}
