@@ -1,6 +1,4 @@
-library(tidyr)
-library(dplyr)
-library(tibble)
+library(tidyverse)
 library(eulerrPaper)
 library(eulerr)
 library(venneuler)
@@ -13,10 +11,14 @@ Stress <- double(0)
 diagError <- double(0)
 Sets <- integer(0)
 
+n_out <- 10
+n_set <- 8
+
 for (i in 3:8) {
+  cat("i=", i, "\n", sep = "")
   ids <- eulerr:::bit_indexr(i)
-  for (j in 1:100) {
-    if (j %% 10 == 0) cat("i=", i, "; j=", j, "\n", sep = "")
+  for (j in 1:n_out) {
+    if (j %% 10 == 0) cat(" j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
     for (k in 1:NROW(ids)) {
@@ -78,10 +80,7 @@ for (i in 3:8) {
 }
 
 data_accuracy <- tibble(Sets, Software, Stress, diagError) %>%
-  mutate(software = as.factor(Software)) %>%
+  mutate(Software = as.factor(Software)) %>%
   gather("Metric", "Loss", Stress, diagError)
 
-usethis::use_data(data_accuracy, overwrite = TRUE)
-
-
-
+usethis::use_data(data_acc, overwrite = TRUE)
