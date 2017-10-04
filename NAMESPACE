@@ -2,6 +2,7 @@
 
 S3method(gof,VennDiagram)
 S3method(gof,VennDrawing)
+S3method(gof,eulerAPE)
 export(degenerate_split_conics)
 export(ellipse_arc)
 export(gof)
