@@ -34,15 +34,15 @@ gof.VennDrawing <- function(obj, orig) {
 
   if (2^length(x) - 1 != length(orig)) {
     stress <- NA
-    diag_error <- NA
+    diagError <- NA
   } else {
     fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
 
     stress <- eulerr:::venneuler_stress(orig, fit)
-    diag_error <- max(abs(fit/sum(fit) - orig/sum(orig)))
+    diagError <- max(abs(fit/sum(fit) - orig/sum(orig)))
   }
 
-  list(stress = stress, diag_error = diag_error)
+  list(stress = stress, diagError = diagError)
 }
 
 #' @rdname gof
@@ -57,7 +57,29 @@ gof.VennDiagram <- function(obj, orig) {
   fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
 
   stress <- eulerr:::venneuler_stress(orig, fit)
-  diag_error <- max(abs(fit/sum(fit) - orig/sum(orig)))
+  diagError <- max(abs(fit/sum(fit) - orig/sum(orig)))
 
-  list(stress = stress, diag_error = diag_error)
+  list(stress = stress, diagError = diagError)
+}
+
+#' @rdname gof
+#' @export
+gof.eulerAPE <- function(obj, orig) {
+  # Goodness of fit tests for eulerAPE diagram
+
+  dat <- matrix(unlist(strsplit(obj[7:9], split = "|", fixed = TRUE)),
+                nrow = 3, byrow = TRUE)
+  dat <- dat[order(dat[, 1]), ]
+  dat <- dat[, -1]
+  dat <- matrix(as.numeric(dat), nrow = 3)
+  dat <- dat[, c(3, 4, 1, 2, 5)]
+  dat[, 5] <- dat[, 5] * pi/180
+  pars <- as.numeric(t(dat))
+
+  fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = FALSE))/100
+
+  stress <- eulerr:::venneuler_stress(orig, fit)
+  diagError <- max(abs(fit/sum(fit) - orig/sum(orig)))
+
+  list(stress = stress, diagError = diagError)
 }
