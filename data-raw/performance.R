@@ -2,7 +2,6 @@
 # Performance tests -------------------------------------------------------
 
 library(tidyverse)
-library(eulerrPaper)
 library(eulerr)
 library(venneuler)
 library(Vennerable)

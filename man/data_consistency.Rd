@@ -9,21 +9,18 @@
 data(data_consistency)
 }
 \description{
-A dataset of comparisons between venneuler and eulerr in terms of
+A dataset of comparisons between Euler diagram methods in the
 reproducibility of diagrams constructed from sampling circles,
 and thus diagrams that have perfect solutions.
 }
 \details{
-#' \describe{
-\item{One}{First item}
-\item{Two}{Second item}
-}
-\itemize{
-\item Sets. A factor of the number of sets used in the diagram
-\item it. An integer variable of the number of the iteration
-\item software. A factor with two levels, signifying which software (eulerr or
-venneuler) that was used.
-\item stress. A double of the stress metric from venneuler.
+\describe{
+\item{it}{The iteration. An integer.}
+\item{shape}{The shape of the diagram. A factor.}
+\item{sets}{The number of sets. A factor (integer) variable.}
+\item{software}{The software used in the observation. A factor.}
+\item{metric}{The loss metric. A factor.}
+\item{loss}{The loss of the function. A double vector.}
 }
 }
 \author{
