@@ -5,21 +5,24 @@ library(tidyverse)
 library(eulerr)
 library(venneuler)
 library(Vennerable)
+library(microbenchmark)
 
 set.seed(1)
 
-Software <- character(0)
-Sets <- integer(0)
-Time <- double(0)
+out <- data.frame(it = integer(),
+                  software = character(),
+                  sets = integer(),
+                  time = double())
 
-n_out <- 100
 n_set <- 8
-n_rep <- 1
 
 for (i in 3:n_set) {
   cat("i=", i, "\n", sep = "")
   ids <- eulerr:::bit_indexr(i)
-  for (j in 1:n_out) {
+  satisfied <- FALSE
+  j <- 1
+
+  while (!satisfied) {
     if (j %% 10 == 0) cat(" j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
@@ -38,10 +41,11 @@ for (i in 3:n_set) {
 
     combinations[sample(intersections, how_many)] <- runif(how_many)
 
+    test <- NULL
+
     if (i == 3) {
-      test <- NULL
       # Fit the areas using vennerable if 3 sets
-      tryCatch({test <- microbenchmark(
+      tryCatch({test <- microbenchmark::microbenchmark(
         Vennerable = compute.Venn(Venn(SetNames = LETTERS[1:i],
                                        Weight = c(0, as.numeric(combinations))),
                                   doWeights = TRUE,
@@ -50,38 +54,63 @@ for (i in 3:n_set) {
         eulerr_circles = euler(combinations),
         eulerr_ellipses = euler(combinations, shape = "ellipse"),
         venneuler = venneuler(combinations),
-        times = n_rep
+        times = 1L
       )},
       error = function(e) {})
 
-      if (!is.null(test)) {
-        Software <- c(Software, as.character(test$expr))
-        Sets <- c(Sets, rep(i, 4*n_rep))
-        Time <- c(Time, test$time)
-      }
-
     } else {
-      test <- microbenchmark(
+      test <- microbenchmark::microbenchmark(
         eulerr_circles = euler(combinations),
         eulerr_ellipses = euler(combinations, shape = "ellipse"),
         venneuler = venneuler(combinations),
-        times = n_rep
+        times = 1L
       )
-
-      Sets <- c(Sets, rep(i, 3*n_rep))
-      Software <- c(Software, as.character(test$expr))
-      Time <- c(Time, test$time)
     }
+
+    if (!is.null(test)) {
+      out <- rbind(out, data.frame(it = j,
+                                   software = as.character(test$expr),
+                                   sets = i,
+                                   time = test$time))
+    }
+
+    if (j >= 100) {
+      # dd <- filter(out, sets == i)
+      #
+      # ptt <- TukeyHSD(aov(time ~ software, data = dd))
+      #
+      # if (all(ptt$software[, 4] < 0.05))
+      #   satisfied <- TRUE
+
+      if (j >= 100) { # Run at least 100 iterations
+        dd <- filter(out, sets == i) %>%
+          group_by(software) %>%
+          summarise(ci = qnorm(0.975)*sd(Time/1e6, na.rm = TRUE)/sqrt(n()))
+
+        # Stop when the 95% CI for each estimate is smaller than 1 millisecond
+        if (all(dd$ci*2 < 1))
+          satisfied <- TRUE
+      }
+
+    }
+
+    j <- j + 1
   }
 }
 
-Software <- as.factor(Software)
-levels(Software)[levels(Software) %in% "eulerr_circles"] <- "eulerr (circles)"
-levels(Software)[levels(Software) %in% "eulerr_ellipses"] <- "eulerr (ellipses)"
-
-if (i == 8 && j == 100) {
-  data_performance <- tibble(Sets, Software, Time) %>%
-    mutate(Software = as.factor(Software))
+if (i == 8 && j >= 100) {
+  data_performance <-
+    out %>%
+    mutate(software = factor(software,
+                             levels = c("eulerr_circles",
+                                        "eulerr_ellipses",
+                                        "venneuler",
+                                        "Vennerable"),
+                             labels = c("eulerr (circles)",
+                                        "eulerr (ellipses)",
+                                        "venneuler",
+                                        "Vennerable"))) %>%
+    rename(Sets = sets, Time = time)
 
   usethis::use_data(data_performance, overwrite = TRUE)
 }
