@@ -613,7 +613,7 @@ where $n$ is the
 
 
 
-\pkg{eulerr} outperforms both \pkg{Vennerable} and \pkg{venneuler} in consistency~\cref{fig:consistency}. It is able to reproduce Euler diagrams for almost all of the circles and for all three-set ellipses. For ellipses of four or more sets, the consistency drops considerably, yet remains above 81\%. \pkg{Vennerable}, which is only able to produce three-set diagrams, only produces accurate diagrams for 4.04\% of the random layouts and moreover fails with an error in 1 cases.
+\pkg{eulerr} outperforms both \pkg{Vennerable} and \pkg{venneuler} in consistency~\cref{fig:consistency}. It is able to reproduce Euler diagrams for almost all of the circles and for all three-set ellipses. For ellipses of four or more sets, the consistency drops considerably, yet remains above \ensuremath{\infty{}}\%. \pkg{Vennerable}, which is only able to produce three-set diagrams, only produces accurate diagrams for \ensuremath{NaN}\% of the random layouts and moreover fails with an error in 0 cases.
 
 \section{Accuracy}
 \label{sec:accuracy}
@@ -645,10 +645,14 @@ The error in the diagrams generated with \pkg{eulerr} is considerably lower than
 
 \begin{figure*}[hbt]
 \begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\linewidth]{figure/graphics-accuracy-1} 
+
+}
 
 
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in eval(lhs, parent, parent): object 'data\_accuracy' not found}}\end{kframe}
+
 \end{knitrout}
 \caption{Accuracy tests of set relationships that may or may not have perfect solutions, generated from~\eqref{eq:consistencyEllipses}.}
 \label{fig:accuracy}

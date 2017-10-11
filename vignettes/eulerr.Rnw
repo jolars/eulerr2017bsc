@@ -110,10 +110,6 @@
 <<setup, include = FALSE>>=
 knitr::knit_hooks$set(crop = knitr::hook_pdfcrop)
 
-mtime <- function(files) {
-  lapply(Sys.glob(files), function(x) file.info(x)$mtime)
-}
-
 knitr::opts_chunk$set(
   echo = FALSE,
   warning = FALSE,
@@ -127,9 +123,6 @@ knitr::opts_chunk$set(
   cache = TRUE,
   fig.path = "figure/graphics-",
   cache.path = "cache/graphics-",
-  cache.extra = mtime(c(file.path("data", "data_acc.rda"),
-                        file.path("data", "data_consistency.rda"),
-                        file.path("data", "data_performance.rda"))),
   autodep = TRUE
 )
 
@@ -714,10 +707,10 @@ where $n$ is the
 
 %
 \begin{figure}[hbtp]
-<<consistency, fig.height = 2.3, fig.width = 4.25, out.width = "\\linewidth">>=
+<<consistency, fig.height = 2.3, fig.width = 4.25, out.width = "\\linewidth", cache.extra = tools::md5sum(file.path("data", "data_consistency.rda"))>>=
 data_consistency %>%
   spread(metric, loss) %>%
-  mutate(success = diagError < 0.01, sets = as.integer(sets)) %>%
+  mutate(success = diagError < 0.01) %>%
   select(sets, success, shape, software) %>%
   group_by(sets, shape, software) %>%
   summarise(success_rate = mean(success, na.rm = TRUE)) %>%
@@ -725,8 +718,8 @@ data_consistency %>%
   ggplot(aes(x = sets, y = success_rate, group = software, color = software, fill = software)) +
     xlab("Sets") +
     ylab("Success rate (%)") +
-    scale_color_manual(values = cbPalette) +
-    scale_fill_manual(values = cbPalette) +
+    #scale_color_manual(values = cbPalette) +
+    #scale_fill_manual(values = cbPalette) +
     geom_line() +
     geom_point(size = 2, shape = 21, colour = "white", stroke = 1) +
     facet_grid(~shape) +
@@ -737,7 +730,7 @@ data_consistency %>%
 \end{figure}
 %
 
-<<consistencyMetrics, include = FALSE>>=
+<<consistencyMetrics, include = FALSE, cache.extra = tools::md5sum(file.path("data", "data_consistency.rda"))>>=
 consistency_eulerr_ellipse <- data_consistency %>%
   filter(software == "eulerr", shape == "ellipse", metric == "diagError") %>%
   mutate(success = loss < 0.01) %>%
@@ -787,7 +780,7 @@ To assess this, we generate random set relationships, that may or may not have e
 The error in the diagrams generated with \pkg{eulerr} is considerably lower than for the other methods. This is most apparent with ellipses but also true for circles compared to \pkg{venneuler} and \pkg{Vennerable}.
 
 \begin{figure*}[hbt]
-<<accuracy, fig.height = 3, fig.width = 6.6, out.width = "\\linewidth">>=
+<<accuracy, fig.height = 3, fig.width = 6.6, out.width = "\\linewidth", cache.extra = tools::md5sum(file.path("data", "data_accuracy.rda"))>>=
 data_accuracy %>%
   filter(!is.na(Loss)) %>%
   mutate(Sets = as.factor(Sets)) %>%
@@ -812,7 +805,7 @@ data_accuracy %>%
 Using the same method as in \nameref{sec:accuracy}, we generate random set relationships and measure the time it takes for each software package to form a diagram from the fit. We rely on \pkg{microbenchmark} to compute this, subtracting function call times to produce strict measurement. In addition, we randomize the order in which the packages are called between trials.
 
 \begin{figure*}[hbt]
-<<performance, fig.height = 2.5, fig.width = 6.6, out.width = "\\linewidth">>=
+<<performance, fig.height = 2.5, fig.width = 6.6, out.width = "\\linewidth", cache.extra = tools::md5sum(file.path("data", "data_performance.rda"))>>=
 data_performance %>%
   filter(!is.na(Time)) %>%
   mutate(Sets = as.factor(Sets), Time = Time/1000000000) %>%
