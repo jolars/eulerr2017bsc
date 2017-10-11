@@ -5,6 +5,7 @@
 \alias{gof.VennDrawing}
 \alias{gof.VennDiagram}
 \alias{gof.eulerAPE}
+\alias{gof.vennjs}
 \title{Goodness of fit tests for euler diagram}
 \usage{
 gof(obj, orig)
@@ -14,6 +15,8 @@ gof(obj, orig)
 \method{gof}{VennDiagram}(obj, orig)
 
 \method{gof}{eulerAPE}(obj, orig)
+
+\method{gof}{vennjs}(obj, orig)
 }
 \arguments{
 \item{obj}{A fit euler diagram}

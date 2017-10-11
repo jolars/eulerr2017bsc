@@ -38,7 +38,7 @@ gof.VennDrawing <- function(obj, orig) {
   } else {
     fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
 
-    stress <- eulerr:::venneuler_stress(orig, fit)
+    stress <- eulerr:::stress(orig, fit)
     diagError <- max(abs(fit/sum(fit) - orig/sum(orig)))
   }
 
@@ -53,10 +53,10 @@ gof.VennDiagram <- function(obj, orig) {
   y <- obj$centers[, 2]
   r <- obj$diameters/2
 
-  pars <- as.vector(matrix(c(x, y, r), nrow = 3, byrow = TRUE))
+  pars <- as.vector(rbind(x, y, r))
   fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
 
-  stress <- eulerr:::venneuler_stress(orig, fit)
+  stress <- eulerr:::stress(orig, fit)
   diagError <- max(abs(fit/sum(fit) - orig/sum(orig)))
 
   list(stress = stress, diagError = diagError)
@@ -78,8 +78,45 @@ gof.eulerAPE <- function(obj, orig) {
 
   fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = FALSE))/100
 
-  stress <- eulerr:::venneuler_stress(orig, fit)
-  diagError <- max(abs(fit/sum(fit) - orig/sum(orig)))
+  stress <- eulerr:::stress(orig, fit)
+  diagError <- diagError(orig, fit)
 
   list(stress = stress, diagError = diagError)
+}
+
+#' @rdname gof
+#' @export
+gof.vennjs <- function(obj, orig) {
+  x <- unlist(lapply(obj, "[", "x"))
+  y <- unlist(lapply(obj, "[", "y"))
+  r <- unlist(lapply(obj, "[", "radius"))
+
+  fit <- eulerr:::intersect_ellipses(as.vector(rbind(x, y, r)), circles = TRUE)
+
+  stress <- eulerr:::stress(orig, fit)
+  diagError <- diagError(orig, fit)
+
+  list(stress = stress, diagError = diagError)
+}
+
+#' diagError
+#'
+#' @param orig Original values
+#' @param fit Fitted values
+#'
+#' @return diagError
+#' @export
+diagError <- function(orig, fit) {
+  max(abs(fit/sum(fit) - orig/sum(orig)))
+}
+
+#' stress
+#'
+#' @param orig Original values
+#' @param fit Fitted values
+#'
+#' @return stress
+#' @export
+stress <- function(orig, fit) {
+  eulerr:::stress(orig, fit)
 }
