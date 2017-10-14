@@ -3,8 +3,7 @@ library(venneuler)
 library(Vennerable)
 library(tidyverse)
 library(V8)
-
-set.seed(1)
+library(processx)
 
 # Look at consistency for circles first
 
@@ -19,6 +18,8 @@ out <- data.frame(it = integer(),
 context <- v8()
 context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
 
+oldwd <- NULL
+
 if (is.null(oldwd)) {
   oldwd <- getwd()
 }
@@ -28,8 +29,10 @@ setwd(file.path(oldwd, "data-raw"))
 n_set <- 8
 
 # Place 3 to 10 circles
+
 for (i in 3:n_set) {
   ids <- eulerr:::bit_indexr(i)
+  set.seed(i)
 
   satisfied <- FALSE
   j <- 1
@@ -96,12 +99,17 @@ for (i in 3:n_set) {
         write.table(input, file = "diagram.els", quote = FALSE,
                     col.names = FALSE, row.names = FALSE)
 
-        system2("java", c("-jar eulerAPE_3.0.0.jar",
-                          "-i", shQuote("diagram.els"),
-                          "--silent",
-                          "--curves", "circles"))
-        output <- structure(readLines("diagram.eld"), class = "eulerAPE")
-        APEgof <- gof(output, combinations)
+        p <- run(commandline = 'java -jar eulerAPE_3.0.0.jar -i "diagram.els" --silent --curves circles',
+                 windows_verbatim_args = TRUE,
+                 timeout = 60)
+
+        # Check for timeout and, if so, return NA
+        if (p$timeout) {
+          APEgof <- list(stress = NA, diagError = NA)
+        } else {
+          output <- structure(readLines("diagram.eld"), class = "eulerAPE")
+          APEgof <- gof(output, combinations)
+        }
 
         out <- rbind(out, data.frame(it = j,
                                      shape = "Circles",
@@ -145,6 +153,10 @@ for (i in 3:n_set) {
       # Stop when the 95% CI for proportion is smaller than 0.01
       if (all(2*dd$ci < 0.02))
         satisfied <- TRUE
+
+      if (j %% 100 == 0) {
+        print(dd)
+      }
     }
     j <- j + 1
   }
@@ -154,6 +166,8 @@ for (i in 3:n_set) {
 # Place 3 to 10 ellipses
 for (i in 3:n_set) {
   ids <- eulerr:::bit_indexr(i)
+
+  set.seed(i)
 
   satisfied <- FALSE
   j <- 1
@@ -222,6 +236,10 @@ for (i in 3:n_set) {
       # Stop when the 95% CI for proportion is smaller than 0.02
       if (all(2*dd$ci < 0.02))
         satisfied <- TRUE
+
+      if (j %% 100 == 0) {
+        print(dd)
+      }
     }
 
     j <- j + 1
@@ -240,5 +258,4 @@ data_consistency <-
 if (i == 8 && j >= 100) {
   usethis::use_data(data_consistency, overwrite = TRUE)
 }
-
 
