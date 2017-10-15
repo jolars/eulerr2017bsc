@@ -24,7 +24,10 @@ Suggests:
   bookdown,
   gridExtra,
   venneuler,
-  pBrackets
+  pBrackets,
+  V8,
+  processx,
+  Vennerable
 URL: https://github.com/jolars/eulerrPaper
 BugReports: https://github.com/jolars/eulerrPaper/issues
 VignetteBuilder: knitr
