@@ -1,10 +1,10 @@
 \PassOptionsToPackage{usenames,fixpdftex,dvipsnames,svgnames,x11names}{xcolor}
+\PassOptionsToPackage{hyphens}{url}
 
 \documentclass[
   a4paper,
   nofonts,
   nobib,
-  nohyper,
   openany
 ]{tufte-book}
 
@@ -40,16 +40,15 @@
 \useosf
 \usepackage{microtype}
 
-\usepackage[hyphens]{url}
-\usepackage{hyperref}
 \usepackage[noabbrev,capitalize,nameinlink]{cleveref}
 \hypersetup{linkcolor=SteelBlue4,
             citecolor=SteelBlue4,
             urlcolor=SteelBlue4,
             colorlinks=true}
 
-\usepackage{fancyvrb} % extended verbatim environments
-  \fvset{fontsize=\normalsize}% default font size for fancy-verbatim environments
+% Extended verbatim environments
+\usepackage{fancyvrb}
+\fvset{fontsize=\normalsize}% default font size for fancy-verbatim environments
 
 \newcommand{\proglang}[1]{\textsf{#1}}
 \newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
@@ -58,6 +57,23 @@
 \titleformat{\section}{\normalfont\bfseries\LARGE}{\thesection}{1em}{}
 \titleformat{\subsection}{\normalfont\bfseries\Large}{\thesubsection}{1em}{}
 \titleformat{\chapter}{\normalfont\bfseries\huge}{\thechapter}{1em}{}
+
+% Modify captions
+\makeatletter
+\long\def\@caption#1[#2]#3{%
+  \par
+  \addcontentsline{\csname ext@#1\endcsname}{#1}%
+    {\protect\numberline{\csname the#1\endcsname}{\ignorespaces #2}}%
+  \begingroup
+    \@parboxrestore
+    \if@minipage
+      \@setminipage
+    \fi
+    \@tufte@caption@font\@tufte@caption@justification
+    \bfseries\noindent\csname fnum@#1\endcsname. \normalfont\ignorespaces#3\par% changed : to .
+  \endgroup}
+\makeatother
+
 
 %\fancyhead[RE, RO]{\small{\itshape{\rightmark}}}%
 %\fancyfoot[LE,LO]{\thepage}
@@ -70,9 +86,6 @@
 %   \fancyfoot[LE,LO]{\thepage} % same placement as with page style "fancy"
 %   \renewcommand{\headrulewidth}{0pt}
 % }
-
-%\usepackage[labelfont=bf,hypcap=false,labelsep=period]{caption}
-%\captionsetup[algorithm]{labelfont=bf,hypcap=false,labelsep=period}
 
 \usepackage{algorithm}
 \usepackage{algorithmic}
