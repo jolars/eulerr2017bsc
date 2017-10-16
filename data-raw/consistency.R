@@ -4,6 +4,7 @@ library(Vennerable)
 library(tidyverse)
 library(V8)
 library(processx)
+library(eulerrPaper)
 
 # Look at consistency for circles first
 
@@ -18,24 +19,22 @@ out <- data.frame(it = integer(),
 context <- v8()
 context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
 
-oldwd <- NULL
-
-if (is.null(oldwd)) {
+if (!exists("oldwd")) {
   oldwd <- getwd()
 }
 
 setwd(file.path(oldwd, "data-raw"))
 
-n_set <- 8
+n_set <- 8L
 
 # Place 3 to 10 circles
 
-for (i in 3:n_set) {
+for (i in 8L:n_set) {
   ids <- eulerr:::bit_indexr(i)
   set.seed(i)
 
   satisfied <- FALSE
-  j <- 1
+  j <- 1L
 
   while (!satisfied) {
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
@@ -158,19 +157,19 @@ for (i in 3:n_set) {
         print(dd)
       }
     }
-    j <- j + 1
+    j <- j + 1L
   }
 }
 
 
 # Place 3 to 10 ellipses
-for (i in 3:n_set) {
+for (i in 3L:n_set) {
   ids <- eulerr:::bit_indexr(i)
 
   set.seed(i)
 
   satisfied <- FALSE
-  j <- 1
+  j <- 1L
 
   while (!satisfied) {
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
@@ -242,7 +241,7 @@ for (i in 3:n_set) {
       }
     }
 
-    j <- j + 1
+    j <- j + 1L
   }
 }
 
