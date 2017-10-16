@@ -28,7 +28,7 @@
 \usepackage{multicol}
 \usepackage[header,page]{appendix}
 
-% FONTS
+% Fonts
 \usepackage[lining]{libertine}
 \usepackage{textcomp}
 \usepackage[varqu,varl,scaled=0.95]{inconsolata}
@@ -40,6 +40,7 @@
 \useosf
 \usepackage{microtype}
 
+% Cross-referencing
 \usepackage[noabbrev,capitalize,nameinlink]{cleveref}
 \hypersetup{linkcolor=SteelBlue4,
             citecolor=SteelBlue4,
@@ -70,7 +71,7 @@
       \@setminipage
     \fi
     \@tufte@caption@font\@tufte@caption@justification
-    \bfseries\noindent\csname fnum@#1\endcsname. \normalfont\ignorespaces#3\par% changed : to .
+    \bfseries\noindent\csname fnum@#1\endcsname. \normalfont\ignorespaces#3\par
   \endgroup}
 \makeatother
 
