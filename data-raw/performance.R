@@ -6,6 +6,7 @@ library(eulerr)
 library(venneuler)
 library(Vennerable)
 library(microbenchmark)
+library(eulerrPaper)
 
 set.seed(1)
 
@@ -17,13 +18,12 @@ out <- data.frame(it = integer(),
 n_set <- 8
 
 for (i in 3:n_set) {
-  cat("i=", i, "\n", sep = "")
   ids <- eulerr:::bit_indexr(i)
   satisfied <- FALSE
   j <- 1
 
   while (!satisfied) {
-    if (j %% 10 == 0) cat(" j=", j, "\n", sep = "")
+    if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
     for (k in 1:NROW(ids)) {
@@ -74,26 +74,22 @@ for (i in 3:n_set) {
                                    time = test$time))
     }
 
-    if (j >= 100) {
-      # dd <- filter(out, sets == i)
-      #
-      # ptt <- TukeyHSD(aov(time ~ software, data = dd))
-      #
-      # if (all(ptt$software[, 4] < 0.05))
-      #   satisfied <- TRUE
+    if (j >= 1000) { # Run at least 1000 iterations
+      dd <- filter(out, sets == i) %>%
+        group_by(software) %>%
+        na.omit() %>%
+        summarise(ci = qnorm(0.975)*sd(time/1e6, na.rm = TRUE)/sqrt(n()))
 
-      if (j >= 100) { # Run at least 100 iterations
-        dd <- filter(out, sets == i) %>%
-          group_by(software) %>%
-          summarise(ci = qnorm(0.975)*sd(Time/1e6, na.rm = TRUE)/sqrt(n()))
-
-        # Stop when the 95% CI for each estimate is smaller than 1 millisecond
-        if (all(dd$ci*2 < 1))
-          satisfied <- TRUE
+        # Stop when the 95% CI for each estimate is smaller than 20 milliseconds
+      if (all(dd$ci*2 < 10*i)) {
+        satisfied <- TRUE
+        cat("i=", i,", j=", j, "\n", sep = "")
       }
 
     }
 
+    if (j %% 100 == 0)
+      print(dd)
     j <- j + 1
   }
 }
