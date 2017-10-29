@@ -29,7 +29,7 @@ n_set <- 8L
 
 # Place 3 to 10 circles
 
-for (i in 8L:n_set) {
+for (i in 4L:n_set) {
   ids <- eulerr:::bit_indexr(i)
   set.seed(i)
 
@@ -40,8 +40,8 @@ for (i in 8L:n_set) {
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     # Sample some random circles
     r <- runif(i, 0.3, 0.6)
-    x <- runif(i, 0, 1)
-    y <- runif(i, 0, 1)
+    x <- runif(i, 0, i*1/3)
+    y <- runif(i, 0, i*1/3)
 
     pars <- as.vector(matrix(c(x, y, r), nrow = 3, byrow = TRUE))
 
@@ -163,7 +163,7 @@ for (i in 8L:n_set) {
 
 
 # Place 3 to 10 ellipses
-for (i in 3L:n_set) {
+for (i in 4L:n_set) {
   ids <- eulerr:::bit_indexr(i)
 
   set.seed(i)
@@ -174,10 +174,12 @@ for (i in 3L:n_set) {
   while (!satisfied) {
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     # Sample some random ellipses
-    a <- runif(i, 0.2, 0.8)
-    b <- runif(i, 0.2, 0.8)
-    x <- runif(i, 0, 1)
-    y <- runif(i, 0, 1)
+    f <- runif(i, 1/3, 1)
+    r <- runif(i, 0.3, 0.6)
+    a <- sqrt(r)*f
+    b <- sqrt(r)*(1/f)
+    x <- runif(i, 0, i*1/3)
+    y <- runif(i, 0, i*1/3)
     phi <- runif(i, 0, 2*pi)
 
     pars <- as.vector(matrix(c(x, y, a, b, phi), nrow = 5, byrow = TRUE))
@@ -233,7 +235,7 @@ for (i in 3L:n_set) {
         mutate(ci = qnorm(0.975)*sqrt(p*(1 - p)/n))
 
       # Stop when the 95% CI for proportion is smaller than 0.02
-      if (all(2*dd$ci < 0.02))
+      if (all(2*dd$ci < 0.02) && all(dd$n >= 500))
         satisfied <- TRUE
 
       if (j %% 100 == 0) {
