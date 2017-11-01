@@ -25,18 +25,19 @@ if (!exists("oldwd")) {
 
 setwd(file.path(oldwd, "data-raw"))
 
-n_set <- 8L
+n_set <- 5L
 
 # Place 3 to 10 circles
 
 for (i in 4L:n_set) {
   ids <- eulerr:::bit_indexr(i)
-  set.seed(i)
 
   satisfied <- FALSE
   j <- 1L
 
   while (!satisfied) {
+    set.seed(i*j)
+
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     # Sample some random circles
     r <- runif(i, 0.3, 0.6)
@@ -163,15 +164,15 @@ for (i in 4L:n_set) {
 
 
 # Place 3 to 10 ellipses
-for (i in 4L:n_set) {
+for (i in 3L:5) {
   ids <- eulerr:::bit_indexr(i)
-
-  set.seed(i)
 
   satisfied <- FALSE
   j <- 1L
 
   while (!satisfied) {
+    set.seed(i*j)
+
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     # Sample some random ellipses
     f <- runif(i, 1/3, 1)
@@ -203,7 +204,7 @@ for (i in 4L:n_set) {
 
     if (i == 3) {
       # eulerAPE
-      if (all(combinations > 0)) {
+      if (all(combinations > 0) && .Platform$OS.type == "windows") {
         input <- paste(combinations, collapse = " | ")
 
         write.table(input, file = "diagram.els", quote = FALSE,
