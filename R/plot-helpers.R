@@ -24,6 +24,7 @@ plot_venneuler <- function(x,
                            ...) {
   obj <- structure(list(), class = "euler")
   obj$coefficients <- cbind(x$centers, r = x$diameters/2)
+  colnames(obj$coefficients) <- c("h", "k", "r")
   obj$fitted.values <- rep(1, length.out = 2^nrow(x$centers) - 1)
   obj$original.values <- rep(1, length.out = 2^nrow(x$centers) - 1)
 

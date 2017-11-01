@@ -144,7 +144,8 @@ for (i in 3:n_set) {
     if (j >= 100) { # Run at least 100 iterations
       dd <- filter(out, sets == i) %>%
         group_by(software) %>%
-        summarise(ci = qnorm(0.975)*sd(diagError, na.rm = TRUE)/sqrt(n()))
+        summarise(ci = qt(0.975, df = n() - 1)*sd(diagError,
+                                                  na.rm = TRUE)/sqrt(n()))
 
       # Stop when the 95% CI for each estimate is smaller than 1% in diagError
       if (all(dd$ci*2 < 0.01))

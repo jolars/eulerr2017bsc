@@ -8,8 +8,6 @@ library(Vennerable)
 library(microbenchmark)
 library(eulerrPaper)
 
-set.seed(1)
-
 out <- data.frame(it = integer(),
                   software = character(),
                   sets = integer(),
@@ -23,6 +21,8 @@ for (i in 3:n_set) {
   j <- 1
 
   while (!satisfied) {
+    set.seed(i*j)
+
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
@@ -74,14 +74,14 @@ for (i in 3:n_set) {
                                    time = test$time))
     }
 
-    if (j >= 1000) { # Run at least 1000 iterations
+    if (j >= 100) { # Run at least 1000 iterations
       dd <- filter(out, sets == i) %>%
         group_by(software) %>%
         na.omit() %>%
         summarise(ci = qnorm(0.975)*sd(time/1e6, na.rm = TRUE)/sqrt(n()))
 
         # Stop when the 95% CI for each estimate is smaller than 20 milliseconds
-      if (all(dd$ci*2 < 10*i)) {
+      if (j >= 1000) {
         satisfied <- TRUE
         cat("i=", i,", j=", j, "\n", sep = "")
       }
@@ -94,7 +94,7 @@ for (i in 3:n_set) {
   }
 }
 
-if (i == 8 && j >= 100) {
+if (i == 8 && j >= 1000) {
   data_performance <-
     out %>%
     mutate(software = factor(software,
