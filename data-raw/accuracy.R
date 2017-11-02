@@ -1,10 +1,9 @@
 library(tidyverse)
 library(eulerr)
+library(eulerrPaper)
 library(venneuler)
 library(Vennerable)
 library(V8)
-
-set.seed(1)
 
 out <- data.frame(it = integer(),
                   sets = integer(),
@@ -14,15 +13,16 @@ out <- data.frame(it = integer(),
 
 n_set <- 8
 
-if (is.null(oldwd)) {
-  oldwd <- getwd() # temporaily set the working directory
-}
-
 # JS context for vennjs
 context <- v8()
 context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
 
-setwd(file.path(oldwd, "data-raw"))
+if (.Platform$OS.type == "windows") {
+  if (is.null(oldwd)) {
+    oldwd <- getwd() # temporaily set the working directory
+  }
+  setwd(file.path(oldwd, "data-raw"))
+}
 
 for (i in 3:n_set) {
   cat("i=", i, "\n", sep = "")
@@ -32,6 +32,8 @@ for (i in 3:n_set) {
   j <- 1
 
   while (!satisfied) {
+    set.seed(i*j)
+
     if (j %% 10 == 0) cat(" j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
@@ -88,7 +90,7 @@ for (i in 3:n_set) {
 
     if (i == 3) {
       # eulerAPE
-      if (all(combinations > 0)) {
+      if (all(combinations > 0) &&  .Platform$OS.type == "windows") {
         input <- paste(combinations, collapse = " | ")
 
         write.table(input, file = "diagram.els", quote = FALSE,
@@ -148,7 +150,7 @@ for (i in 3:n_set) {
                                                   na.rm = TRUE)/sqrt(n()))
 
       # Stop when the 95% CI for each estimate is smaller than 1% in diagError
-      if (all(dd$ci*2 < 0.01))
+      if (all(dd$ci*2 < 0.01) && j >= 500)
         satisfied <- TRUE
     }
 
@@ -156,13 +158,14 @@ for (i in 3:n_set) {
   }
 }
 
-setwd(oldwd)
+if (.Platform$OS.type == "windows")
+  setwd(oldwd)
 
 data_accuracy <- out %>%
   rename(Sets = sets) %>%
   mutate(software = as.factor(software), it = as.integer(it)) %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
-if (i == 8 && j >= 100) {
+if (i == 8 && j >= 500) {
   usethis::use_data(data_accuracy, overwrite = TRUE)
 }
