@@ -1011,22 +1011,26 @@ For the circles, we sample radii ($r_i$) and coordinates ($h_i$ and $k_i$) from
 \begin{equation}
 \begin{aligned}
 r_i     & \sim \mathcal{U}(0.3, 0.6)\\
-h_i,k_i & \sim \mathcal{U}(0, 1).
+h_i,k_i & \sim \mathcal{U}(0, N/3),
 \end{aligned}
 \label{eq:consistencyCircles}
 \end{equation}
-%
+where $N$ is the number of shapes.
 For the ellipses, we sample semiaxes ($a_i$ and $b_i$), coordinates
 ($h_i$ and $k_i$), and rotation axes ($\phi_i$) from
 %
 \begin{equation}
 \begin{aligned}
-h_i,k_i & \sim \mathcal{U}(0, 1)\\
-a_i,b_i & \sim \mathcal{U}(0.2, 0.8)\\
-\phi_i  & \sim \mathcal{U}(0, 2\pi).
+h_i,k_i & \sim \mathcal{U}(0, i/3)\\
+r_i     & \sim \mathcal{U}(0.3, 0.6)\\
+c_i     & \sim \mathcal{U}(1/3, 1)\\
+a_i     & = r_ic_i\\
+b_i     & = r_i/c_i\\
+\phi_i  & \sim \mathcal{U}(0, 2\pi),
 \end{aligned}
 \label{eq:consistencyEllipses}
 \end{equation}
+where $c$ is the
 
 Next, we compute the required areas, $\omega$ (from~\cref{def:omega}), for each
 iteration and fit a Euler diagram using the aforementioned packages. Finally,
@@ -1071,30 +1075,34 @@ areas, and fit Euler diagrams to these layouts using the different software pack
 }
 \end{alg}
 
-\begin{figure}[bhtp]
-\sidecaption{Reproducibility tests for ellipses and circles generated from the
-distributions from \eqref{eq:consistencyCircles}. Note that \pkg{Vennerable}
-and \pkg{eulerAPE} only support Euler diagrams for three sets, which is why its
-data is absent for the other cases.\label{fig:consistency}}
-<<consistency, fig.height = 2.3, fig.width = 4.25, cache.extra = tools::md5sum(file.path("data", "data_consistency.rda"))>>=
-data_consistency %>%
-  spread(metric, loss) %>%
+\begin{figure*}[bhtp]
+
+<<consistency, fig.height = 2.3, fig.width = 6.6, cache.extra = tools::md5sum(file.path("data", "data_consistency.rda"))>>=
+library(directlabels)
+dd <- data_consistency %>%
   mutate(success = diagError < 0.01) %>%
   select(sets, success, shape, software) %>%
   group_by(sets, shape, software) %>%
   summarise(success_rate = mean(success, na.rm = TRUE)) %>%
-  mutate(success_rate = success_rate*100) %>%
-  ggplot(aes(x = sets, y = success_rate, group = software, color = software, fill = software)) +
-    xlab("Sets") +
-    ylab("Success rate (%)") +
-    scale_color_manual(values = pal) +
-    scale_fill_manual(values = pal) +
-    geom_line() +
-    geom_point(size = 2, shape = 21, colour = "white", stroke = 1) +
-    facet_grid(~shape) +
-    theme(legend.title = element_blank(), legend.position = "top")
+  mutate(success_rate = success_rate*100)
+
+ggplot(dd, aes(x = sets, y = success_rate, group = software, label = software)) +
+  xlab("Sets") +
+  ylab("Success rate (%)") +
+  scale_color_manual(values = pal) +
+  scale_fill_manual(values = pal) +
+  geom_line(cex = 0.5) +
+  geom_point(cex = 0.75) +
+  geom_dl(method = list("last.qp", dl.trans(x = x + 0.2), cex = 0.75)) +
+  facet_grid(~shape) +
+  xlim(c(2, 10)) +
+  guides(color = FALSE, fill = FALSE)
 @
-\end{figure}
+\caption{Reproducibility tests for ellipses and circles generated from the
+distributions from \eqref{eq:consistencyCircles}. Note that \pkg{Vennerable}
+and \pkg{eulerAPE} only support Euler diagrams for three sets, which is why its
+data is absent for the other cases.\label{fig:consistency}}
+\end{figure*}
 
 <<consistencyMetrics, include = FALSE, cache.extra = tools::md5sum(file.path("data", "data_consistency.rda"))>>=
 consistency_eulerr_ellipse <- data_consistency %>%
@@ -1541,7 +1549,7 @@ fit1 # or equivalently print(fit1)
 @
 
 The fit is more or less equivalent to that of
-\pkg{venneuler}~\citet{wilkinson_2012}. We could try to fit the diagram using
+\pkg{venneuler}~\citep{wilkinson_2012}. We could try to fit the diagram using
 ellipses instead.
 
 <<echo = TRUE>>=

@@ -15,7 +15,7 @@ out <- data.frame(it = integer(),
 
 n_set <- 8
 
-for (i in 3:n_set) {
+for (i in 7:n_set) {
   ids <- eulerr:::bit_indexr(i)
   satisfied <- FALSE
   j <- 1
