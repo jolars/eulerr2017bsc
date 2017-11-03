@@ -36,10 +36,9 @@ for (i in 7:n_set) {
       combinations[sample(which(has_letter), 1)] <- runif(1)
     }
 
-    intersections <- (i + 1):(NROW(ids))
-    how_many <- sample(1:length(intersections), 1)
+    how_many <- sample(sum(combinations == 0), 1)
 
-    combinations[sample(intersections, how_many)] <- runif(how_many)
+    combinations[combinations == 0][sample(how_many)] <- runif(how_many)
 
     test <- NULL
 
