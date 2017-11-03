@@ -293,11 +293,7 @@ we have constructed is a \emph{Euler diagram}~(\cref{fig:children-men}).
 
 \begin{marginfigure}
 \begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{verbatim}
-## [1] 2.24e-09
-\end{verbatim}
-\end{kframe}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
 {\centering \includegraphics[width=\maxwidth]{figure/graphics-childrenMen-1} 
 
@@ -352,12 +348,7 @@ $b$, and an angle of rotation $\phi$.
 
 \begin{marginfigure}
 \begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{verbatim}
-## [1] 0.0579
-## [1] 8.09e-08
-\end{verbatim}
-\end{kframe}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
 {\centering \includegraphics[width=\maxwidth]{figure/graphics-impossible-1} 
 \includegraphics[width=\maxwidth]{figure/graphics-impossible-2} 
@@ -383,11 +374,7 @@ with \pkg{eulerAPE}.
 
 \begin{marginfigure}
 \begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{verbatim}
-## [1] 7.56e-07
-\end{verbatim}
-\end{kframe}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
 {\centering \includegraphics[width=\maxwidth]{figure/graphics-unnamed-chunk-1-1} 
 
@@ -889,12 +876,7 @@ small benefit that \pkg{eulerr} offers relative to \pkg{venneuler}.
 
 \begin{figure*}[thb]
 \begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{verbatim}
-## [1] 0.011
-## [1] 2.08e-08
-\end{verbatim}
-\end{kframe}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
 {\centering \includegraphics[width=\maxwidth]{figure/graphics-venneulerHard-1} 
 
@@ -923,22 +905,26 @@ For the circles, we sample radii ($r_i$) and coordinates ($h_i$ and $k_i$) from
 \begin{equation}
 \begin{aligned}
 r_i     & \sim \mathcal{U}(0.3, 0.6)\\
-h_i,k_i & \sim \mathcal{U}(0, 1).
+h_i,k_i & \sim \mathcal{U}(0, N/3),
 \end{aligned}
 \label{eq:consistencyCircles}
 \end{equation}
-%
+where $N$ is the number of shapes.
 For the ellipses, we sample semiaxes ($a_i$ and $b_i$), coordinates
 ($h_i$ and $k_i$), and rotation axes ($\phi_i$) from
 %
 \begin{equation}
 \begin{aligned}
-h_i,k_i & \sim \mathcal{U}(0, 1)\\
-a_i,b_i & \sim \mathcal{U}(0.2, 0.8)\\
-\phi_i  & \sim \mathcal{U}(0, 2\pi).
+h_i,k_i & \sim \mathcal{U}(0, i/3)\\
+r_i     & \sim \mathcal{U}(0.3, 0.6)\\
+c_i     & \sim \mathcal{U}(1/3, 1)\\
+a_i     & = r_ic_i\\
+b_i     & = r_i/c_i\\
+\phi_i  & \sim \mathcal{U}(0, 2\pi),
 \end{aligned}
 \label{eq:consistencyEllipses}
 \end{equation}
+where $c$ is the
 
 Next, we compute the required areas, $\omega$ (from~\cref{def:omega}), for each
 iteration and fit a Euler diagram using the aforementioned packages. Finally,
@@ -983,11 +969,8 @@ areas, and fit Euler diagrams to these layouts using the different software pack
 }
 \end{alg}
 
-\begin{figure}[bhtp]
-\sidecaption{Reproducibility tests for ellipses and circles generated from the
-distributions from \eqref{eq:consistencyCircles}. Note that \pkg{Vennerable}
-and \pkg{eulerAPE} only support Euler diagrams for three sets, which is why its
-data is absent for the other cases.\label{fig:consistency}}
+\begin{figure*}[bhtp]
+
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
@@ -998,7 +981,11 @@ data is absent for the other cases.\label{fig:consistency}}
 
 
 \end{knitrout}
-\end{figure}
+\caption{Reproducibility tests for ellipses and circles generated from the
+distributions from \eqref{eq:consistencyCircles}. Note that \pkg{Vennerable}
+and \pkg{eulerAPE} only support Euler diagrams for three sets, which is why its
+data is absent for the other cases.\label{fig:consistency}}
+\end{figure*}
 
 
 
@@ -1311,11 +1298,7 @@ slightly to fullfil our other objectives of avoiding using colors for two sets.
 \begin{figure}
 \sidecaption{The eight first colors of the default color palette.}
 \begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{verbatim}
-## [1] 8.43e-08
-\end{verbatim}
-\end{kframe}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
 {\centering \includegraphics[width=\maxwidth]{figure/graphics-colorexamle-1} 
 
@@ -1349,9 +1332,6 @@ first form, we may input a diagram from \citet{junta_2009} that was showcased in
                 \hlstr{"Treat&Anti-CCP"} \hlstd{=} \hlnum{6}\hlstd{,} \hlstr{"SE&Anti-CCP&DAS28"} \hlstd{=} \hlnum{1}\hlstd{)}
 \hlstd{fit1} \hlkwb{<-} \hlkwd{euler}\hlstd{(junta_2009)}
 \end{alltt}
-\begin{verbatim}
-## [1] 0.00392
-\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1388,7 +1368,7 @@ diagError metrics that were introduced in~\nameref{sec:gof}.
 \end{knitrout}
 
 The fit is more or less equivalent to that of
-\pkg{venneuler}~\citet{wilkinson_2012}. We could try to fit the diagram using
+\pkg{venneuler}~\citep{wilkinson_2012}. We could try to fit the diagram using
 ellipses instead.
 
 \begin{knitrout}\small
@@ -1396,11 +1376,7 @@ ellipses instead.
 \begin{alltt}
 \hlcom{# Fit the data using ellipses instead}
 \hlstd{fit2} \hlkwb{<-} \hlkwd{euler}\hlstd{(junta_2009,} \hlkwc{shape} \hlstd{=} \hlstr{"ellipse"}\hlstd{)}
-\end{alltt}
-\begin{verbatim}
-## [1] 0.00392
-\end{verbatim}
-\begin{alltt}
+
 \hlcom{# Compare the fits on diagerror}
 \hlstd{fit1}\hlopt{$}\hlstd{diagError} \hlopt{-} \hlstd{fit2}\hlopt{$}\hlstd{diagError}
 \end{alltt}
