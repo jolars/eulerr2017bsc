@@ -21,15 +21,14 @@ context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
 
 if (!exists("oldwd")) {
   oldwd <- getwd()
+  setwd(file.path(oldwd, "data-raw"))
 }
 
-setwd(file.path(oldwd, "data-raw"))
-
-n_set <- 5L
+n_set <- 8
 
 # Place 3 to 10 circles
 
-for (i in 4L:n_set) {
+for (i in 3:n_set) {
   ids <- eulerr:::bit_indexr(i)
 
   satisfied <- FALSE
@@ -100,6 +99,7 @@ for (i in 4L:n_set) {
                     col.names = FALSE, row.names = FALSE)
 
         p <- run(commandline = 'java -jar eulerAPE_3.0.0.jar -i "diagram.els" --silent --curves circles',
+                 error_on_status = FALSE,
                  windows_verbatim_args = TRUE,
                  timeout = 60)
 
@@ -164,7 +164,7 @@ for (i in 4L:n_set) {
 
 
 # Place 3 to 10 ellipses
-for (i in 3L:5) {
+for (i in 3L:n_set) {
   ids <- eulerr:::bit_indexr(i)
 
   satisfied <- FALSE
