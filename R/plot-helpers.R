@@ -16,7 +16,7 @@
 #' @export
 plot_venneuler <- function(x,
                            col,
-                           col.fn = function(col) hcl(col * 360, 130, 60),
+                           col.fn = function(col) hcl(col*360, 130, 60),
                            alpha = 0.3,
                            edges = 200,
                            border = NA,
