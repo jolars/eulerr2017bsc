@@ -6,7 +6,7 @@ library(Vennerable)
 library(V8)
 
 out <- data.frame(it = integer(),
-                  sets = integer(),
+                  Sets = integer(),
                   software = character(),
                   stress = double(),
                   diagError = double())
@@ -18,10 +18,10 @@ context <- v8()
 context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
 
 if (.Platform$OS.type == "windows") {
-  if (is.null(oldwd)) {
+  if (!exists("oldwd")) {
     oldwd <- getwd() # temporaily set the working directory
+    setwd(file.path(oldwd, "data-raw"))
   }
-  setwd(file.path(oldwd, "data-raw"))
 }
 
 for (i in 3:n_set) {
@@ -58,7 +58,7 @@ for (i in 3:n_set) {
       out,
       data.frame(
         it = j,
-        sets = i,
+        Sets = i,
         software = c("eulerr (circles)", "eulerr (ellipses)"),
         stress = c(eulerr_circles$stress, eulerr_ellipses$stress),
         diagError = c(eulerr_circles$diagError, eulerr_ellipses$diagError)
@@ -70,7 +70,7 @@ for (i in 3:n_set) {
     venneuler_gof <- gof(venneuler_fit, combinations)
     out <- rbind(out,
                  data.frame(it = j,
-                            sets = i,
+                            Sets = i,
                             software = "venneuler",
                             stress = venneuler_gof$stress,
                             diagError = venneuler_gof$diagError))
@@ -83,14 +83,14 @@ for (i in 3:n_set) {
     vennjs_gof <- gof(vennjs_fit, combinations)
 
     out <- rbind(out, data.frame(it = j,
-                                 sets = i,
+                                 Sets = i,
                                  software = "venn.js",
                                  stress = vennjs_gof$stress,
                                  diagError = vennjs_gof$diagError))
 
     if (i == 3) {
       # eulerAPE
-      if (all(combinations > 0) &&  .Platform$OS.type == "windows") {
+      if (all(combinations > 0) && .Platform$OS.type == "windows") {
         input <- paste(combinations, collapse = " | ")
 
         write.table(input, file = "diagram.els", quote = FALSE,
@@ -111,7 +111,7 @@ for (i in 3:n_set) {
           out,
           data.frame(
             it = j,
-            sets = i,
+            Sets = i,
             software = c("eulerAPE (circles)", "eulerAPE (ellipses)"),
             stress = c(APEgof$circles$stress, APEgof$ellipses$stress),
             diagError = c(APEgof$circles$diagError, APEgof$ellipses$diagError)
@@ -137,17 +137,19 @@ for (i in 3:n_set) {
       }, error = function(e) {})
 
       out <- rbind(out, data.frame(it = j,
-                                   sets = i,
+                                   Sets = i,
                                    software = "Vennerable",
                                    stress = vennerable_gof$stress,
                                    diagError = vennerable_gof$diagError))
     }
 
-    if (j >= 100) { # Run at least 100 iterations
-      dd <- filter(out, sets == i) %>%
+    if (j >= 100) {
+      dd <- filter(out, Sets == i) %>%
         group_by(software) %>%
         summarise(ci = qt(0.975, df = n() - 1)*sd(diagError,
                                                   na.rm = TRUE)/sqrt(n()))
+      if (j %% 100 == 0)
+        print(dd)
 
       # Stop when the 95% CI for each estimate is smaller than 1% in diagError
       if (all(dd$ci*2 < 0.01) && j >= 500)
@@ -158,11 +160,10 @@ for (i in 3:n_set) {
   }
 }
 
-if (.Platform$OS.type == "windows")
+if (.Platform$OS.type == "windows" && exists("oldwd"))
   setwd(oldwd)
 
-data_accuracy <- out %>%
-  rename(Sets = sets) %>%
+data_accuracy <- data_accuracy %>%
   mutate(software = as.factor(software), it = as.integer(it)) %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
