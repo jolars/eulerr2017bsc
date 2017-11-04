@@ -717,9 +717,9 @@ yielding four points.}
 After we have all the intersection points, we find the overlap by examining the
 intersection points that are formed from the intersections of the ellipses we
 are currently exploring and that are simultaneously contained within all of
-these ellipses. These points form a geometric shape that can be considered a
-polygon with elliptical segments formed by successive points of the
-polygon~(\cref{fig:polyarea}).
+these ellipses. The elliptical arcs that connect these points along
+with a polygon out of sides formed from joining the points with straight lines
+together make up the area of the overlap~(\cref{fig:polyarea}).
 
 \begin{figure}[hbt]
 \sidecaption{The overlap area between three ellipses is the sum of a convex polygon (in \textcolor{Grey}{grey}) and 2--3 ellipse segments (in \textcolor{SteelBlue4}{blue}).}
@@ -865,7 +865,7 @@ from $(a, 0)$ to $\theta_1$ and then subtracting the triangle part
 \end{marginfigure}
 
 In a few instances\sidenote{1 out of approximately 7000 in our simulations},
-the exact algorithm will break down. This occurs from numerical approximation
+the exact algorithm breaks down. This occurs from numerical approximation
 errors when some ellipses are close-to tangent to one another or completely
 overlap. In these cases, the algorithm will resort to approximation of the
 involved overlap area by
@@ -886,9 +886,12 @@ involved overlap area by
 
 With this in place, we are now able to compute the areas of all intersections
 and their relative complements up to numerical precision. We feed the initial
-layout computed in~\nameref{sec:initConfig} to the optimizer, this time allowing
-the ellipses to rotate and the relation between the semiaxes vary, altogether
-rendering five parameters to optimize per set and ellipse. For each iteration of
+layout computed in~\nameref{sec:initConfig} to the optimizer---once again
+we employ \code{nlm()} from \pkg{stats}. We now also provide the option to
+use ellipses rather than circles, in which case we allow the shapes
+to rotate and the relation between the semiaxes to vary, altogether
+rendering five parameters to optimize per set and ellipse. If we stick with
+circles, we will instead have three parameters. For each iteration of
 the optimizer, the areas of all intersections are analyzed and a measure of loss
 returned. The loss we use is the sum of squared errors between the ideal sizes
 ($\omega$ from~\cref{def:omega}) and the respective areas of the diagram,
@@ -899,6 +902,20 @@ returned. The loss we use is the sum of squared errors between the ideal sizes
 
 \section{Goodness of fit}
 \label{sec:gof}
+
+If we are using ellipses and are faced with a substantial
+error, we offer a final step in which we
+pass the parameters on to a \emph{Generalized Simulated Annealing} optimizer
+from the R package \pkg{GenSA}~(\citep{xiang_2013}). \code{GenSA()} is a
+suitable optimizer for complicated functions with many local
+minima~\citep{mullen_2014}, which is precisely what a Euler diagram with
+ellipses is. This is not true for \code{nlm()}, which may run into local
+minima when we use ellipses.
+
+By default, this optimizer is activated when we have a three-set diagram
+with ellipses and our diagError~\eqref(eq:diagError) surpasses 0.001\sidenote{
+The user is free to choose if and when to activate the
+optimizer using standard arguments to the main function of the package.}
 
 When \pkg{eulerr} cannot find a perfect solution it offers an approximate one
 instead, the adequacy of which has to be measured in a standardized way. For
@@ -915,7 +932,8 @@ squares,
 where $\bar{A}$ is the arithmetic mean of the areas in the diagram.
 
 The stress metric does not lend itself readily to a clear-cut interpretation but
-can be transformed into a rough analogue of the correlation coefficient by $r = \sqrt{1-\text{Stress}^2}$.
+can be transformed into a rough analogue of the correlation coefficient by
+$r = \sqrt{1-\text{Stress}^2}$.
 
 diagError, meanwhile, is given by
 \begin{equation}
@@ -941,25 +959,32 @@ sets, which is why there are only three-set results for \pkg{Vennerable} and
 
 The packages used here were
 \begin{itemize}
-  \item \pkg{eulerr} 2.0.0.9000,
+  \item \pkg{eulerr} 3.0.0,
   \item \pkg{eulerAPE} 3.0.0,
   \item \pkg{venn.js} 0.2.14,
   \item \pkg{venneuler} 1.1-0, and
   \item \pkg{Vennerable} 3.1.0.9000.
 \end{itemize}
 
-The results in \nameref{sec:performance} and all results from \pkg{eulerAPE}
-were computed on a computer\sidenote{%
+The results for \pkg{eulerAPE}
+were computed on a laptop computer\sidenote{%
   The specification of the computer was
-    \begin{itemize}
-      \item Microsoft Windows Pro 10 x64
-      \item Intel\textregistered~Core\textsuperscript{TM} i7-4500U CPU @
-            1.80GHz, 2 cores
-      \item 8 Gb memory
-    \end{itemize}
+  \begin{itemize}
+    \item Microsoft Windows Pro 10 x64
+    \item Intel\textregistered~Core\textsuperscript{TM} i7-4500U CPU @
+          1.80GHz, 2 cores
+    \item 8 GB memory
+  \end{itemize}
 }
-running R version~3.4.2. The remaining results were computed on an Amazon EC2
-cloud-based computing instance.
+The remaining results were computed on an Amazon EC2
+cloud-based computing instance\sidenote{
+  This was a  m4.large instance with the following specifications:
+  \begin{itemize}
+    \item Ubuntu 16.04 x64
+    \item 2.4 GHz Intel Xeon\textregistered E5-2676 v3 (Broadwell) CPU, 2 cores
+    \item 8 GB memory
+  \end{itemize}
+}
 
 \section{Case studies}
 \label{sec:caseStudies}
@@ -996,6 +1021,8 @@ generated from \pkg{eulerr} with circles and ellipses respectively. The stress
 of the solutions are 0.006, 0.004, and 0.000 respectively.}
 \label{fig:venneulerHard}
 \end{figure*}
+
+In
 
 \section{Consistency}
 \label{sec:consistency}
@@ -1093,10 +1120,11 @@ ggplot(dd, aes(x = sets, y = success_rate, group = software, label = software)) 
   scale_fill_manual(values = pal) +
   geom_line(cex = 0.5) +
   geom_point(cex = 0.75) +
-  geom_dl(method = list("last.qp", dl.trans(x = x + 0.2), cex = 0.75)) +
+  geom_dl(method = list("last.bumpup", dl.trans(x = x + 0.2), cex = 0.75)) +
   facet_grid(~shape) +
-  xlim(c(2, 10)) +
+  xlim(c(3, 10)) +
   guides(color = FALSE, fill = FALSE)
+  theme(plot.margin = unit(c(5.5, 7, 5.5, 5.5), "points"))
 @
 \caption{Reproducibility tests for ellipses and circles generated from the
 distributions from \eqref{eq:consistencyCircles}. Note that \pkg{Vennerable}
