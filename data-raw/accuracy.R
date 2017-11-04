@@ -164,7 +164,7 @@ if (.Platform$OS.type == "windows" && exists("oldwd"))
   setwd(oldwd)
 
 data_accuracy <- data_accuracy %>%
-  mutate(software = as.factor(software), it = as.integer(it)) %>%
+  mutate(it = as.integer(it)) %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
 if (i == 8 && j >= 500) {
