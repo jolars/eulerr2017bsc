@@ -167,6 +167,4 @@ data_accuracy <- data_accuracy %>%
   mutate(it = as.integer(it)) %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
-if (i == 8 && j >= 500) {
-  usethis::use_data(data_accuracy, overwrite = TRUE)
-}
+# usethis::use_data(data_accuracy, overwrite = TRUE)
