@@ -163,8 +163,8 @@ for (i in 3:n_set) {
 if (.Platform$OS.type == "windows" && exists("oldwd"))
   setwd(oldwd)
 
-data_accuracy <- data_accuracy %>%
+data_accuracy <- out %>%
   mutate(it = as.integer(it)) %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
-# usethis::use_data(data_accuracy, overwrite = TRUE)
+# devtools::use_data(data_accuracy, overwrite = TRUE)
