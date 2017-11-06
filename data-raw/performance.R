@@ -15,7 +15,7 @@ out <- data.frame(it = integer(),
 
 n_set <- 8
 
-for (i in 7:n_set) {
+for (i in 3:n_set) {
   ids <- eulerr:::bit_indexr(i)
   satisfied <- FALSE
   j <- 1
@@ -38,7 +38,8 @@ for (i in 7:n_set) {
 
     how_many <- sample(sum(combinations == 0), 1)
 
-    combinations[combinations == 0][sample(how_many)] <- runif(how_many)
+    combinations[combinations == 0][sample(how_many)] <-
+      runif(how_many, sqrt(.Machine$double.eps), 1)
 
     test <- NULL
 
@@ -79,7 +80,7 @@ for (i in 7:n_set) {
         na.omit() %>%
         summarise(ci = qnorm(0.975)*sd(time/1e6, na.rm = TRUE)/sqrt(n()))
 
-        # Stop when the 95% CI for each estimate is smaller than 20 milliseconds
+        # Stop after 1000 iterations
       if (j >= 1000) {
         satisfied <- TRUE
         cat("i=", i,", j=", j, "\n", sep = "")
@@ -93,21 +94,18 @@ for (i in 7:n_set) {
   }
 }
 
-if (i == 8 && j >= 1000) {
-  data_performance <-
-    out %>%
-    mutate(software = factor(software,
-                             levels = c("eulerr_circles",
-                                        "eulerr_ellipses",
-                                        "venneuler",
-                                        "Vennerable"),
-                             labels = c("eulerr (circles)",
-                                        "eulerr (ellipses)",
-                                        "venneuler",
-                                        "Vennerable"))) %>%
-    rename(Sets = sets, Time = time)
+data_performance <-
+  out %>%
+  mutate(software = factor(software,
+                           levels = c("eulerr_circles",
+                                      "eulerr_ellipses",
+                                      "venneuler",
+                                      "Vennerable"),
+                           labels = c("eulerr (circles)",
+                                      "eulerr (ellipses)",
+                                      "venneuler",
+                                      "Vennerable"))) %>%
+  rename(Sets = sets, Time = time)
 
-  usethis::use_data(data_performance, overwrite = TRUE)
-}
-
+# devtools::use_data(data_performance, overwrite = TRUE)
 
