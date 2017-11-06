@@ -21,7 +21,6 @@ context <- v8()
 context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
 
 for (i in 3:n_set) {
-  cat("i=", i, "\n", sep = "")
   ids <- eulerr:::bit_indexr(i)
 
   satisfied <- FALSE
@@ -30,7 +29,7 @@ for (i in 3:n_set) {
   while (!satisfied) {
     set.seed(i*j)
 
-    if (j %% 10 == 0) cat(" j=", j, "\n", sep = "")
+    if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     combinations <- double(2^i - 1)
 
     for (k in 1:NROW(ids)) {
@@ -45,7 +44,8 @@ for (i in 3:n_set) {
 
     how_many <- sample(sum(combinations == 0), 1)
 
-    combinations[combinations == 0][sample(how_many)] <- runif(how_many)
+    combinations[combinations == 0][sample(how_many)] <-
+      runif(how_many, sqrt(.Machine$double.eps), 1)
 
     # eulerr
     eulerr_circles <- euler(combinations)
