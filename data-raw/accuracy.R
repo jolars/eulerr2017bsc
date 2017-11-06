@@ -1,3 +1,6 @@
+
+# Accuracy tests for 3 to 8 sets ------------------------------------------
+
 library(tidyverse)
 library(eulerr)
 library(eulerrPaper)
@@ -16,13 +19,6 @@ n_set <- 8
 # JS context for vennjs
 context <- v8()
 context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
-
-if (.Platform$OS.type == "windows") {
-  if (!exists("oldwd")) {
-    oldwd <- getwd() # temporaily set the working directory
-    setwd(file.path(oldwd, "data-raw"))
-  }
-}
 
 for (i in 3:n_set) {
   cat("i=", i, "\n", sep = "")
@@ -88,61 +84,6 @@ for (i in 3:n_set) {
                                  stress = vennjs_gof$stress,
                                  diagError = vennjs_gof$diagError))
 
-    if (i == 3) {
-      # eulerAPE
-      if (all(combinations > 0) && .Platform$OS.type == "windows") {
-        input <- paste(combinations, collapse = " | ")
-
-        write.table(input, file = "diagram.els", quote = FALSE,
-                    col.names = FALSE, row.names = FALSE)
-
-        APEgof <- list("circles" = list(), "ellipses" = list())
-
-        for (shape in c("circles", "ellipses")) {
-          system2("java", c("-jar eulerAPE_3.0.0.jar",
-                            "-i", shQuote("diagram.els"),
-                            "--silent",
-                            "--curves", shape))
-          output <- structure(readLines("diagram.eld"), class = "eulerAPE")
-          APEgof[[shape]] <- gof(output, combinations)
-        }
-
-        out <- rbind(
-          out,
-          data.frame(
-            it = j,
-            Sets = i,
-            software = c("eulerAPE (circles)", "eulerAPE (ellipses)"),
-            stress = c(APEgof$circles$stress, APEgof$ellipses$stress),
-            diagError = c(APEgof$circles$diagError, APEgof$ellipses$diagError)
-          )
-        )
-      }
-
-      # Vennerable
-      vest <- Vennerable::Venn(SetNames = LETTERS[1:i],
-                               Weight = c(0, as.numeric(combinations)))
-
-      vennerable_gof <- list(stress = NA, diagError = NA)
-      vennerable_fit <- NA
-
-      tryCatch({
-        vennerable_fit <- Vennerable::compute.Venn(vest,
-                                                   doWeights = TRUE,
-                                                   doEuler = TRUE,
-                                                   type = "circles")
-        if (isTRUE(class(vennerable_fit) == "VennDrawing")) {
-          vennerable_gof <- gof(vennerable_fit, combinations)
-        }
-      }, error = function(e) {})
-
-      out <- rbind(out, data.frame(it = j,
-                                   Sets = i,
-                                   software = "Vennerable",
-                                   stress = vennerable_gof$stress,
-                                   diagError = vennerable_gof$diagError))
-    }
-
     if (j >= 100) {
       dd <- filter(out, Sets == i) %>%
         group_by(software) %>%
@@ -160,13 +101,9 @@ for (i in 3:n_set) {
   }
 }
 
-if (.Platform$OS.type == "windows" && exists("oldwd"))
-  setwd(oldwd)
-
-data_accuracy <- data_accuracy %>%
+data_accuracy <- out %>%
   mutate(it = as.integer(it)) %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
-if (i == 8 && j >= 500) {
-  usethis::use_data(data_accuracy, overwrite = TRUE)
-}
+# devtools::use_data(data_accuracy, overwrite = TRUE)
+
