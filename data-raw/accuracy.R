@@ -106,4 +106,3 @@ data_accuracy <- out %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
 # devtools::use_data(data_accuracy, overwrite = TRUE)
-
