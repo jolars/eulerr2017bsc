@@ -40,8 +40,8 @@ for (i in 3:n_set) {
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     # Sample some random circles
     r <- runif(i, 0.3, 0.6)
-    x <- runif(i, 0, i*1/3)
-    y <- runif(i, 0, i*1/3)
+    x <- runif(i, 0, 1)
+    y <- runif(i, 0, 1)
 
     pars <- as.vector(matrix(c(x, y, r), nrow = 3, byrow = TRUE))
 
@@ -91,7 +91,7 @@ for (i in 3:n_set) {
 
     if (i == 3) {
       # eulerAPE
-      if (all(combinations > 0)) {
+      if (all(combinations > 0) && .Platform$OS.type == "windows") {
         input <- paste(combinations, collapse = " | ")
         APEgof <- list(stress = NA, diagError = NA)
 
@@ -176,11 +176,11 @@ for (i in 3L:n_set) {
     if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
     # Sample some random ellipses
     f <- runif(i, 1/3, 1)
-    r <- runif(i, 0.3, 0.6)
+    r <- runif(i, 0.2, 0.6)
     a <- sqrt(r)*f
     b <- sqrt(r)*(1/f)
-    x <- runif(i, 0, i*1/3)
-    y <- runif(i, 0, i*1/3)
+    x <- runif(i, 0, 1)
+    y <- runif(i, 0, 1)
     phi <- runif(i, 0, 2*pi)
 
     pars <- as.vector(matrix(c(x, y, a, b, phi), nrow = 5, byrow = TRUE))
