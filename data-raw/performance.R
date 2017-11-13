@@ -10,8 +10,8 @@ library(eulerrPaper)
 
 out <- data.frame(it = integer(),
                   software = character(),
-                  sets = integer(),
-                  time = double())
+                  Sets = integer(),
+                  Time = double())
 
 n_set <- 8
 
@@ -70,15 +70,15 @@ for (i in 3:n_set) {
     if (!is.null(test)) {
       out <- rbind(out, data.frame(it = j,
                                    software = as.character(test$expr),
-                                   sets = i,
-                                   time = test$time))
+                                   Sets = i,
+                                   Time = test$time))
     }
 
     if (j >= 100) { # Run at least 1000 iterations
-      dd <- filter(out, sets == i) %>%
+      dd <- filter(out, Sets == i) %>%
         group_by(software) %>%
         na.omit() %>%
-        summarise(ci = qnorm(0.975)*sd(time/1e6, na.rm = TRUE)/sqrt(n()))
+        summarise(ci = qnorm(0.975)*sd(Time/1e6, na.rm = TRUE)/sqrt(n()))
 
         # Stop after 1000 iterations
       if (j >= 1000) {
@@ -104,8 +104,7 @@ data_performance <-
                            labels = c("eulerr (circles)",
                                       "eulerr (ellipses)",
                                       "venneuler",
-                                      "Vennerable"))) %>%
-  rename(Sets = sets, Time = time)
+                                      "Vennerable")))
 
 # devtools::use_data(data_performance, overwrite = TRUE)
 
