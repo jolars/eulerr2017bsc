@@ -108,6 +108,7 @@ for (i in 3:n_set) {
         if (.Platform$OS.type == "windows" &&
             (!isTRUE(filter(dd, software == "eulerAPE")$ci*2 < 0.02) ||
              isTRUE(filter(dd, software == "eulerAPE")$n < n_it))) {
+
           input <- paste(combinations, collapse = " | ")
           APEgof <- list(stress = NA, diagError = NA)
 
