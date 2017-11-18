@@ -14,6 +14,7 @@ out <- data.frame(it = integer(),
                   time = double())
 
 n_set <- 8
+n_it <- 1000
 
 for (i in 3:n_set) {
   ids <- eulerr:::bit_indexr(i)
@@ -81,7 +82,7 @@ for (i in 3:n_set) {
         summarise(ci = qnorm(0.975)*sd(time/1e6, na.rm = TRUE)/sqrt(n()))
 
         # Stop after 1000 iterations
-      if (j >= 1000) {
+      if (j >= n_it) {
         satisfied <- TRUE
         cat("i=", i,", j=", j, "\n", sep = "")
       }

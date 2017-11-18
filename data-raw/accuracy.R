@@ -15,6 +15,7 @@ out <- data.frame(it = integer(),
                   diagError = double())
 
 n_set <- 8
+n_it <- 1000
 
 # JS context for vennjs
 context <- v8()
@@ -93,7 +94,7 @@ for (i in 3:n_set) {
         print(dd)
 
       # Stop when the 95% CI for each estimate is smaller than 1% in diagError
-      if (all(dd$ci*2 < 0.01) && j >= 500)
+      if (all(dd$ci*2 < 0.01) && j >= n_it)
         satisfied <- TRUE
     }
 
