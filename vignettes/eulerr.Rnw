@@ -1,5 +1,3 @@
-%\VignetteIndexEntry{eulerr under the hood}
-
 \PassOptionsToPackage{usenames,fixpdftex,dvipsnames,svgnames,x11names}{xcolor}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{font=small,labelfont=bf,labelsep=period}{caption}
@@ -105,9 +103,6 @@
 \appto{\endthebibliography}{\end{multicols}}
 
 % Floats
-% \usepackage{newfloat}
-% \DeclareFloatingEnvironment[fileext=alg,placement={htbp},name=Algorithm]{alg}
-% \captionsetup[myfloat]{labelfont=bf,labelsep=period,font=small}
 \DeclareCaptionType[fileext=alg,name=Algorithm]{alg}
 
 % Extended verbatim environments
@@ -187,6 +182,19 @@
     {\@sidenotes@placemarginal{#2}{\textsuperscript{#1}\small~#3}}
 }
 \ExplSyntaxOff
+\makeatother
+
+% Fix vdots and ddots for smallmatrix
+\newcommand{\svdots}{\raisebox{3pt}{$\scalebox{.75}{\vdots}$}}
+\newcommand{\sddots}{\raisebox{3pt}{$\scalebox{.75}{$\ddots$}$}}
+
+% Rotate text 90 degrees (for table)
+\newcommand*\rot{\rotatebox{90}}
+
+% Libertine in tabular
+\makeatletter
+\AtBeginDocument{\def\libertine@figurealign{}\libertineOsF}
+\newcommand\libertineTabular{\def\libertine@figurealign{T}\libertineLF}
 \makeatother
 
 \begin{document}
@@ -578,65 +586,106 @@ separation ($d_{ij}$), radii ($r_i,r_j$), and area of overlap ($O_{ij}$).}
 We are looking for $d$, which we find easily from knowing $O$ and $r$. Our loss
 function is the squared difference between $O$ and $\omega$
 (the desired overlap),
-\[
+\begin{equation}
   \mathcal{L}(d_{ij}) = (O_{ij} - \omega_{ij})^2, \quad \text{for } i <
     j \neq < n
-\]
+\label{eq:dopt}
+\end{equation}
 which we optimize using R's built-in \code{optimize()}\sidenote{According to the
 documentation, \code{optimize()} consists of a "combination of golden section
 search and successive parabolic interpolation."}. Convergence is fast and
-neglible next to our later optimization procedures.
+neglible next to our later optimization procedures. For a two-set
+combination, this is all we need to plot an exact diagram, given
+that we now have each the two circles' radii, their separation, and
+can place the circles arbitrarily on a two-dimensional plane as long
+as $d$ remains the same. This is not, however, with more than two sets,
+in which case we proceed to the next step.
 
-Given these optimal pairwise distances, we proceed to the next step, where we
-position the circles representing the sets. This can be accomplished in many
-ways; \pkg{eulerr}
+Given these optimal pairwise distances, we now try to arrange
+the circles representing the sets for our initial layout. This can be
+accomplished in many ways; \pkg{eulerr}'s approach is based on a method
+developed by~\citet{Frederickson_2015}, which the author describes as
+constrained multi-dimensional scaling---a form of numeric optimization.
 
-The algorithm assigns a loss and gradient of zero when the sets and their
-representations as circles are disjoint or when the sets and circles are subset.
+The algorithm tries to position the circles on a plane so that the separation
+between each pair of circles matches the separation required from~\eqref{eq:dopt}.
+If the two sets are disjoint, however, it is unconcerned with the relative
+locations of those circles as long as they do not intersect. The same
+applies to subset sets: as long as the circle representing the smaller set
+remains within the larger circle, their locations are free to vary.
 In all other cases, the loss function~\eqref{eq:initLoss} is the normal sums of
 squares between the optimal distance between two sets, $d$, that we found
 in~\eqref{eq:circleOverlap} and the actual distance in the layout we are
-currently exploring. The gradient~\eqref{eq:initGrad} is retrieved as usual by
-taking the derivative of the loss function.
+currently exploring.
+
 \begin{fullwidth}
-\begin{align}
-\mathcal{L}(\bm{v}) = \sum_{i=1}^{N-1} \sum_{i=j+1}^{N}
-& \begin{cases}
-  0 & (F_i \cap F_j = \emptyset) \wedge (O_{ij} = \emptyset)\\
-  0 & \left((F_i \subseteq F_j) \vee (F_i \supseteq F_j)\right) \wedge (O_{ij}=\emptyset)\\
-  4 ((\bm{v}_i - \bm{v}_j)^{\scriptscriptstyle T}(\bm{v}_i - \bm{v}_j) - d_{ij}^2)^2  & \text{otherwise} \\
-\end{cases} \label{eq:initLoss} \\
-\vec{\nabla} f(\bm{v}_i) = \sum_{i=1}^N
-& \begin{cases}
-  \vec{0} & (F_i \cap F_j = \emptyset) \wedge (O_{ij} = \emptyset)\\
-  \vec{0} & \left((F_i \subseteq F_j) \vee (F_i \supseteq F_j)\right) \wedge (O_{ij}=\emptyset)\\
-  4 \left((\bm{v}_i - \bm{v}_j)^{\scriptscriptstyle T}(\bm{v}_i - \bm{v}_j) - d_{ij}^2\right) (\bm{v}_i - \bm{v}_j) & \text{otherwise}, \\
-\end{cases} \label{eq:initGrad}
-\end{align}
+\begin{equation}
+  \mathcal{L}(h,k) = \displaystyle\smashoperator[l]{\sum_{0\leq i<j\leq N}}
+  \begin{cases}
+    0 & F_i \cap F_j = \emptyset \text{ and } O_{ij} = \emptyset\\
+    0 & (F_i \subseteq F_j \text{ or } F_i \supseteq F_j) \text{ and } O_{ij}=\emptyset\\
+   \left(\left(h_i-h_j\right)^2+\left(k_i-k_j\right)^2-d_{ij}^2\right)^2  & \text{otherwise} \\
+  \end{cases}. \label{eq:initLoss}
+\end{equation}
 \end{fullwidth}
-where $\bm{v}_i = \begin{bsmallmatrix}h_i \\ k_i\end{bsmallmatrix}$ and $\wedge,\vee$ denote the conditional \texttt{AND} and \texttt{OR} operators respectively.
+The analytical gradient~\eqref{eq:initGrad} is retrieved as usual by
+taking the derivative of the loss function:
+\begin{fullwidth}
+\begin{equation}
+  \vec{\nabla} f(h_i) = \sum_{j=1}^N
+  \begin{cases}
+    \vec{0} & F_i \cap F_j = \emptyset \text{ and } O_{ij} = \emptyset\\
+    \vec{0} & (F_i \subseteq F_j \text{ or } F_i \supseteq F_j) \text{ and } O_{ij}=\emptyset\\
+    4\left(h_i-h_j\right)\left(\left(h_i-h_j\right)^2+\left(k_i-k_j\right)^2-d_{ij}^2\right) & \text{otherwise}, \\
+  \end{cases} \label{eq:initGrad}
+\end{equation}
+\end{fullwidth}
+where $\vec{\nabla} f(k_i)$ is found as in~\eqref{eq:initGrad} with $h_i$
+swapped for $k_i$ (and vice versa). Because it speeds up convergence, we also
+compute the Hessian matrix~\eqref{eq:initHess}. (In our implementation, we only
+actually use the lower triangle.)
+\begin{fullwidth}
+\begin{equation}
+  \bm{H} = \smashoperator[l]{\sum_{0\leq i<j\leq N}}
+  \begin{bsmallmatrix}
+    4\left(\left(h_i-h_j\right)^2+\left(k_i-k_j\right)^2-d_{ij}^2\right)+8\left(h_i-h_j\right)^2 &
+    \cdots &
+    8\left(h_i-h_j\right)\left(k_i-k_j\right)\\
+    \svdots & \sddots & \svdots \\
+    8\left(k_i-k_j\right)\left(h_i-h_j\right) &
+    \cdots &
+    4\left(\left(h_i-h_j\right)^2+\left(k_i-k_j\right)^2-d_{ij}^2\right)+8\left(k_i-k_j\right)^2
+  \end{bsmallmatrix}.
+\label{eq:initHess}
+\end{equation}
+\end{fullwidth}
+Note that the constraints given in~\eqref{eq:initLoss} and \eqref{eq:initGrad}
+still apply to each element of~\eqref{eq:initHess} and have been omitted for
+practical reasons only.
 
 We optimize~\eqref{eq:initLoss} using the nonlinear optimizer \code{nlminb()} from
 the R core package \pkg{stats}. The underlying code for \code{nlminb()} was
 written by \citet{gray_1990} and was part of the PORT Mathematical
 Subroutine Library~\citep{fox_1978}. It was ported to R by Douglas Bates
-and Deepayan Sarkar~\citep{RCT_2017}. It makes use of the Hessian, which we
-presently compute numerically. \code{nlminb()} consists of a set of
+and Deepayan Sarkar~\citep{RCT_2017}. \code{nlminb()} consists of a set of
 complicated routines that seem to perform well for
-difficult problems~\cite{Nash_2014} and allows bound constraints.
-
-This initial configuration will be accurate for two-set combinations and
-optimal---although not necessarily accurate---for three-set combinations that
-use circles. But for all other combinations there is usually a need to fine-tune
-the configuration.
+difficult problems~\cite{Nash_2014} and allows bound constraints, which we
+make use of here by limiting the paramater space so that
+\[
+\textstyle h_i,k_i \in \left[0, \sqrt{\sum_{i=1}^N r_i^2\pi}\right].
+\]
+This initial configuration will be be perfect for any two-set combination
+using circles but may need to be adjusted if more circles are used.
+More pertinently, we have not yet allowed for ellipses in our diagrams.
 
 \section{Final configuration}
 \label{sec:finalConfig}
 
-So far, we have only considered pairwise relationships. To test and improve our
-layout, however, we need to account for all the relationships and, consequently,
+We now need to account for all the sets' relationships and, consequently,
 all the intersections and overlaps in the diagram. Initially, we restricted
-ourselves to circles but now extend ourselves also to ellipses.
+ourselves to circles but now extend ourselves also to ellipses. From here on
+we abandon the practice of treating circles separately---they are
+ellipses and everything that applies to an ellipses does so equally for circles.
 
 As we saw in the \nameref{sec:background}, we now need to have all the ellipses'
 points of intersections at hand. \pkg{eulerr}'s approach to this is outlined in
@@ -729,7 +778,9 @@ with the polygon with sides formed from joining the points with straight lines
 together make up the area of the overlap~(\cref{fig:polyarea}).
 
 \begin{figure}[hbtp]
-\sidecaption{The overlap area between three ellipses is the sum of a convex polygon (in \textcolor{Grey}{grey}) and 2--3 ellipse segments (in \textcolor{SteelBlue4}{blue}).}
+\sidecaption{The overlap area between three ellipses is the sum of a convex
+polygon (in \textcolor{Grey}{grey}) and 2--3 ellipse segments (in
+\textcolor{SteelBlue4}{blue}).\label{fig:polyarea}}
 <<polyarea, fig.height = 4.2, fig.width = 4.2>>=
 x <- c(0, -0.3, 0.2)
 y <- c(0, 0.1, 0.3)
@@ -871,21 +922,19 @@ from $(a, 0)$ to $\theta_1$ and then subtracting the triangle part
 \label{fig:ellipsesegment}
 \end{marginfigure}
 
-In a few instances\sidenote{1 out of approximately 7000 in our simulations.},
-the exact algorithm breaks down. This occurs from numerical approximation
-errors when some ellipses are close-to tangent to one another or completely
-overlap. In these cases, the algorithm will resort to approximation of the
-involved overlap area by
+The exact algorith may in rare instances\sidenote{1 out of approximately 7000 in
+our simulations.}, breaks down. The culprit is numerical approximation
+issues that occur because ellipses are close-to tangent to one another or
+completely overlap. In these cases, the algorithm will resort to approximation
+of the involved overlap area by
 \begin{enumerate}
 \item spreading points across the ellipses using Vogel's
-  method~(see \nameref{sec:labeling} for an overview),
+  method~(see \nameref{sec:labeling} for a brief introduction),
 \item identifying the points that are inside the intersection via the inequality
-  \begin{equation*}
-  \begin{multlined}
-  \frac{\left[ (x-h)\cos{\phi}+(y-k)\sin{\phi} \right]^2}{a^2} + \\
+  \begin{multline*}
+  \frac{\left[(x-h)\cos{\phi}+(y-k)\sin{\phi} \right]^2}{a^2} + \\
     \frac{\left[(x-h) \sin{\phi}-(y-k)\cos{\phi}\right]^2}{b^2} < 1,
-  \end{multlined}
-  \end{equation*}
+  \end{multline*}
   where $x$ and $y$ are the coordinates of the sampled points, and finally
 \item approximating the area by multiplying the proportion of points inside the
   overlap with the area of the ellipse.
@@ -897,8 +946,8 @@ layout computed in~\nameref{sec:initConfig} to the optimizer---once again
 we employ \code{nlminb()} from \pkg{stats} but now also provide the option to
 use ellipses rather than circles, allowing the "circles"
 to rotate and the relation between the semiaxes to vary, altogether
-rendering five parameters to optimize per set and ellipse. If we stick with
-circles, we will instead have three parameters. For each iteration of
+rendering five parameters to optimize per set and ellipse (or three if we
+restrict ourselves to circles). For each iteration of
 the optimizer, the areas of all intersections are analyzed and a measure of loss
 returned. The loss we use is the sum of squared errors between the ideal sizes
 ($\omega$ from~\cref{def:omega}) and the respective areas of the diagram,
@@ -913,16 +962,16 @@ returned. The loss we use is the sum of squared errors between the ideal sizes
 If we are using ellipses and are faced with a substantial
 error, we offer a final step in which we
 pass the parameters on to a \emph{Generalized Simulated Annealing} optimizer
-from the R package \pkg{GenSA}~(\citep{xiang_2013}). \code{GenSA()} is a
+from the R package \pkg{GenSA}~\citep{xiang_2013}. \code{GenSA()} is a
 suitable optimizer for complicated functions with many local
 minima~\citep{mullen_2014}, which is precisely what a Euler diagram with
-ellipses is. This is not true for \code{nlm()}, which may run into local
-minima when we use ellipses.
+ellipses is.
 
-By default, this optimizer is activated when we have a three-set diagram
+By default, this step is activated only when we have a three-set diagram
 with ellipses and our diagError~\eqref{eq:diagError} surpasses 0.001\sidenote{
-The user is free to choose if and when to activate the
-optimizer using standard arguments to the main function of the package.}
+The user, however, is free to choose if and when to activate the
+optimizer using standard arguments to the main function of the package.} The
+reason being that the method is considerably more intensive computationally.
 
 When \pkg{eulerr} cannot find a perfect solution it offers an approximate one
 instead, the adequacy of which has to be measured in a standardized way. For
@@ -940,7 +989,7 @@ where $\bar{A}$ is the arithmetic mean of the areas in the diagram.
 
 The stress metric does not lend itself readily to a clear-cut interpretation but
 can be transformed into a rough analogue of the correlation coefficient by
-$r = \sqrt{1-\text{Stress}^2}$.
+$r = \sqrt{1-\text{stress}^2}$.
 
 diagError, meanwhile, is given by
 \begin{equation}
@@ -985,7 +1034,7 @@ were computed on a laptop computer\sidenote{%
 }
 The remaining results were computed on an Amazon EC2
 cloud-based computing instance\sidenote{
-  This was a  m4.large instance with the following specifications:
+  This was a m4.large instance with the following specifications:
   \begin{itemize}
     \item Ubuntu 16.04 x64
     \item 2.4 GHz Intel Xeon\textregistered E5-2676 v3 (Broadwell) CPU, 2 cores
@@ -1029,7 +1078,169 @@ of the solutions are 0.006, 0.004, and 0.000 respectively.}
 \label{fig:venneulerHard}
 \end{figure*}
 
-In
+\citet{micallef_2014a} featured a diagram from~\citet{Lenz_2006}. We will not
+dwell upon the inaccuracies of the original diagram here but rather
+contrast the results of \pkg{eulerAPE} with those of \pkg{eulerr}. The
+data from the original diagram was
+\begin{gather*}
+A = 0.36,\quad B = 0.03,\quad C = 0,\\
+A\&B = 0.41,\quad A\&C = 0.04,\quad B\&C = 0,\quad\text{and}\\
+A\&B\&C = 0.11.
+\end{gather*}
+However, because \pkg{eulerAPE} cannot fit diagrams that lack some intersections,
+instead replaced 0 with 0.00001. Since the diagram was reproduced with
+ellipses, we will do the same with \pkg{eulerr} but set the
+areas as they are in the original data.
+
+The fits from both packages are exact~(\cref{fig:lenz}). Although
+we told \pkg{eulerr} to use ellipses in the fit, the algorithm stuck to
+circles, which, given that the fit is exact, is the appropriate choice
+since circles are easier to interpret.
+The reason \pkg{eulerAPE} did not is that it tries to keep the three
+shapes intersecting (albeit marginally), which cannot be done
+with circles if the layout is to be exact.
+
+We also note that the labels of the nonexistant overlaps in the diagram from
+\emph{eulerAPE} have been placed at seemingly arbitrary locations. In
+the original publication~\citep{micallef_2014a}, the labels were manually
+adjusted.
+
+\begin{figure}[hbtp]
+\sidecaption{Diagrams from \pkg{eulerAPE} and \pkg{eulerr} based on data from a
+diagram in~\citet{Lenz_2006}. The diagrams have not been modified in any way
+save for converting the diagram from \pkg{eulerAPE} from .svg to .pdf.
+\label{fig:lenz}}
+\begin{subfigure}[b]{.5\linewidth}
+<<lenz, out.width = "0.9\\linewidth">>=
+lenz_fit <- euler(c(A = 0.36, B = 0.03, C = 0.00,
+                    "A&B" = 0.41, "A&C" = 0.04, "B&C" = 0.00,
+                    "A&B&C" = 0.11), shape = "ellipse")
+plot(lenz_fit)
+@
+\centering
+\subcaption{The diagram from \pkg{eulerr}.}
+\end{subfigure}%
+\begin{subfigure}[b]{.5\linewidth}
+\centering
+\includegraphics[height=.9\linewidth]{graphics//eulerape-lenz-a}
+\subcaption{The diagram from \pkg{eulerAPE}.}
+\end{subfigure}
+\end{figure}
+
+To conclude the case studies part of this thesis, we look at a diagram
+that was featured on website of the author of
+\pkg{venn.js}~\citep{Frederickson_2015a}, which used the
+\emph{Netflix Prize Dataset}\sidenote{The dataset is no longer available
+on this webpage, but can be found at
+\url{https://www.kaggle.com/netflix-inc/netflix-prize-data}
+for those who are interested.} from which he
+\begin{quote}
+[...] picked 6 movies, kind of at random -- and then represented them using the
+set of users that gave the movie a 5 star rating.
+\end{quote}
+The movies were Amelie, Pulp Fiction, Miss Congeniality, Armageddon, Rashomon,
+and Coyote Ugly. The data only includes pairwise
+relationships~(\cref{tab:netflix}).
+
+\begin{table}
+\sidecaption{The data from the Netflix Prize dataset
+used in \citet{Frederickson_2015a}.\label{tab:netflix}}
+\centering
+\libertineTabular
+\addtolength{\tabcolsep}{-2pt}
+\small
+\begin{tabular}{r|rrrrrr}
+& \rot{Amelie} & \rot{Pulp Fiction} & \rot{Miss Congeniality} & \rot{Armageddon} & \rot{Rashomon} & \rot{Coyote Ugly}\\
+\hline
+Amelie            & 38,753 &&&&&\\
+Pulp Fiction      & 15,197 & 70,153 &&&&\\
+Miss Congeniality &  1,829 &  3,854 & 37,837 &&&\\
+Armageddon        &  1,218 &  6,593 & 10,536 & 40,345 &&\\
+Rashomon          &  2,087 &  2,799 &    132 &    143 & 6,209 &\\
+Coyote Ugly       &    610 &  2,206 &  5,965 &  5,699 &    38 & 15,611
+\end{tabular}
+\end{table}
+
+<<include = FALSE>>=
+netflix <- c("Amelie" = 38753,
+             "Pulp Fiction" = 70153,
+             "Miss Congeniality" = 37837,
+             "Armageddon" = 40345,
+             "Rashomon" = 6209,
+             "Coyote Ugly" = 15611,
+             "Amelie&Pulp Fiction" = 15197,
+             "Amelie&Miss Congeniality" = 1829,
+             "Amelie&Armageddon" = 1218,
+             "Amelie&Rashomon" = 2087,
+             "Amelie&Coyote Ugly" = 610,
+             "Pulp Fiction&Miss Congeniality" = 3854,
+             "Pulp Fiction&Armageddon" = 6593,
+             "Pulp Fiction&Rashomon" = 2799,
+             "Pulp Fiction&Coyote Ugly" = 2206,
+             "Miss Congeniality&Armageddon" = 10536,
+             "Miss Congeniality&Rashomon" = 132,
+             "Miss Congeniality&Coyote Ugly" = 5965,
+             "Armageddon&Rashomon" = 143,
+             "Armageddon&Coyote Ugly" = 5699,
+             "Rashomon&Coyote Ugly" = 38)
+netflix_eulerr <- euler(netflix)
+netflix_eulerr_ellipses <- euler(netflix, shape = "ellipse")
+
+context <- V8::v8()
+context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
+input <- setup_vennjs(netflix)
+context$eval(input)
+context$eval("circles = venn.venn(sets)")
+netflix_vennjs <- structure(context$get("circles"), class = "vennjs")
+vennjs_gof <- gof(netflix_vennjs, netflix)
+@
+
+It is not obvious which of the two fits are better.
+The stress and diagError from the \pkg{eulerr}
+diagram~(\cref{fig:netflix-eulerr}) is
+\Sexpr{netflix_eulerr$stress} and \Sexpr{netflix_eulerr$diagErro} respectively,
+whilst the same figures are \Sexpr{vennjs_gof$stress} and
+\Sexpr{vennjs_gof$diagError} for the \pkg{venn.js}
+diagram~(\cref{fig:netflix-vennjs}).
+
+\begin{figure*}[hbtp]
+\begin{subfigure}[b]{.45\linewidth}
+\centering
+<<fig.width = 3.2, fig.height = 3.2>>=
+plot(netflix_eulerr, border = "grey40")
+@
+\subcaption{The fit from \pkg{eulerr} with a stress of
+\Sexpr{netflix_eulerr$stress} and diagError of \Sexpr{netflix_eulerr$diagError}.
+\label{fig:netflix-eulerr}}
+\end{subfigure}\hfill%
+\begin{subfigure}[b]{.45\linewidth}
+\centering
+<<fig.width = 3.2, fig.height = 3.2>>=
+plot_vennjs(netflix_vennjs)
+@
+\subcaption{The fit from \pkg{venn.js} with a stress of
+\Sexpr{vennjs_gof$stress} and diagError of \Sexpr{vennjs_gof$diagError}.
+\label{fig:netflix-vennjs}}
+\end{subfigure}
+\caption{The Euler diagrams generated from the Netflix Prize data. Notice
+the different choices made by the algorithms.}
+\label{fig:netflix}
+\end{figure*}
+
+Another option is of course to try to fit the diagram with ellipses
+instead~(\cref{fig:netflix-ellipses}). We are now able to reduce our diagError
+to \Sexpr{netflix_eulerr_ellipses$diagError} and our stress to
+\Sexpr{netflix_eulerr_ellipses$stress}, which is mostly the result of being
+able to dispose of all the three-way intersections that were implicitly
+set to 0 when we fit our diagram.
+
+\begin{figure}[hbtp]
+\sidecaption{The data from \cref{tab:netflix} visualized with ellipses.
+\label{fig:netflix-ellipses}}
+<<fig.width = 3.5, fig.height = 3.5>>=
+plot(netflix_eulerr_ellipses, border = "grey40")
+@
+\end{figure}
 
 \section{Consistency}
 \label{sec:consistency}
@@ -1057,14 +1268,14 @@ For the ellipses, we sample semiaxes ($a_i$ and $b_i$), coordinates
 \begin{aligned}
 h_i,k_i & \sim \mathcal{U}(0, 1)\\
 r_i     & \sim \mathcal{U}(0.2, 0.6)\\
-c_i     & \sim \mathcal{U}(1/3, 1)\\
+c_i     & \sim \mathcal{U}(1/2, 2)\\
 a_i     & = r_ic_i\\
 b_i     & = r_i/c_i\\
-\phi_i  & \sim \mathcal{U}(0, 2\pi),
+\phi_i  & \sim \mathcal{U}(0, \pi),
 \end{aligned}
 \label{eq:consistencyEllipses}
 \end{equation}
-where $c$ is the
+where $c$ is the ratio between the semiaxes.
 
 Next, we compute the required areas, $\omega$ (from~\cref{def:omega}), for each
 iteration and fit a Euler diagram using the aforementioned packages. Finally,
@@ -1074,7 +1285,10 @@ if no portion of the diagram is 1\% off (in absolute terms) from that of the
 input; note that this is always achievable since our Euler diagrams are formed
 from sampled diagrams.
 
-For each number of shapes $(i=3,4,\dots,8)$ we run the simulations until we have achieved a 95\% confidence interval around $p$, the proportion of successful diagrams, that is no wider than 2\%. The confidence that we generate is the standard asymptotic interval,
+For each number of shapes $(i=3,4,\dots,8)$ we run the simulations until we have
+achieved a 95\% confidence interval around $\hat{p}$, the proportion of
+successful diagrams, that is no wider than 2\%. The confidence that we generate
+is the standard asymptotic interval,
 \begin{equation*}
 \mathcal{I}(\hat{p})_{0.95} = \hat{p} \pm z_{0.95}\sqrt{\frac{\hat{p}(\hat{p}-1)}{n}}
 \end{equation*}
@@ -1227,9 +1441,9 @@ bwplot(Loss ~ Sets | Metric, data = dd_acc, groups = software,
        ylab = c("stress", "diagError"),
        par.settings = list(box.rectangle = list(col = 1),
                            box.dot = list(col = 1),
-                           box.umbrella = list(col = 1),
+                           box.umbrella = list(col = 1, lty = 1),
                            plot.symbol = list(col = 1,
-                                              alpha = 0.3)),
+                                              alpha = 0.25)),
        panel = panel.superpose,
        scales = list(y = list(relation = "free")),
        panel.groups = function(x, y, ..., group.number) {
@@ -1314,11 +1528,36 @@ with a internet connection and somewhat-recent web browser.
 \label{ch:discussion}
 
 In this paper, we have presented a novel method for generating Euler diagrams
-for any number of sets using ellipses. We have shown that the method is superior
-in both accuracy and consistency next to all other software packages for
-R---even when the method is restricted to circles. In addition, the method is
+for any number of sets using ellipses. We have shown that the package
+performs on par with \pkg{eulerAPE} and better than all other packages
+that were tested in this thesis. In addition, the method is
 speedier than the competition for set relationships with up to six sets,
 wherafter it performs worse than \pkg{venneuler}.
+
+\pkg{eulerr} has perfect consistency for all the different circular diagrams
+tested in the \nameref{sec:accuracy} section. No other package managed
+to fit all of the combinations perfectly, although both \pkg{eulerAPE} and
+\pkg{venn.js} has next-to perfect consistency and did not differ significantly
+from \pkg{eulerr}. \pkg{venneuler} was not able to reproduce between 35 and 60\%
+of the diagrams. Most of these diagrams feature disjoint or subset
+relationships, which \pkg{venneuler} have problems fitting because of its
+initial optimizer. As we discussed in the \nameref{sec:introduction},
+eulerr, venn.js, and \pkg{venneuler} all use multi-dimensional scaling for
+their initial diagram. venneuler, however, unnecessarily restricts the
+locations of disjoint and subset circles. Given, for instance, two disjoint
+sets, the algorithm will
+
+attempt to place them tangent to one another or the
+loss function in the optimizer will report loss.
+
+
+disjoint and subset circles tangent and, respectively, at the exact
+midpoint of . Yet, because we are indifferent about where in the space
+outside (or respectively inside) the circles are placed, that behavior becomes
+problematic since it might interfere with locations of other sets that need to
+use that space. The MDS algorithm from \pkg{venn.js} circumvents this by
+assigning a loss and gradient of zero when the pairwise set intersection
+\emph{and} the candidate circles are disjoint or subset.
 
 In terms of consistency and accuracy, there are several reasons for why
 \pkg{eulerr} improves upon the method in \pkg{venneuler} and \pkg{Vennerable}.
@@ -1326,16 +1565,7 @@ The primary reason lies in the use of ellipses rather than circles. Ellipses
 feature two additional degrees of freedom and are therefore able to accurately
 represent a larger variety of relationships.
 
-Moreover, the initial optimizer in \pkg{eulerr} circumvents a rule in
-\pkg{venneuler} that puts unnecessary restrictions on layouts that include
-disjoint or subset relationships. The initial optimizer in venneuler places
-disjoint and subset circles exactly neck-in-neck and at the exact midpoint of
-the set respectively. Yet, because we are indifferent about where in the space
-outside (or respectively inside) the circles are placed, that behavior becomes
-problematic since it might interfere with locations of other sets that need to
-use that space. The MDS algorithm from \pkg{venn.js} circumvents this by
-assigning a loss and gradient of zero when the pairwise set intersection
-\emph{and} the candidate circles are disjoint or subset.
+
 
 For 3 to 7 sets, \pkg{eulerr} is speedier than both \pkg{Vennerable} and
 \pkg{venneuler}. The reasons for this is partly to do with the implementation
@@ -1659,13 +1889,13 @@ fit1$diagError - fit2$diagError
 Comparing the two fits in diagError, however, shows that we have not bettered
 the fit in any meaningful way. Our next goal is to visualize the layout, which
 we do both using the default options and by customizing the fit, adding
-counts, replacing the sets' labels with a key, removing lines, and changing the
+quantities, replacing the sets' labels with a key, removing lines, and changing the
 fills using the \pkg{RColorBrewer} package~(\cref{fig:plotting}).
 
 <<twofits, echo = TRUE>>=
 p1 <- plot(fit1)
 p2 <- plot(fit1,
-           counts = list(fontface = 3),
+           quantities = list(fontface = 3),
            fill = RColorBrewer::brewer.pal(4, "Set2"),
            border = "transparent",
            auto.key = list(space = "right")) # key on the right
@@ -1673,18 +1903,18 @@ p2 <- plot(fit1,
 
 \begin{figure}[hbtp]
 \sidecaption{The same fit visualized in two distinct ways.\label{fig:plotting}}
-\begin{minipage}[b]{.4\linewidth}
-<<twofits1, fig.width = 4.2, fig.height = 2.1>>=
+\begin{subfigure}[b]{.4\linewidth}
+<<twofits1, fig.width = 4.3, fig.height = 2.1>>=
 p1
 @
 \subcaption{The default settings.}
-\end{minipage}%
-\begin{minipage}[b]{.6\linewidth}
-<<twofits2, fig.width = 4.2, fig.height = 2.1>>=
+\end{subfigure}%
+\begin{subfigure}[b]{.6\linewidth}
+<<twofits2, fig.width = 4.3, fig.height = 2.1>>=
 p2
 @
 \subcaption{Custom plot settings.}
-\end{minipage}
+\end{subfigure}
 \end{figure}
 
 \begin{fullwidth}
