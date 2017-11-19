@@ -79,7 +79,7 @@ gof.eulerAPE <- function(obj, orig) {
   fit <- as.vector(eulerr:::intersect_ellipses(pars, circles = FALSE))/100
 
   stress <- eulerr:::stress(orig, fit)
-  diagError <- diagError(orig, fit)
+  diagError <- diag_error(orig, fit)
 
   list(stress = stress, diagError = diagError)
 }
@@ -94,7 +94,7 @@ gof.vennjs <- function(obj, orig) {
   fit <- eulerr:::intersect_ellipses(as.vector(rbind(x, y, r)), circles = TRUE)
 
   stress <- eulerr:::stress(orig, fit)
-  diagError <- diagError(orig, fit)
+  diagError <- diag_error(orig, fit)
 
   list(stress = stress, diagError = diagError)
 }
@@ -106,7 +106,7 @@ gof.vennjs <- function(obj, orig) {
 #'
 #' @return diagError
 #' @export
-diagError <- function(orig, fit) {
+diag_error <- function(orig, fit) {
   max(abs(fit/sum(fit) - orig/sum(orig)))
 }
 
