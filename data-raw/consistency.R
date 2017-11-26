@@ -24,7 +24,7 @@ if (!exists("oldwd")) {
   setwd(file.path(oldwd, "data-raw"))
 }
 
-n_set <- 8
+n_set <- 3
 n_it  <- 1000
 
 # Place 3 to 10 circles
@@ -48,7 +48,7 @@ for (i in 3:n_set) {
 
     pars <- as.vector(matrix(c(x, y, r), nrow = 3, byrow = TRUE))
 
-    combinations <- as.vector(eulerr:::intersect_ellipses(pars, circles = TRUE))
+    combinations <- as.vector(eulerr:::intersect_ellipses(pars, circle = TRUE))
 
     # Avoid extremely small areas
     combinations[abs(combinations) < sqrt(.Machine$double.eps)] <- 0
@@ -203,7 +203,7 @@ for (i in 3L:n_set) {
 
     pars <- as.vector(matrix(c(x, y, a, b, phi), nrow = 5, byrow = TRUE))
 
-    combinations <- as.vector(eulerr:::intersect_ellipses(pars, circles = FALSE))
+    combinations <- as.vector(eulerr:::intersect_ellipses(pars, circle = FALSE))
 
     combinations[abs(combinations) < sqrt(.Machine$double.eps)] <- 0
 

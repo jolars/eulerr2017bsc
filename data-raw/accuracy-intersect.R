@@ -25,6 +25,7 @@ if (.Platform$OS.type == "windows") {
 }
 
 i <- 3
+n_it <- 1000
 
 ids <- eulerr:::bit_indexr(i)
 
@@ -134,7 +135,7 @@ while (!satisfied) {
       print(dd)
 
     # Stop when the 95% CI for each estimate is smaller than 1% in diagError
-    if (all(dd$ci*2 < 0.01) && j >= 500)
+    if (all(dd$ci*2 < 0.01) && j >= n_it)
       satisfied <- TRUE
   }
   j <- j + 1
@@ -148,4 +149,4 @@ data_accuracy_int <- out %>%
   mutate(it = as.integer(it)) %>%
   gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
 
-# devtools::use_data(data_accuracy_int, overwrite = TRUE)
+devtools::use_data(data_accuracy_int, overwrite = TRUE)
