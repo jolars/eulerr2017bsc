@@ -48,6 +48,24 @@ gof.VennDrawing <- function(obj, orig) {
 #' @rdname gof
 #' @export
 gof.VennDiagram <- function(obj, orig) {
+  combo_names <- strsplit(names(orig), split = "&", fixed = TRUE)
+  setnames <- unique(unlist(combo_names, use.names = FALSE))
+
+  n <- length(setnames)
+  id <- eulerr:::bit_indexr(n)
+  N <- NROW(id)
+  n_restarts <- 10L # should this be made an argument?
+
+  areas <- double(N)
+  for (i in 1L:N) {
+    s <- setnames[id[i, ]]
+    for (j in seq_along(combo_names)) {
+      if (setequal(s, combo_names[[j]])) {
+        areas[i] <- orig[j]
+      }
+    }
+  }
+
   # Goodness of fit tests for venneuler diagram
   x <- obj$centers[, 1]
   y <- obj$centers[, 2]
@@ -56,8 +74,8 @@ gof.VennDiagram <- function(obj, orig) {
   pars <- as.vector(rbind(x, y, r))
   fit <- as.vector(eulerr:::intersect_ellipses(pars, circle = TRUE))
 
-  stress <- eulerr:::stress(orig, fit)
-  diagError <- max(abs(fit/sum(fit) - orig/sum(orig)))
+  stress <- eulerr:::stress(areas, fit)
+  diagError <- max(abs(fit/sum(fit) - areas/sum(areas)))
 
   list(stress = stress, diagError = diagError)
 }
@@ -66,6 +84,23 @@ gof.VennDiagram <- function(obj, orig) {
 #' @export
 gof.eulerAPE <- function(obj, orig) {
   # Goodness of fit tests for eulerAPE diagram
+  combo_names <- strsplit(names(orig), split = "&", fixed = TRUE)
+  setnames <- unique(unlist(combo_names, use.names = FALSE))
+
+  n <- length(setnames)
+  id <- eulerr:::bit_indexr(n)
+  N <- NROW(id)
+  n_restarts <- 10L # should this be made an argument?
+
+  areas <- double(N)
+  for (i in 1L:N) {
+    s <- setnames[id[i, ]]
+    for (j in seq_along(combo_names)) {
+      if (setequal(s, combo_names[[j]])) {
+        areas[i] <- orig[j]
+      }
+    }
+  }
 
   dat <- matrix(unlist(strsplit(obj[7:9], split = "|", fixed = TRUE)),
                 nrow = 3, byrow = TRUE)
@@ -78,8 +113,8 @@ gof.eulerAPE <- function(obj, orig) {
 
   fit <- as.vector(eulerr:::intersect_ellipses(pars, circle = FALSE))/100
 
-  stress <- eulerr:::stress(orig, fit)
-  diagError <- diag_error(orig, fit)
+  stress <- eulerr:::stress(areas, fit)
+  diagError <- diag_error(areas, fit)
 
   list(stress = stress, diagError = diagError)
 }
@@ -87,14 +122,32 @@ gof.eulerAPE <- function(obj, orig) {
 #' @rdname gof
 #' @export
 gof.vennjs <- function(obj, orig) {
+  combo_names <- strsplit(names(orig), split = "&", fixed = TRUE)
+  setnames <- unique(unlist(combo_names, use.names = FALSE))
+
+  n <- length(setnames)
+  id <- eulerr:::bit_indexr(n)
+  N <- NROW(id)
+  n_restarts <- 10L # should this be made an argument?
+
+  areas <- double(N)
+  for (i in 1L:N) {
+    s <- setnames[id[i, ]]
+    for (j in seq_along(combo_names)) {
+      if (setequal(s, combo_names[[j]])) {
+        areas[i] <- orig[j]
+      }
+    }
+  }
+
   x <- unlist(lapply(obj, "[", "x"))
   y <- unlist(lapply(obj, "[", "y"))
   r <- unlist(lapply(obj, "[", "radius"))
 
   fit <- eulerr:::intersect_ellipses(as.vector(rbind(x, y, r)), circle = TRUE)
 
-  stress <- eulerr:::stress(orig, fit)
-  diagError <- diag_error(orig, fit)
+  stress <- eulerr:::stress(areas, fit)
+  diagError <- diag_error(areas, fit)
 
   list(stress = stress, diagError = diagError)
 }
