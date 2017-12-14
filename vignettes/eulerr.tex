@@ -1,6 +1,6 @@
 \PassOptionsToPackage{usenames,fixpdftex,dvipsnames,svgnames,x11names}{xcolor}
 \PassOptionsToPackage{hyphens}{url}
-\PassOptionsToPackage{format=plain,font=small,labelfont=bf,labelsep=period,justification=RaggedRight,singlelinecheck=false}{caption}
+\PassOptionsToPackage{font=small,labelfont=bf,labelsep=period,justification=RaggedRight,format=plain}{caption}
 
 \documentclass[
   oneside,
@@ -77,9 +77,25 @@
 \usepackage{multicol}
 
 % Margin paragraph
-%\usepackage{footnotes}
-%\usepackage{marginfix}
+%\usepackage{sidenotes}
+%\usepackage{marginnote}
+%\usepackage[marginnote=true]{snotez}
+\usepackage{marginfix}
 %\usepackage{morefloats} % More than 18 floats
+
+\newcounter{snmark}
+\setcounter{snmark}{0}
+
+\newcommand*{\makesidenotemark}{\/\textsuperscript{\thesnmark}}
+
+\newcommand{\sidenote}[1]{%
+  \refstepcounter{snmark}%
+  \makesidenotemark{}%
+  \marginpar{%
+    \RaggedRight\small\textsuperscript{\thesnmark}\/#1
+  }%
+}
+\makeatother
 
 % Headers and footers
 \usepackage[
@@ -129,7 +145,6 @@
 
 % Text justification and parskip
 \usepackage[document]{ragged2e}
-%\setlength{\RaggedRightParindent}{\parindent}
 
 % Lists
 \usepackage[shortlabels]{enumitem}
@@ -140,8 +155,6 @@
 
 % Babel
 %\usepackage[swedish]{babel}
-
-\usepackage[footnote]{snotez}
 
 % Bibliography
 \usepackage[square,numbers,sort&compress]{natbib}
@@ -154,11 +167,38 @@
   {}
 \appto{\endthebibliography}{\end{multicols}}
 
-% Block margins for sidecaption around environments
+% Block margins for caption around environments
 \BeforeBeginEnvironment{figure}{\blockmargin}
 \AfterEndEnvironment{figure}{\unblockmargin}
 \BeforeBeginEnvironment{table}{\blockmargin}
 \AfterEndEnvironment{table}{\unblockmargin}
+
+\usepackage{floatrow}
+
+\DeclareFloatSeparators{marginparsep}{\hskip\marginparsep}
+\floatsetup[figure]{margins=hangright,
+                    capposition=beside,
+                    capbesidesep=marginparsep,
+                    capbesideposition={center,right},
+                    floatwidth=\textwidth}
+\floatsetup[table]{margins=hangright,
+                   capposition=beside,
+                   capbesidesep=marginparsep,
+                   capbesideposition={center,outside},
+                   floatwidth=\textwidth}
+\floatsetup[widefigure]{margins=hangright,
+                        capposition=bottom}
+\floatsetup[widetable]{margins=hangright,
+                       capposition=top}
+
+% Environments
+\usepackage{environ}
+\NewEnviron{marginfigure}{%
+  \marginpar{%
+    \captionsetup{type=figure}
+    \BODY
+  }%
+}
 
 % Floats
 \DeclareCaptionType[fileext=alg,name=Algorithm]{alg}
@@ -193,67 +233,9 @@
 \useosf
 \usepackage{microtype}
 
-%\usepackage{footnotes}
-\usepackage{marginfix}
-%\usepackage{morefloats} % More than 18 floats
-\usepackage[footnote]{snotez}
-
-\usepackage{floatrow}
-
-\DeclareFloatSeparators{parsep}{\hskip\marginparsep}
-
-\floatsetup[widefigure]{margins=hangright,
-                        capposition=bottom}
-\floatsetup[figure]{margins=hangright,
-                    capposition=beside,
-                    capbesidesep=parsep,
-                    capbesideposition={center,right},
-                    floatwidth=\textwidth}
-\floatsetup[widetable]{margins=hangright,
-                       capposition=top}
-\floatsetup[table]{margins=hangright,
-                   capposition=beside,
-                   capbesidesep=parsep,
-                   capbesideposition={center,right},
-                   floatwidth=\textwidth}
-
-\usepackage{l3keys2e}
-\usepackage{xparse}
-
-\makeatletter
-\DeclareExpandableDocumentCommand{\IfNoValueOrEmptyTF}{ m m m }
-{
- \IfNoValueTF{#1}
-  {#2}
-  {\tl_if_empty:nTF {#1} {#2} {#3}}
-}
-
-\NewDocumentCommand \@placemarginal { m m }
-{
-  \IfNoValueOrEmptyTF{#1}
-    {\marginpar{#2}}
-    {\marginnote{#2}[#1]}
-}
-
-\newsavebox{\@marginfigurebox}
-\DeclareCaptionStyle{marginfigure}{font=footnotesize}
-\NewDocumentEnvironment{marginfigure} { o }
-{
-  \begin{lrbox}{\@marginfigurebox}
-    \begin{minipage}{\marginparwidth}
-      \captionsetup{type=figure,style=marginfigure}
-}
-{
-    \end{minipage}%
-  \end{lrbox}%
-  \@placemarginal{#1}{\usebox{\@marginfigurebox}}
-}
-\makeatother
-
 \newcommand{\proglang}[1]{\textsf{#1}}
 \newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
 \newcommand{\code}[1]{\texttt{#1}}
-\newcommand{\ts}{\textsuperscript} % Simpler superscript in text
 
 % Custom operators
 \DeclareMathOperator{\E}{E}
@@ -262,8 +244,8 @@
 \DeclareMathOperator{\V}{Var}
 \DeclareMathOperator{\Exp}{Exp}
 
-% Caption styles (caption package is loaded with footnotes)
-% \DeclareCaptionStyle{sidecaption}{labelfont=bf,labelsep=period,font=small}
+% Caption styles (caption package is loaded with sidenotes)
+% \DeclareCaptionStyle{caption}{labelfont=bf,labelsep=period,font=small}
 % \DeclareCaptionStyle{marginfigure}{labelfont=bf,labelsep=period,font=small}
 % \DeclareCaptionStyle{margintable}{labelfont=bf,labelsep=period,font=small}
 % \DeclareCaptionStyle{widefigure}{labelfont=bf,labelsep=period,font=small}
@@ -281,6 +263,22 @@
 
 % Theorems
 \newtheorem{mydef}{Definition}[chapter]
+%
+% % Change fontsize in sidenotes
+% \makeatletter
+% \ExplSyntaxOn
+% \RenewDocumentCommand \sidenotetext{o o +m}{
+%   \IfNoValueOrEmptyTF{#1}{
+%     \@sidenotes@placemarginal{#2}{\small\textsuperscript{\thesidenote}\,#3}
+%     \refstepcounter{sidenote}
+%   }{
+%     \@sidenotes@placemarginal{#2}{\small\textsuperscript{#1}\,#3}
+%   }
+% }
+% \ExplSyntaxOff
+% \makeatother
+
+\let\footnote\sidenote % Convert footnotes to sidenotes.
 
 % Fix vdots and ddots for smallmatrix
 \newcommand{\svdots}{\raisebox{3pt}{$\scalebox{.75}{\vdots}$}}
@@ -288,6 +286,8 @@
 
 % Rotate text 90 degrees (for table)
 \newcommand*\rot{\rotatebox{90}}
+
+% Fix spacing of superscripts
 
 % Libertine in tabular
 \makeatletter
@@ -300,13 +300,20 @@
 
 
 \frontmatter
-
 \maketitle
 
 \begin{addmargin*}[0.5\overhang]{-0.5\overhang}
 {\hypersetup{linkcolor=black}
 \tableofcontents
 }
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+Euler diagrams may moreover be area-proportional, which is to say that each separate
+surface of the diagram maps to some quantity. (This was the case with
+the diagram with defined in the second paragraph.) This is a rational form for a
+Euler diagram---only its geometries are necessary to interpret it, letting us, for
+instance, to discard numbers without crucial loss of information; the same
+cannot be said for a Venn diagram.
 \end{addmargin*}
 \mainmatter
 
@@ -323,7 +330,7 @@ relationships. Consider, for instance, a disc with a radius of 2~cm labelled
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/men-1}
+{\centering \includegraphics[width=\maxwidth]{figure/men-1} 
 
 }
 
@@ -335,7 +342,7 @@ labelled \emph{Children}\marginpar{%
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/children-1}
+{\centering \includegraphics[width=\maxwidth]{figure/children-1} 
 
 }
 
@@ -345,14 +352,14 @@ labelled \emph{Children}\marginpar{%
 }, the graphic starts to become informative: it now displays the relation
 between two quantities. Now, if we intersect the two
 discs, so as to produce an overlap, we have successfully visualized the
-relative proportions of men and men, as well as their intersection. The diagram
-we have constructed is a \emph{Euler diagram}~(\cref{fig:children-men}).
+relative proportions of men and children, as well as their intersection. The diagram
+we have constructed is an \emph{Euler diagram}~(\cref{fig:children-men}).
 
 \begin{marginfigure}
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/childrenMen-1}
+{\centering \includegraphics[width=\maxwidth]{figure/childrenMen-1} 
 
 }
 
@@ -407,8 +414,8 @@ $b$, and an angle of rotation $\phi$.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/impossible-1}
-\includegraphics[width=\maxwidth]{figure/impossible-2}
+{\centering \includegraphics[width=\maxwidth]{figure/impossible-1} 
+\includegraphics[width=\maxwidth]{figure/impossible-2} 
 
 }
 
@@ -416,7 +423,7 @@ $b$, and an angle of rotation $\phi$.
 
 \end{knitrout}
 \caption{A set relationship depicted erroneously with circles and perfectly with
-ellipses.}
+  ellipses.}
 \label{fig:impossible}
 \end{marginfigure}
 
@@ -433,7 +440,7 @@ with \pkg{eulerAPE}.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-1-1}
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-1-1} 
 
 }
 
@@ -446,7 +453,7 @@ with \pkg{eulerAPE}.
 
 Euler diagrams do not reduce to analytical solutions~\citep{Chow_2007} and have
 to be solved numerically. Most implementations accomplish this in two steps,
-first finding a rough initial estimate that is then finalized in a second, more
+first finding a rough initial configuration that is then finalized in a second, more
 accurate, algorithm. For the initial configuration,
 \pkg{eulerAPE}~\citep{Micallef_2013}, for instance, uses a greedy algorithm that
 tries to minimize the error in the three-way intersection.
@@ -503,11 +510,11 @@ stress metric is defined as
 \[
  \frac{\sum_{i=1}^n (A_i - \beta \omega_i)^2}{\sum_{i=1}^n A_i^2},
 \]
-where $\beta = \sum_{i=1}^n A_i\omega_i/\sum_{i=1}^n \omega_i^2$.
+where \(\beta = \frac{\sum_{i=1}^n A_i\omega_i}{\sum_{i=1}^n \omega_i^2}\).
 }, which is computed as the residual sums of squares over total sums of squares,
 \pkg{Vennerable}
 uses Chow's~\citep{Chow_2005} idealistic function\footnote{
-This idealistic function is defined as
+This idealistic function (used in \pkg{Vennerable}) is defined as
 \begin{multline*}
 \sum_{i=1}^n \left( \frac{\omega_i}{\sum_{i=1}^n \omega_i} - \frac{A_i}{\sum_{i=1}^n A_i} \right)^2\\
   + \sum_{k < j < n} \left( A_i - A_j\right),
@@ -540,57 +547,51 @@ sets of any numbers using ellipses and exact area computations.
 \chapter{Method}
 \label{ch:method}
 
-Constructing a Euler diagram is analagous to fitting a statistical model in that
-you need
+Constructing an Euler diagram is much like fitting a statistical model in that
+we have
 \begin{enumerate}
 \item data,
 \item a model to fit the data on,
-\item a test to assess the model fit, and
+\item tests to assess the model's fit, and
 \item a presentation of the result.
 \end{enumerate}
-In the following sections, we explain how \pkg{eulerr} adressess each of these
-items in turn.
+In the following sections, we explain how \pkg{eulerr} tackles each item.
 
 \section{Input}
 \label{sec:input}
 
-The data for a Euler diagram is always a description of set relationships.
+Euler diagrams present relationships between sets, wherefore the data must
+describe these relationships, either directly or indirectly.
 \pkg{eulerr} allows several alternatives for this data, namely,
 \begin{itemize}
-\item intersections and relative complements\footnote{%
-    $A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$
-  },
-\item unions and identities\footnote{%
-    $A=4 \quad B=3 \quad A \cap B=1$
-  },
+\item intersections and relative
+complements\footnote{$A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$},
+\item unions and identities\footnote{\(A=4 \quad B=3 \quad A \cap B=1\)},
 \item a matrix of binary (or boolean) indices\footnote{%
-    $\begin{bmatrix}
-      \bm{A} & \bm{B} & \bm{C}\\
-      0 & 1 & 0 \\
-      1 & 1 & 1 \\
-      1 & 0 & 0 \\
-    \end{bmatrix}$
-  },
+  $\begin{bmatrix}
+    \bm{A} & \bm{B} & \bm{C}\\
+    0 & 1 & 0 \\
+    1 & 1 & 1 \\
+    1 & 0 & 0 \\
+  \end{bmatrix}$},
 \item a list of sample spaces\footnote{%
-    $\begin{matrix}
-      A = \{ab,\,bb,\,bc\}\\
-      B = \{aa,\,bc,\,cc\}\\
-      C = \{bb,\,bb,\,cc\} \end{matrix}
-    $
-  }, or
-\item a two- or three-way table \footnote{%
-    \begin{tabular}{lrr}
+  $\begin{matrix}
+    A = \{ab,\,bb,\,bc\}\\
+    B = \{aa,\,bc,\,cc\}\\
+    C = \{bb,\,bb,\,cc\} \end{matrix}$}, or
+\item a two- or three-way table\footnote{%
+  \begin{tabular}{lrr}
     \toprule Survived? & No  & Yes \\
     \midrule Child & 52.00 & 57.00 \\
     Adult & 1438.00 & 654.00 \\
-    \bottomrule\end{tabular}
-  }.
+    \bottomrule
+  \end{tabular}}.
 \end{itemize}
 
 As an additional feature for the matrix form, the user may supply a factor
-variable with which to split the data set before fitting a Euler diagram to each
-split. This is offered as a convenience function for the user since it may be
-that the solution is more well-behaved after such a split.
+variable with which to split the data set before fitting the diagram. This is
+offered for the user's convenience, since it may be
+that the fit improves after such a split.
 
 Whichever type of input is provided, \pkg{eulerr} translates it to the first,
 \emph{intersections and relative complements}~(\cref{def:omega}), which is the
@@ -621,7 +622,7 @@ where $i$ in this instance is the index of the binary identifier of the
 intersection between $F_j$ and $F_k$.
 \end{mydef}
 
-With the input translated into a useable form, the Euler diagram is fit in two
+With the input translated into our form of choice, the Euler diagram is fit in two
 steps: first, an initial configuration is formed with circles using only the
 sets' pairwise relationships. Second, this configuration is fine tuned taking
 all $2^N-1$ overlaps into account.
@@ -629,7 +630,7 @@ all $2^N-1$ overlaps into account.
 \section{Initial configuration}
 \label{sec:initConfig}
 
-For our initial configuration we rely on a constrained version of
+For our initial configuration, we rely on a constrained version of
 multi-dimensional scaling~(MDS) from \pkg{venn.js}~\citep{Frederickson_2016},
 which is a modification of a method from \pkg{venneuler}~\citep{Wilkinson_2012}.
 In it, we consider the pairwise relationsships between the sets and attempt to
@@ -658,7 +659,7 @@ between them.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/circleOverlap-1}
+{\centering \includegraphics[width=\maxwidth]{figure/circleOverlap-1} 
 
 }
 
@@ -680,8 +681,8 @@ function is the squared difference between $O$ and $\omega$
 \end{equation}
 which we optimize using R's built-in \code{optimize()}\footnote{According to the
 documentation, \code{optimize()} consists of a "combination of golden section
-search and successive parabolic interpolation."}. Convergence is fast and
-neglible next to our later optimization procedures. For a two-set
+search and successive parabolic interpolation."}. Convergence is
+fast---neglible next to our later optimization procedures. For a two-set
 combination, this is all we need to plot an exact diagram, given
 that we now have each the two circles' radii, their separation, and
 can place the circles arbitrarily on a two-dimensional plane as long
@@ -815,9 +816,9 @@ which is the form we need to intersect our ellipses. We now proceed to
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/intersection-1}
-\includegraphics[width=\maxwidth]{figure/intersection-2}
-\includegraphics[width=\maxwidth]{figure/intersection-3}
+{\centering \includegraphics[width=\maxwidth]{figure/intersection-1} 
+\includegraphics[width=\maxwidth]{figure/intersection-2} 
+\includegraphics[width=\maxwidth]{figure/intersection-3} 
 
 }
 
@@ -842,12 +843,11 @@ together make up the area of the overlap~(\cref{fig:polyarea}).
 \begin{figure}[hbtp]
 \caption{The overlap area between three ellipses is the sum of a convex
 polygon (in \textcolor{Grey}{grey}) and 2--3 ellipse segments (in
-\textcolor{SteelBlue4}{blue}).}
-\label{fig:polyarea}
+\textcolor{SteelBlue4}{blue}).\label{fig:polyarea}}
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/polyarea-1}
+{\centering \includegraphics[width=\maxwidth]{figure/polyarea-1} 
 
 }
 
@@ -892,7 +892,7 @@ This procedure is illustrated in~\cref{fig:ellipsesegment}.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/ellipsesegment-1}
+{\centering \includegraphics[width=\maxwidth]{figure/ellipsesegment-1} 
 
 }
 
@@ -1060,7 +1060,7 @@ small benefit that \pkg{eulerr} offers relative to \pkg{venneuler}.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/venneulerHard-1}
+{\centering \includegraphics[width=\maxwidth]{figure/venneulerHard-1} 
 
 }
 
@@ -1109,7 +1109,7 @@ save for converting the diagram from \pkg{eulerAPE} from .svg to .pdf.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=0.9\linewidth]{figure/lenz-1}
+{\centering \includegraphics[width=0.9\linewidth]{figure/lenz-1} 
 
 }
 
@@ -1175,7 +1175,7 @@ diagram~(\cref{fig:netflix-vennjs}).
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-3-1}
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-3-1} 
 
 }
 
@@ -1191,7 +1191,7 @@ diagram~(\cref{fig:netflix-vennjs}).
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-4-1}
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-4-1} 
 
 }
 
@@ -1294,7 +1294,7 @@ areas, and fit Euler diagrams to these layouts using the different software pack
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/consistency-1}
+{\centering \includegraphics[width=\maxwidth]{figure/consistency-1} 
 
 }
 
@@ -1325,7 +1325,7 @@ cases, which again is not significantly worse.
 
 For ellipses of four or more sets---which only \pkg{eulerr} accepts---the
 consistency drops for each additional set, yet remains above
-42\%. \pkg{Vennerable}, which
+38\%. \pkg{Vennerable}, which
 is only able to produce three-set diagrams, only produces accurate diagrams for
 7\% of the random layouts and moreover
 fails with an error in 6 cases.
@@ -1398,7 +1398,7 @@ number of sets, but is relatively more pronounced for sets of three and four sha
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/accuracy-1}
+{\centering \includegraphics[width=\maxwidth]{figure/accuracy-1} 
 
 }
 
@@ -1432,7 +1432,7 @@ intersection present.\label{fig:accuracy-int}}
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/accuracy-int-1}
+{\centering \includegraphics[width=\maxwidth]{figure/accuracy-int-1} 
 
 }
 
@@ -1487,7 +1487,7 @@ if the fit is not error-free.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/performance-1}
+{\centering \includegraphics[width=\maxwidth]{figure/performance-1} 
 
 }
 
@@ -1611,7 +1611,7 @@ all the intersections between six sets.
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/battlement-1}
+{\centering \includegraphics[width=\maxwidth]{figure/battlement-1} 
 
 }
 
@@ -1826,9 +1826,9 @@ quickly and that the simplex remains within the intersection boundaries
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/vogel-1}
-\includegraphics[width=\maxwidth]{figure/vogel-2}
-\includegraphics[width=\maxwidth]{figure/vogel-3}
+{\centering \includegraphics[width=\maxwidth]{figure/vogel-1} 
+\includegraphics[width=\maxwidth]{figure/vogel-2} 
+\includegraphics[width=\maxwidth]{figure/vogel-3} 
 
 }
 
@@ -1888,7 +1888,7 @@ sets. The first eight colors of the pallete are visualized in
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/colorexamle-1}
+{\centering \includegraphics[width=\maxwidth]{figure/colorexamle-1} 
 
 }
 
@@ -1960,8 +1960,8 @@ and \emph{diagError} metrics that were introduced in~\nameref{sec:gof}.
 ## SE&Anti-CCP&DAS28              1  0.000     1.000       0.004
 ## Treat&Anti-CCP&DAS28           0  0.000     0.000       0.000
 ## SE&Treat&Anti-CCP&DAS28        0  0.000     0.000       0.000
-##
-## diagError: 0.004
+## 
+## diagError: 0.004 
 ## stress:    0
 \end{verbatim}
 \end{kframe}
@@ -2012,7 +2012,7 @@ fills using the \pkg{RColorBrewer} package~(\cref{fig:plotting}).
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/twofits1-1}
+{\centering \includegraphics[width=\maxwidth]{figure/twofits1-1} 
 
 }
 
@@ -2025,7 +2025,7 @@ fills using the \pkg{RColorBrewer} package~(\cref{fig:plotting}).
 \begin{knitrout}\small
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\maxwidth]{figure/twofits2-1}
+{\centering \includegraphics[width=\maxwidth]{figure/twofits2-1} 
 
 }
 

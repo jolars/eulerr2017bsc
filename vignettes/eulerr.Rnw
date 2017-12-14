@@ -1,6 +1,6 @@
 \PassOptionsToPackage{usenames,fixpdftex,dvipsnames,svgnames,x11names}{xcolor}
 \PassOptionsToPackage{hyphens}{url}
-\PassOptionsToPackage{font=small,labelfont=bf,labelsep=period}{caption}
+\PassOptionsToPackage{font=small,labelfont=bf,labelsep=period,justification=RaggedRight,format=plain}{caption}
 
 \documentclass[
   oneside,
@@ -27,9 +27,31 @@
 \usepackage{multicol}
 
 % Margin paragraph
-\usepackage{sidenotes}
+%\usepackage{sidenotes}
+%\usepackage{marginnote}
+%\usepackage[marginnote=true]{snotez}
 \usepackage{marginfix}
 %\usepackage{morefloats} % More than 18 floats
+
+\newcounter{snmark}
+\setcounter{snmark}{0}
+
+\newcommand{\vs}{%
+\settowidth{\vl}{\tiny{\arabic{Verso}}}%
+\noindent\textsuperscript{\tiny{\arabic{Verso}}}%I used \hspace here with no luck
+\stepcounter{Verso}%
+}%
+
+\newcommand*{\makesidenotemark}{\/\textsuperscript{\thesnmark}}
+
+\newcommand{\sidenote}[1]{%
+  \refstepcounter{snmark}%
+  \makesidenotemark{}%
+  \marginpar{%
+    \RaggedRight\small\textsuperscript{\thesnmark}\,#1
+  }%
+}
+\makeatother
 
 % Headers and footers
 \usepackage[
@@ -101,11 +123,38 @@
   {}
 \appto{\endthebibliography}{\end{multicols}}
 
-% Block margins for sidecaption around environments
+% Block margins for caption around environments
 \BeforeBeginEnvironment{figure}{\blockmargin}
 \AfterEndEnvironment{figure}{\unblockmargin}
 \BeforeBeginEnvironment{table}{\blockmargin}
 \AfterEndEnvironment{table}{\unblockmargin}
+
+\usepackage{floatrow}
+
+\DeclareFloatSeparators{marginparsep}{\hskip\marginparsep}
+\floatsetup[figure]{margins=hangright,
+                    capposition=beside,
+                    capbesidesep=marginparsep,
+                    capbesideposition={center,right},
+                    floatwidth=\textwidth}
+\floatsetup[table]{margins=hangright,
+                   capposition=beside,
+                   capbesidesep=marginparsep,
+                   capbesideposition={center,outside},
+                   floatwidth=\textwidth}
+\floatsetup[widefigure]{margins=hangright,
+                        capposition=bottom}
+\floatsetup[widetable]{margins=hangright,
+                       capposition=top}
+
+% Environments
+\usepackage{environ}
+\NewEnviron{marginfigure}{%
+  \marginpar{%
+    \captionsetup{type=figure}
+    \BODY
+  }%
+}
 
 % Floats
 \DeclareCaptionType[fileext=alg,name=Algorithm]{alg}
@@ -152,11 +201,11 @@
 \DeclareMathOperator{\Exp}{Exp}
 
 % Caption styles (caption package is loaded with sidenotes)
-\DeclareCaptionStyle{sidecaption}{labelfont=bf,labelsep=period,font=small}
-\DeclareCaptionStyle{marginfigure}{labelfont=bf,labelsep=period,font=small}
-\DeclareCaptionStyle{margintable}{labelfont=bf,labelsep=period,font=small}
-\DeclareCaptionStyle{widefigure}{labelfont=bf,labelsep=period,font=small}
-\DeclareCaptionStyle{widetable}{labelfont=bf,labelsep=period,font=small}
+% \DeclareCaptionStyle{caption}{labelfont=bf,labelsep=period,font=small}
+% \DeclareCaptionStyle{marginfigure}{labelfont=bf,labelsep=period,font=small}
+% \DeclareCaptionStyle{margintable}{labelfont=bf,labelsep=period,font=small}
+% \DeclareCaptionStyle{widefigure}{labelfont=bf,labelsep=period,font=small}
+% \DeclareCaptionStyle{widetable}{labelfont=bf,labelsep=period,font=small}
 
 % Cross-referencing and colors
 \usepackage{hyperref}
@@ -170,21 +219,22 @@
 
 % Theorems
 \newtheorem{mydef}{Definition}[chapter]
+%
+% % Change fontsize in sidenotes
+% \makeatletter
+% \ExplSyntaxOn
+% \RenewDocumentCommand \sidenotetext{o o +m}{
+%   \IfNoValueOrEmptyTF{#1}{
+%     \@sidenotes@placemarginal{#2}{\small\textsuperscript{\thesidenote}\,#3}
+%     \refstepcounter{sidenote}
+%   }{
+%     \@sidenotes@placemarginal{#2}{\small\textsuperscript{#1}\,#3}
+%   }
+% }
+% \ExplSyntaxOff
+% \makeatother
 
-% Change fontsize in sidenotes
-\makeatletter
-\ExplSyntaxOn
-\RenewDocumentCommand \sidenotetext { o o +m }
-{
-  \IfNoValueOrEmptyTF{#1}
-    {
-      \@sidenotes@placemarginal{#2}{\textsuperscript{\thesidenote}{}\small\,#3}
-  \refstepcounter{sidenote}
-}
-    {\@sidenotes@placemarginal{#2}{\textsuperscript{#1}\small\,#3}}
-}
-\ExplSyntaxOff
-\makeatother
+\let\footnote\sidenote % Convert footnotes to sidenotes.
 
 % Fix vdots and ddots for smallmatrix
 \newcommand{\svdots}{\raisebox{3pt}{$\scalebox{.75}{\vdots}$}}
@@ -192,6 +242,8 @@
 
 % Rotate text 90 degrees (for table)
 \newcommand*\rot{\rotatebox{90}}
+
+% Fix spacing of superscripts
 
 % Libertine in tabular
 \makeatletter
@@ -239,7 +291,6 @@ options(digits = 3)
 library(grid)
 library(eulerrPaper)
 library(tidyverse)
-library(ggthemes)
 library(RConics)
 library(eulerr)
 library(lattice)
@@ -259,13 +310,20 @@ pal <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442",
 @
 
 \frontmatter
-
 \maketitle
 
 \begin{addmargin*}[0.5\overhang]{-0.5\overhang}
 {\hypersetup{linkcolor=black}
 \tableofcontents
 }
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+Euler diagrams may moreover be area-proportional, which is to say that each separate
+surface of the diagram maps to some quantity. (This was the case with
+the diagram with defined in the second paragraph.) This is a rational form for a
+Euler diagram---only its geometries are necessary to interpret it, letting us, for
+instance, to discard numbers without crucial loss of information; the same
+cannot be said for a Venn diagram.
 \end{addmargin*}
 \mainmatter
 
@@ -371,7 +429,7 @@ plot(euler(c(A = 1, B = 1, "A&B" = 0.1, "A&B&C" = 0.4), shape = "ellipse"))
 
 Euler diagrams do not reduce to analytical solutions~\citep{Chow_2007} and have
 to be solved numerically. Most implementations accomplish this in two steps,
-first finding a rough initial estimate that is then finalized in a second, more
+first finding a rough initial configuration that is then finalized in a second, more
 accurate, algorithm. For the initial configuration,
 \pkg{eulerAPE}~\citep{Micallef_2013}, for instance, uses a greedy algorithm that
 tries to minimize the error in the three-way intersection.
@@ -416,23 +474,23 @@ with subset or disjoint relationships.
 In the final configuration step, this area-algorithm is used with a numerical optimizer
 to tune the parameters of the diagram. All previously considered packages
 treat this as a minimization problem but their optimization targets vary.
-\pkg{venn.js} uses residual sums of squares\sidenote{
+\pkg{venn.js} uses residual sums of squares\footnote{
 \pkg{venn.js}'s loss function is
 \[
 \sum_{i=1}^n \left( A_i - \omega_i \right)^2,
 \]
 where $n$ is the number of overlaps, $\omega_i$ the size of the $i$:th intersection,
 and $A_i$ the corresponding overlap's area in the diagram.
-}), \pkg{venneuler} uses the \emph{stress} metric\sidenote{\pkg{venneuler}'s
+}), \pkg{venneuler} uses the \emph{stress} metric\footnote{\pkg{venneuler}'s
 stress metric is defined as
 \[
  \frac{\sum_{i=1}^n (A_i - \beta \omega_i)^2}{\sum_{i=1}^n A_i^2},
 \]
-where $\beta = \sum_{i=1}^n A_i\omega_i/\sum_{i=1}^n \omega_i^2$.
+where \(\beta = \frac{\sum_{i=1}^n A_i\omega_i}{\sum_{i=1}^n \omega_i^2}\).
 }, which is computed as the residual sums of squares over total sums of squares,
 \pkg{Vennerable}
-uses Chow's~\citep{Chow_2005} idealistic function\sidenote{
-This idealistic function is defined as
+uses Chow's~\citep{Chow_2005} idealistic function\footnote{
+This idealistic function (used in \pkg{Vennerable}) is defined as
 \begin{multline*}
 \sum_{i=1}^n \left( \frac{\omega_i}{\sum_{i=1}^n \omega_i} - \frac{A_i}{\sum_{i=1}^n A_i} \right)^2\\
   + \sum_{k < j < n} \left( A_i - A_j\right),
@@ -440,7 +498,7 @@ This idealistic function is defined as
 where the sets and their respective overlaps corresponding to the indices
 $i$ and $j$ have been ordered so that $i < j \implies \omega_i < \omega_j$.
 }, and \pkg{eulerAPE} uses a
-proportional loss function\sidenote{\pkg{eulerAPE}'s cost function is
+proportional loss function\footnote{\pkg{eulerAPE}'s cost function is
 defined as \[\frac{1}{n}\sum_{i = 1}^n \frac{\left(\omega_i-A_i\right)^2}{A_i}.\]
 }
 that severely punishes missing overlaps---in fact, it becomes undefined if such
@@ -465,57 +523,51 @@ sets of any numbers using ellipses and exact area computations.
 \chapter{Method}
 \label{ch:method}
 
-Constructing a Euler diagram is analagous to fitting a statistical model in that
-you need
+Constructing an Euler diagram is much like fitting a statistical model in that
+we have
 \begin{enumerate}
 \item data,
 \item a model to fit the data on,
-\item a test to assess the model fit, and
+\item tests to assess the model's fit, and
 \item a presentation of the result.
 \end{enumerate}
-In the following sections, we explain how \pkg{eulerr} adressess each of these
-items in turn.
+In the following sections, we explain how \pkg{eulerr} tackles each item.
 
 \section{Input}
 \label{sec:input}
 
-The data for a Euler diagram is always a description of set relationships.
+Euler diagrams present relationships between sets, wherefore the data must
+describe these relationships, either directly or indirectly.
 \pkg{eulerr} allows several alternatives for this data, namely,
 \begin{itemize}
-\item intersections and relative complements\sidenote{%
-    $A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$
-  },
-\item unions and identities\sidenote{%
-    $A=4 \quad B=3 \quad A \cap B=1$
-  },
-\item a matrix of binary (or boolean) indices\sidenote{%
-    $\begin{bmatrix}
-      \bm{A} & \bm{B} & \bm{C}\\
-      0 & 1 & 0 \\
-      1 & 1 & 1 \\
-      1 & 0 & 0 \\
-    \end{bmatrix}$
-  },
-\item a list of sample spaces\sidenote{%
-    $\begin{matrix}
-      A = \{ab,\,bb,\,bc\}\\
-      B = \{aa,\,bc,\,cc\}\\
-      C = \{bb,\,bb,\,cc\} \end{matrix}
-    $
-  }, or
-\item a two- or three-way table \sidenote{%
-    \begin{tabular}{lrr}
+\item intersections and relative
+complements\footnote{$A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1$},
+\item unions and identities\footnote{\(A=4 \quad B=3 \quad A \cap B=1\)},
+\item a matrix of binary (or boolean) indices\footnote{%
+  $\begin{bmatrix}
+    \bm{A} & \bm{B} & \bm{C}\\
+    0 & 1 & 0 \\
+    1 & 1 & 1 \\
+    1 & 0 & 0 \\
+  \end{bmatrix}$},
+\item a list of sample spaces\footnote{%
+  $\begin{matrix}
+    A = \{ab,\,bb,\,bc\}\\
+    B = \{aa,\,bc,\,cc\}\\
+    C = \{bb,\,bb,\,cc\} \end{matrix}$}, or
+\item a two- or three-way table\footnote{%
+  \begin{tabular}{lrr}
     \toprule Survived? & No  & Yes \\
     \midrule Child & 52.00 & 57.00 \\
     Adult & 1438.00 & 654.00 \\
-    \bottomrule\end{tabular}
-  }.
+    \bottomrule
+  \end{tabular}}.
 \end{itemize}
 
 As an additional feature for the matrix form, the user may supply a factor
-variable with which to split the data set before fitting a Euler diagram to each
-split. This is offered as a convenience function for the user since it may be
-that the solution is more well-behaved after such a split.
+variable with which to split the data set before fitting the diagram. This is
+offered for the user's convenience, since it may be
+that the fit improves after such a split.
 
 Whichever type of input is provided, \pkg{eulerr} translates it to the first,
 \emph{intersections and relative complements}~(\cref{def:omega}), which is the
@@ -546,7 +598,7 @@ where $i$ in this instance is the index of the binary identifier of the
 intersection between $F_j$ and $F_k$.
 \end{mydef}
 
-With the input translated into a useable form, the Euler diagram is fit in two
+With the input translated into our form of choice, the Euler diagram is fit in two
 steps: first, an initial configuration is formed with circles using only the
 sets' pairwise relationships. Second, this configuration is fine tuned taking
 all $2^N-1$ overlaps into account.
@@ -554,7 +606,7 @@ all $2^N-1$ overlaps into account.
 \section{Initial configuration}
 \label{sec:initConfig}
 
-For our initial configuration we rely on a constrained version of
+For our initial configuration, we rely on a constrained version of
 multi-dimensional scaling~(MDS) from \pkg{venn.js}~\citep{Frederickson_2016},
 which is a modification of a method from \pkg{venneuler}~\citep{Wilkinson_2012}.
 In it, we consider the pairwise relationsships between the sets and attempt to
@@ -637,10 +689,10 @@ function is the squared difference between $O$ and $\omega$
     j \neq < n
 \label{eq:dopt}
 \end{equation}
-which we optimize using R's built-in \code{optimize()}\sidenote{According to the
+which we optimize using R's built-in \code{optimize()}\footnote{According to the
 documentation, \code{optimize()} consists of a "combination of golden section
-search and successive parabolic interpolation."}. Convergence is fast and
-neglible next to our later optimization procedures. For a two-set
+search and successive parabolic interpolation."}. Convergence is
+fast---neglible next to our later optimization procedures. For a two-set
 combination, this is all we need to plot an exact diagram, given
 that we now have each the two circles' radii, their separation, and
 can place the circles arbitrarily on a two-dimensional plane as long
@@ -747,7 +799,7 @@ ellipses at a time. The canonical form of an ellipse is given by
 where $\phi$ is the counter-clockwise angle from the positive x-axis to the
 semi-major axis $a$, $b$ is the semi-minor axis, and $h, k$ are the x- and
 y-coordinates, respectively, of ellipse's center. However, because an ellipse
-is a conic\sidenote{The circle, parabola, and hyperbola are also conics.} they
+is a conic\footnote{The circle, parabola, and hyperbola are also conics.} they
 can be represented via the quadric form
 \begin{equation}
 Ax^2 + Bxy + Cy^2 + Dx + Ey + F = 0.
@@ -827,7 +879,7 @@ with the polygon with sides formed from joining the points with straight lines
 together make up the area of the overlap~(\cref{fig:polyarea}).
 
 \begin{figure}[hbtp]
-\sidecaption{The overlap area between three ellipses is the sum of a convex
+\caption{The overlap area between three ellipses is the sum of a convex
 polygon (in \textcolor{Grey}{grey}) and 2--3 ellipse segments (in
 \textcolor{SteelBlue4}{blue}).\label{fig:polyarea}}
 <<polyarea, fig.height = 4.2, fig.width = 4.2>>=
@@ -902,10 +954,10 @@ xyplot(
 
 Since the polygon part is always convex, it is easy to find its area using the
 \emph{triangle method}. To find the areas of the elliptical segments, we first
-order all the points in clockwise order\sidenote{It makes no difference if we
+order all the points in clockwise order\footnote{It makes no difference if we
 sort them in counter-clockwise order instead.}. Then, we acknowledge that each
 elliptical segment is formed from an arc of the ellipse that is shared by both
-points\sidenote{Because there is sometimes two arcs connecting the pairs of
+points\footnote{Because there is sometimes two arcs connecting the pairs of
 points, we simply compute both areas and pick the smaller.}. Now that we have
 two points on an ellipse, we can find the area of the ellipse segment using an
 algorithm from \citet{Eberly_2016}. To proceed, we
@@ -970,7 +1022,7 @@ from $(a, 0)$ to $\theta_1$ and then subtracting the triangle part
 \label{fig:ellipsesegment}
 \end{marginfigure}
 
-The exact algorith may in rare instances\sidenote{1 out of approximately 7000 in
+The exact algorith may in rare instances\footnote{1 out of approximately 7000 in
 our simulations.}, breaks down. The culprit is numerical approximation
 issues that occur because ellipses are close-to tangent to one another or
 completely overlap. In these cases, the algorithm will resort to approximation
@@ -1015,7 +1067,7 @@ sizes of the sets.
 
 If we are using ellipses and are faced with an error in our fit,
 we offer a final step in which we
-pass the parameters on to a last-ditch optimizer. The weapon of choice\sidenote{
+pass the parameters on to a last-ditch optimizer. The weapon of choice\footnote{
 We conducted thorough benchmarking, that we opt not to report here, to
 decide upon an algorithm for this step.
 } is a \emph{differential evolution algorithm}
@@ -1030,7 +1082,7 @@ optimizer~\citep{Xiang_2013}---again, we employ \code{nlm()} from \pkg{stats} to
 serve this purpose.
 
 By default, this last-ditch step is activated only when we have a three-set diagram
-with ellipses and a diagError~\eqref{eq:diagError} above 0.001\sidenote{
+with ellipses and a diagError~\eqref{eq:diagError} above 0.001\footnote{
 The user, however, is free to choose if and when to activate the
 optimizer using standard arguments to the main function of the package.} The
 reason being that the method is considerably more intensive computationally.
@@ -1084,7 +1136,7 @@ The packages used here were
 \end{itemize}
 
 The results for \pkg{eulerAPE}
-were computed on a laptop computer\sidenote{%
+were computed on a laptop computer\footnote{%
   The specification of the computer was
   \begin{itemize}
     \item Microsoft Windows Pro 10 x64
@@ -1094,7 +1146,7 @@ were computed on a laptop computer\sidenote{%
   \end{itemize}
 }
 The remaining results were computed on an Amazon EC2
-cloud-based computing instance\sidenote{
+cloud-based computing instance\footnote{
   This was a m4.large instance with the following specifications:
   \begin{itemize}
     \item Ubuntu 16.04 x64
@@ -1162,12 +1214,12 @@ shapes intersecting (albeit marginally), which cannot be done
 with circles if the layout is to be exact.
 
 We also note that the labels of the nonexistant overlaps in the diagram from
-\pkg{eulerAPE} have been placed at seemingly arbitrary locations\sidenote{In
+\pkg{eulerAPE} have been placed at seemingly arbitrary locations\footnote{In
 the original publication~\citep{Micallef_2014a}, the labels were manually
 adjusted.}.
 
 \begin{figure}[hbtp]
-\sidecaption{Diagrams from \pkg{eulerAPE} and \pkg{eulerr} based on data from a
+\caption{Diagrams from \pkg{eulerAPE} and \pkg{eulerr} based on data from a
 diagram in~\citet{Lenz_2006}. The diagrams have not been modified in any way
 save for converting the diagram from \pkg{eulerAPE} from .svg to .pdf.
 \label{fig:lenz}}
@@ -1191,7 +1243,7 @@ plot(lenz_fit)
 To conclude the case studies part of this thesis, we look at a diagram
 that was featured on website of the author of
 \pkg{venn.js}~\citep{Frederickson_2015a}, which used the
-\emph{Netflix Prize Dataset}\sidenote{The dataset is no longer available
+\emph{Netflix Prize Dataset}\footnote{The dataset is no longer available
 on this webpage, but has been archived at
 \url{https://www.kaggle.com/netflix-inc/netflix-prize-data}
 for those who are interested.} from which he
@@ -1204,7 +1256,7 @@ and Coyote Ugly. The data only includes pairwise
 relationships~(\cref{tab:netflix}).
 
 \begin{table}
-\sidecaption{The data from the Netflix Prize dataset
+\caption{The data from the Netflix Prize dataset
 used in \citet{Frederickson_2015a}.\label{tab:netflix}}
 \centering
 \libertineTabular
@@ -1343,7 +1395,7 @@ The algorithm is formalized in~\autoref{alg:consistency}. The left panel of
 
 \begin{alg}
 \DontPrintSemicolon
-\sidecaption{The algorithm used to simulate circles and ellipses, compute their
+\caption{The algorithm used to simulate circles and ellipses, compute their
 areas, and fit Euler diagrams to these layouts using the different software packages.\label{alg:consistency}}
 \For{$i\leftarrow 3$ \KwTo $8$}{
   \While{length of each $\mathcal{I}(p_s)_{0.95} < 2\%$ \textbf{and} $j < 500$}{
@@ -1411,10 +1463,11 @@ consistency_vennerable_circle <- data_consistency %>%
   as_vector()
 
 vennerable_na <- data_consistency %>%
+  filter(software == "Vennerable") %>%
   spread(metric, loss) %>%
-  filter(software == "Vennerable", is.na(diagError)) %>%
-  summarize(n()) %>%
-  as.vector()
+  filter(is.na(diagError)) %>%
+  summarize(n = n()) %>%
+  pull(n)
 
 failures <-
   data_consistency %>%
@@ -1422,7 +1475,6 @@ failures <-
   mutate(failures = diagError >= 0.01) %>%
   group_by(software, shape) %>%
   summarize(failures = sum(failures), n = n())
-
 @
 
 For circular diagrams, \pkg{eulerr} outperforms \pkg{Vennerable} and \pkg{venneuler} in
@@ -1476,7 +1528,7 @@ where $\hat{\mu} = \bar{x}$. The algorithm is formalized in~\autoref{alg:accurac
 
 \begin{alg}
 \DontPrintSemicolon
-\sidecaption{The algorithm we use to simulate random set relationships and fit
+\caption{The algorithm we use to simulate random set relationships and fit
 them with the software under study to assess their accuracy.\label{alg:accuracy}}
 \For{$i\leftarrow 3$ \KwTo $8$}{
   \While{length of each $\mathcal{I}(\hat{\mu}_s)_{0.95} < 0.02$ \textbf{and} $j < 500$}{
@@ -1500,7 +1552,7 @@ in which we modify~\autoref{alg:accuracy} so that every intersection
 is initialized to a value in $\mathcal{U}(\epsilon, 1)$, where
 $\epsilon$ is defined as the square root of the current machine's smallest
 representable difference between one and the smallest value greater than
-one\sidenote{The relevant line of code used to generate this tolerance is
+one\footnote{The relevant line of code used to generate this tolerance is
 \code{sqrt(.Machine\$double.eps)}}.
 
 <<>>=
@@ -1574,7 +1626,7 @@ difference next to \pkg{eulerAPE} is very small, however, with differences
 below $10^{-8}$.
 
 \begin{figure}[hbtp]
-\sidecaption{Tukey box plots of diagError and stress for Euler diagrams
+\caption{Tukey box plots of diagError and stress for Euler diagrams
 based on set relationships of three sets with every
 intersection present.\label{fig:accuracy-int}}
 <<accuracy-int, fig.height = 2.1, fig.width = 4.4, cache.extra = mtime(file.path("data", "data_accuracy_int.rda"))>>=
@@ -1754,7 +1806,7 @@ low.
 three-set diagrams perfectly but failed for a considerable portion as the number
 of sets in the input surged.
 For three-set diagrams, \pkg{eulerr} employs a rigorous last-ditch
-optimizer in case the fit it not adequate\sidenote{Here, we define \emph{adequate}
+optimizer in case the fit it not adequate\footnote{Here, we define \emph{adequate}
 as a diagram with diagError below 0.001.} after the "final" optimization step. This step is
 time-consuming (as we saw in \nameref{sec:performance}), but if activated
 would yield better results also for sets of more than three shapes.
@@ -1785,7 +1837,7 @@ this diagram was generated with \pkg{Vennerable}.}
 
 Considering only circular Euler diagrams, \pkg{eulerr} remains the best
 choice for both diagError and stress in all cases except for three-set
-diagrams, where it ranks best in terms of stress but not diagError\sidenote{
+diagrams, where it ranks best in terms of stress but not diagError\footnote{
 It might be appropriate to note that \pkg{eulerr} and \pkg{venn.js} both
 attempt to minimize the sums of squares and not diagError.}; \pkg{venn.js}
 scores lowest. Interestingly---as well as surprisingly, given the results
@@ -1832,7 +1884,7 @@ The last-ditch optimizer
 battles such minimi with brute force: it tries a considerable number of permutations
 and uses the previous fits (initial and semi-final) only to set up
 constraints for the algorithm. The downside to using this optimizer is that it,
-in contrast to us, people\sidenote{And the other
+in contrast to us, people\footnote{And the other
 optimizer that begins with an initial layout of circles.},
 does not prefer circles over ellipses, which means that we might get diagrams
 with ellipses when circles would do just as well.
@@ -2110,7 +2162,7 @@ sets. The first eight colors of the pallete are visualized in
 \cref{fig:colorexample}.
 
 \begin{figure}[htbp]
-\sidecaption{The eight first colors of the default color palette.\label{fig:colorexample}}
+\caption{The eight first colors of the default color palette.\label{fig:colorexample}}
 <<colorexamle, fig.width = 4.2, fig.height = 3>>=
 set.seed(2)
 con <- c(A = 1, B = 1, C = 1, D = 1, E = 1, F = 1, G = 1, H = 1,
@@ -2190,7 +2242,7 @@ p2 <- plot(fit1,
 @
 
 \begin{figure}[hbtp]
-\sidecaption{The same fit visualized in two distinct ways.\label{fig:plotting}}
+\caption{The same fit visualized in two distinct ways.\label{fig:plotting}}
 \begin{subfigure}[b]{.4\linewidth}
 <<twofits1, fig.width = 4.3, fig.height = 2.1>>=
 p1
