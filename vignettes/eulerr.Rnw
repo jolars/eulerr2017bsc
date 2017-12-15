@@ -35,11 +35,11 @@
   %textheight=49\baselineskip,
   %headheight=\baselineskip
 ]{geometry}
-%\usepackage{showframe}
+
 \usepackage{multicol}
 
 \usepackage{marginfix}
-%\usepackage{morefloats} % More than 18 floats
+%\usepackage{morefloats}
 
 \newcounter{snmark}
 \setcounter{snmark}{0}
@@ -100,45 +100,40 @@
 % Graphics
 \usepackage[font=footnotesize]{subcaption}
 \usepackage{graphicx}
-\setkeys{Gin}{width=\linewidth,totalheight=\textheight,keepaspectratio}
-\graphicspath{{graphics/}}
-%\captionsetup[sub]{font = footnotesize}
-
 \usepackage{booktabs}
-%\usepackage[header,page]{appendix}
-
-% Text justification and parskip
 \usepackage[document]{ragged2e}
-
-% Lists
 \usepackage[shortlabels]{enumitem}
-%\setlist{listparindent=\parindent, parsep=0pt plus 1pt}
-
-% Algorithms
 \usepackage[vlined]{algorithm2e}
-
-% Babel
-%\usepackage[swedish]{babel}
-
-% Bibliography
-\usepackage[square,numbers,sort&compress]{natbib}
 \usepackage{etoolbox}
-%\usepackage{relsize}
-\patchcmd{\thebibliography}
-  {\list}
-  {\begin{multicols}{2}\small\list}
-  {}
-  {}
+%\usepackage[swedish]{babel}
+\usepackage[square,numbers,sort&compress]{natbib}
+\usepackage{floatrow}
+
+% Fonts
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[lining]{libertine}
+\usepackage{textcomp}
+\usepackage[varqu,varl,scaled=0.93]{inconsolata}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage[libertine,vvarbb,libaltvw,liby]{newtxmath}
+\usepackage[scr=rsfso]{mathalfa}
+\usepackage{bm}
+\useosf
+\usepackage{microtype}
+
+% Two-column bibliography
+\patchcmd{\thebibliography}{\list}{\begin{multicols}{2}\small\list}{}{}
 \appto{\endthebibliography}{\end{multicols}}
 
-% Block margins for caption around environments
+% Block margins for caption around figure and table environments
 \BeforeBeginEnvironment{figure}{\blockmargin}
 \AfterEndEnvironment{figure}{\unblockmargin}
 \BeforeBeginEnvironment{table}{\blockmargin}
 \AfterEndEnvironment{table}{\unblockmargin}
 
-\usepackage{floatrow}
-
+% Setup floats
 \DeclareFloatSeparators{marginparsep}{\hskip\marginparsep}
 \floatsetup[figure]{margins=hangright,
                     capposition=beside,
@@ -154,8 +149,13 @@
                         capposition=bottom}
 \floatsetup[widetable]{margins=hangright,
                        capposition=top}
+\floatsetup[algorithm]{margins=hangright,
+                 capposition=beside,
+                 capbesidesep=marginparsep,
+                 capbesideposition={center,outside},
+                 floatwidth=\textwidth}
 
-% Environments
+% Provide marginfigure
 \usepackage{environ}
 \NewEnviron{marginfigure}{%
   \marginpar{%
@@ -164,8 +164,16 @@
   }%
 }
 
-% Floats
 \DeclareCaptionType[fileext=alg,name=Algorithm]{alg}
+
+% Graphics options
+\setkeys{Gin}{%
+  width=\linewidth,
+  totalheight=\textheight,
+  keepaspectratio
+}
+\graphicspath{{graphics/}}
+%\captionsetup[sub]{font = footnotesize}
 
 % Extended verbatim environments
 \usepackage{fancyvrb}
@@ -175,27 +183,12 @@
 \newlength{\overhang}
 \setlength{\overhang}{\marginparwidth}
 \addtolength{\overhang}{\marginparsep}
-\makeatother
 
 \newenvironment{fullwidth}{
   \begin{addmargin*}[0em]{-\overhang}
   }{
   \end{addmargin*}
 }
-
-% Fonts
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage[lining]{libertine}
-\usepackage{textcomp}
-\usepackage[varqu,varl,scaled=0.93]{inconsolata}
-\usepackage{mathtools}
-\usepackage{amsthm}
-\usepackage[libertine,vvarbb,libaltvw,liby]{newtxmath}
-\usepackage[scr=rsfso]{mathalfa}
-\usepackage{bm}
-\useosf
-\usepackage{microtype}
 
 \newcommand{\proglang}[1]{\textsf{#1}}
 \newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
@@ -220,20 +213,6 @@
 
 % Theorems
 \newtheorem{mydef}{Definition}[chapter]
-%
-% % Change fontsize in sidenotes
-% \makeatletter
-% \ExplSyntaxOn
-% \RenewDocumentCommand \sidenotetext{o o +m}{
-%   \IfNoValueOrEmptyTF{#1}{
-%     \@sidenotes@placemarginal{#2}{\small\textsuperscript{\thesidenote}\,#3}
-%     \refstepcounter{sidenote}
-%   }{
-%     \@sidenotes@placemarginal{#2}{\small\textsuperscript{#1}\,#3}
-%   }
-% }
-% \ExplSyntaxOff
-% \makeatother
 
 \let\footnote\sidenote % Convert footnotes to sidenotes.
 
@@ -243,8 +222,6 @@
 
 % Rotate text 90 degrees (for table)
 \newcommand*\rot{\rotatebox{90}}
-
-% Fix spacing of superscripts
 
 % Libertine in tabular
 \makeatletter
@@ -1394,7 +1371,7 @@ is the standard asymptotic interval,
 The algorithm is formalized in~\autoref{alg:consistency}. The left panel of
 \cref{fig:consistency} shows the results of our simulation.
 
-\begin{alg}
+\begin{algorithm}
 \DontPrintSemicolon
 \caption{The algorithm used to simulate circles and ellipses, compute their
 areas, and fit Euler diagrams to these layouts using the different software packages.\label{alg:consistency}}
@@ -1420,7 +1397,7 @@ areas, and fit Euler diagrams to these layouts using the different software pack
     }
   }
 }
-\end{alg}
+\end{algorithm}
 
 \begin{figure*}[bhtp]
 
