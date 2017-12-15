@@ -103,7 +103,9 @@
 \usepackage{booktabs}
 \usepackage[document]{ragged2e}
 \usepackage[shortlabels]{enumitem}
-\usepackage[vlined]{algorithm2e}
+%\usepackage[vlined]{algorithm2e}
+%\usepackage{algorithm}
+\usepackage{algpseudocode}
 \usepackage{etoolbox}
 %\usepackage[swedish]{babel}
 \usepackage[square,numbers,sort&compress]{natbib}
@@ -150,10 +152,10 @@
 \floatsetup[widetable]{margins=hangright,
                        capposition=top}
 \floatsetup[algorithm]{margins=hangright,
-                 capposition=beside,
-                 capbesidesep=marginparsep,
-                 capbesideposition={center,outside},
-                 floatwidth=\textwidth}
+                       capposition=beside,
+                       capbesidesep=marginparsep,
+                       capbesideposition={center,outside},
+                       floatwidth=\textwidth}
 
 % Provide marginfigure
 \usepackage{environ}
@@ -164,7 +166,8 @@
   }%
 }
 
-\DeclareCaptionType[fileext=alg,name=Algorithm]{alg}
+%\DeclareCaptionType[fileext=alg,name=Algorithm]{alg}
+\DeclareNewFloatType{algorithm}{fileext=alg,name=Algorithm}
 
 % Graphics options
 \setkeys{Gin}{%
@@ -186,7 +189,7 @@
 
 \newenvironment{fullwidth}{
   \begin{addmargin*}[0em]{-\overhang}
-  }{
+}{
   \end{addmargin*}
 }
 
@@ -1372,31 +1375,34 @@ The algorithm is formalized in~\autoref{alg:consistency}. The left panel of
 \cref{fig:consistency} shows the results of our simulation.
 
 \begin{algorithm}
-\DontPrintSemicolon
 \caption{The algorithm used to simulate circles and ellipses, compute their
-areas, and fit Euler diagrams to these layouts using the different software packages.\label{alg:consistency}}
-\For{$i\leftarrow 3$ \KwTo $8$}{
-  \While{length of each $\mathcal{I}(p_s)_{0.95} < 2\%$ \textbf{and} $j < 500$}{
-    \uIf{circle}{
-      $h,k    \leftarrow \mathcal{U}(0, 1)$\\
-      $r      \leftarrow \mathcal{U}(0.3, 0.6)$\\
-      $\omega \leftarrow \mathtt{findOverlaps}(h, k, r)$\\
-    }
-    \ElseIf{ellipse}{
-      $h,k    \leftarrow \mathcal{U}(0, 1)$\\
-      $a,b    \leftarrow \mathcal{U}(0.2, 0.8)$\\
-      $\phi   \leftarrow \mathcal{U}(0, 2\pi)$\\
-      $\omega \leftarrow \mathtt{findOverlaps}(h, k, a, b, \phi)$\\
-    }
-    $A \leftarrow \mathtt{ fitDiagram}(\omega)$\\
-    $\text{diagError}_j \leftarrow \max_{k=1,2,\dots,2^i-1} \left| \frac{\omega_k}{\sum \omega_k} - \frac{A_k}{\sum A_k} \right|$\\
-    \lIf{$\text{diagError}_j < 0.01$}{$\text{successes} + 1$}
-    \ForEach{$s \leftarrow$ software package}{
-      $\hat{p}_s \leftarrow \text{successes}/j$\\
-      $\mathcal{I}(\hat{p}_s)_{0.95} \leftarrow \hat{p} \pm z_{0.95}\sqrt{\frac{\hat{p}_s(\hat{p}_s-1)}{n}}$\\
-    }
-  }
-}
+areas, and fit Euler diagrams to these layouts using the different software packages.}
+\label{alg:consistency}
+\begin{algorithmic}
+\For{$i \gets 3:8$}
+  \While{length of each $\mathcal{I}(p_s)_{0.95} < 2\%$ and $j < 500$}
+    \If{circle}
+      \State $h,k    \gets \mathcal{U}(0, 1)$
+      \State $r      \gets \mathcal{U}(0.3, 0.6)$
+      \State $\omega \gets \mathtt{findOverlaps}(h, k, r)$
+    \ElsIf{ellipse}
+      \State $h,k    \gets \mathcal{U}(0, 1)$
+      \State $a,b    \gets \mathcal{U}(0.2, 0.8)$
+      \State $\phi   \gets \mathcal{U}(0, 2\pi)$
+      \State $\omega \gets \mathtt{findOverlaps}(h, k, a, b, \phi)$
+    \EndIf
+    \State $A \gets \mathtt{ fitDiagram}(\omega)$
+    \State $\text{diagError}_j \gets \max_{k=1,2,\dots,2^i-1} \left| \frac{\omega_k}{\sum \omega_k} - \frac{A_k}{\sum A_k} \right|$
+    \If{$\text{diagError}_j < 0.01$}
+      \State $\text{successes} + 1$
+    \EndIf
+    \ForAll{$s \gets$ software package}
+      \State $\hat{p}_s \gets \text{successes}/j$
+      \State $\mathcal{I}(\hat{p}_s)_{0.95} \gets \hat{p} \pm z_{0.95}\sqrt{\frac{\hat{p}_s(\hat{p}_s-1)}{n}}$
+    \EndFor
+  \EndWhile
+\EndFor
+\end{algorithmic}
 \end{algorithm}
 
 \begin{figure*}[bhtp]
@@ -1504,23 +1510,25 @@ based on the t-distribution:
 \end{equation}
 where $\hat{\mu} = \bar{x}$. The algorithm is formalized in~\autoref{alg:accuracy}
 
-\begin{alg}
-\DontPrintSemicolon
+\begin{algorithm}
 \caption{The algorithm we use to simulate random set relationships and fit
-them with the software under study to assess their accuracy.\label{alg:accuracy}}
-\For{$i\leftarrow 3$ \KwTo $8$}{
-  \While{length of each $\mathcal{I}(\hat{\mu}_s)_{0.95} < 0.02$ \textbf{and} $j < 500$}{
-    initialize $\omega = \{\omega_1,\omega_2,\dots,\omega_{2^i-1} \}$ to zero\\
-    \For{$j\leftarrow 3$ \KwTo $i$}{
-      $j \leftarrow$ random index in $\{\omega : \omega \cap F_i \neq \emptyset\}$\\
-      $\omega_j \leftarrow \mathcal{U}(0, 1)$\\
-    }
-    $\omega_S \leftarrow \mathcal{U}\{0, i\}$ random elements from $\{\omega : \omega = 0\}$\\
-    $\omega_S \leftarrow \mathcal{U}(0, 1)$\\
-    fit a Euler diagram to $\omega$\\
-  }
-}
-\end{alg}
+them with the software under study to assess their accuracy.}
+\label{alg:accuracy}
+\begin{algorithmic}
+\For{$i \gets 3:8$}
+  \While{length of each $\mathcal{I}(\hat{\mu}_s)_{0.95} < 0.02$ \textbf{and} $j < 500$}
+    \State initialize $\omega = \{\omega_1,\omega_2,\dots,\omega_{2^i-1} \}$ to zero
+    \For{$j \gets 3:i$}
+      \State $j \gets$ random index in $\{\omega : \omega \cap F_i \neq \emptyset\}$
+      \State $\omega_j \gets \mathcal{U}(0, 1)$
+    \EndFor
+    \State $\omega_S \gets \mathcal{U}\{0, i\}$ random elements from $\{\omega : \omega = 0\}$
+    \State $\omega_S \gets \mathcal{U}(0, 1)$
+    \State fit an Euler diagram to $\omega$
+  \EndWhile
+\EndFor
+\end{algorithmic}
+\end{algorithm}
 
 However, given that neither \pkg{Vennerable} nor \pkg{eulerAPE} are capable
 of fitting Euler diagrams that feature subset or disjoint relationships, and
