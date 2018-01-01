@@ -1,3 +1,6 @@
+%\VignetteIndexEntry{eulerr: Area-Proportional Euler Diagrams with Ellipses}
+%\VignetteEngine{knitr::knitr}
+
 \PassOptionsToPackage{
   usenames,
   fixpdftex,
@@ -254,10 +257,6 @@ knitr::knit_hooks$set(
     sub('\\usepackage[]{color}', '\\usepackage{xcolor}', x, fixed = TRUE)
   }
 )
-
-mtime <- function(files) {
-  lapply(Sys.glob(files),function(x) file.info(x)$mtime)
-}
 
 knitr::opts_chunk$set(
   echo = FALSE,
@@ -873,7 +872,8 @@ where $\phi$ is the counter-clockwise angle from the positive x-axis to the
 semi-major axis $a$, $b$ is the semi-minor axis, and $h, k$ are the x- and
 y-coordinates, respectively, of ellipse's center~(\cref{fig:ellipse}).
 
-<<ellipse, fig.env="marginfigure", fig.cap="A rotated ellipse with semimajor axis $a$, semiminor axis $b$, rotation $\\phi$, and center $h,k$.">>=
+\begin{marginfigure}
+<<ellipse>>=
 h <- 0.7
 k <- 0.5
 a <- 1
@@ -920,6 +920,8 @@ xyplot(1 ~ 1, xlim = c(-0.3, 1.7), ylim = c(-0.3, 1.3), asp = "iso",
          panel.lines(ellipse, col = 1)
        })
 @
+\caption{A rotated ellipse with semimajor axis $a$, semiminor axis $b$, rotation $\phi$, and center $h,k$.\label{fig:ellipse}}
+\end{marginfigure}
 
 However, because an ellipse
 is a conic\footnote{The circle, parabola, and hyperbola are the other types of conics.} it
@@ -1327,7 +1329,8 @@ a slimmed-down version of the package that
 allows the two primary forms of input, offers a little less freedom in customizing the
 diagram, and does not feature the last-ditch optimizer~(\cref{sec:last-ditch}).
 
-Finally, the source code for this thesis has been provided in a GitHub
+Finally, the source code for this thesis has been provided in the form
+of an R-package and is located in a GitHub
 repository at
 \url{https://github.com/jolars/eulerr2017bsc}, which, in addition to the
 text and markup for the thesis, also hosts the code used to generate the
@@ -1706,7 +1709,7 @@ interval~\eqref{eq:prop-ci}.\label{alg:consistency}}
 \end{algorithm}
 
 \begin{figure*}[bhtp]
-<<consistency, fig.height = 3, fig.width = 6.8, cache.extra = mtime(file.path("data", "data_consistency.rda"))>>=
+<<consistency, fig.height = 3, fig.width = 6.8>>=
 library(directlabels)
 dd <- data_consistency %>%
   spread(metric, loss) %>%
@@ -1838,7 +1841,7 @@ diagError~(\cref{fig:accuracy}) for all set sizes, although the difference is
 relatively more pronounced for set sizes three and four.
 
 \begin{figure*}[hbtp]
-<<accuracy, fig.height = 3, fig.width = 6.6, cache.extra = mtime(file.path("data", "data_accuracy.rda"))>>=
+<<accuracy, fig.height = 3, fig.width = 6.6>>=
 dd_acc <- data_accuracy %>%
   filter(!is.na(Loss)) %>%
   mutate(Sets = as.factor(Sets))
@@ -1900,7 +1903,7 @@ below $10^{-7}$.
 \caption{Tukey box plots of diagError and stress for Euler diagrams
 based on set relationships of three sets with every
 intersection present.\label{fig:accuracy-int}}
-<<accuracy-int, fig.height = 2.1, fig.width = 4.4, cache.extra = mtime(file.path("data", "data_accuracy_int.rda"))>>=
+<<accuracy-int, fig.height = 2.1, fig.width = 4.4>>=
 dd <- data_accuracy_int %>%
   filter(!is.na(Loss))
 
@@ -1965,7 +1968,7 @@ last-ditch optimizer (\cref{sec:last-ditch}) that is activated by default
 if the fit is not error-free after the final optimizer.
 
 \begin{figure*}[hbtp]
-<<performance, fig.height = 2.5, fig.width = 6.6, cache.extra = mtime(file.path("data", "data_performance.rda"))>>=
+<<performance, fig.height = 2.5, fig.width = 6.6>>=
 dd_perf <-
   data_performance %>%
   filter(!is.na(Time)) %>%
