@@ -1139,6 +1139,45 @@ diagError, meanwhile, is given by
 which is the maximum \emph{absolute} difference of the proportion of any
 $\omega$ to the respective unique area of the diagram.
 
+\section{Availability}\label{sec:availability}
+
+\pkg{eulerr} is available as an R package on the CRAN network~\citep{RCT_2017a}
+and is installed by calling
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{install.packages}\hlstd{(}\hlstr{"eulerr"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+A development version, along with source code, for the project is maintained in
+a GitHub repository at
+\url{https://github.com/jolars/eulerr}. This version
+can be installed, provided that the \pkg{devtools} package~\citep{Wickham_2017} is installed,
+by running the following code:
+
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{devtools}\hlopt{::}\hlkwd{install_github}\hlstd{(}\hlstr{"jolars/eulerr"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We have also developed a \pkg{shiny}~\citep{Chang_2017} web application for
+\pkg{eulerr}, which can be found at \url{http://jolars.co/eulerr}. It features
+a slimmed-down version of the package that
+allows the two primary forms of input, offers a little less freedom in customizing the
+diagram, and does not feature the last-ditch optimizer~(\cref{sec:last-ditch}).
+
+Finally, the source code for this thesis has been provided in a GitHub
+repository at
+\url{https://github.com/jolars/eulerr2017bsc}, which, in addition to the
+text and markup for the thesis, also hosts the code used to generate the
+data, the data itself, and the analyzes of this data~(\cref{ch:results}).
+
 \chapter{Results}
 \label{ch:results}
 
@@ -1702,45 +1741,6 @@ if the fit is not error-free after the final optimizer.
 random set relationships of three to eight sets. The density smoother is that of \citet{Sheather_1991}.}
 \label{fig:performance}
 \end{figure*}
-
-\section{Availability}\label{sec:availability}
-
-\pkg{eulerr} is available as an R package on the CRAN network~\citep{RCT_2017a}
-and is installed by calling
-
-\begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{install.packages}\hlstd{(}\hlstr{"eulerr"}\hlstd{)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-A development version, along with source code, for the project is maintained in
-a GitHub repository at
-\url{https://github.com/jolars/eulerr}. This version
-can be installed, provided that \pkg{devtools}~\citep{Wickham_2017} is installed,
-with the following oneliner:
-
-\begin{knitrout}\small
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{devtools}\hlopt{::}\hlkwd{install_github}\hlstd{(}\hlstr{"jolars/eulerr"}\hlstd{)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-We have also developed a \pkg{shiny}~\citep{Chang_2017} web application for
-\pkg{eulerr}, which can be found at \url{http://jolars.co/eulerr}. It features
-a slimmed-down version of the package that
-allows the two primary forms of input, offers a little less freedom in customizing the
-diagram, and does not feature the last-ditch optimizer~(\cref{sec:last-ditch}).
-
-Finally, the source code for this thesis has been provided in a GitHub
-repository at
-\url{https://github.com/jolars/eulerr2017bsc}, which, in addition to the
-text and markup for the thesis, also hosts the code used to generate the
-data, the data itself, and the analyzes of this data.
 
 \chapter{Discussion}
 \label{ch:discussion}
