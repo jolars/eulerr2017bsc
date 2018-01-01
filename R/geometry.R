@@ -35,11 +35,14 @@ ellipse_arc <- function(saxes = c(1, 1),
                         loc = c(0, 0),
                         theta = 0,
                         n = 200,
-                        rng = c(0, 2 * pi)) {
+                        rng = c(0, 2*pi)) {
   b <- min(saxes[1], saxes[2])
   a <- max(saxes[1], saxes[2])
   d2 <- (a - b) * (a + b)
-  phi <- seq(rng[1], rng[2], len = n) - theta
+  if (length(rng) == 1)
+    phi <- rng - theta
+  else
+    phi <- seq(rng[1], rng[2], len = n) - theta
   sp <- sin(phi)
   cp <- cos(phi)
   r <- a * b/sqrt((saxes[2] * cp)^2 + (saxes[1] * sp)^2)

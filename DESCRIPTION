@@ -1,12 +1,13 @@
-Package: eulerrPaper
+Package: eulerr2017bsc
 Type: Package
-Title: Source Code for a Paper on Eulerr
+Title: Source Code for a 2017 bachelor's thesis on the R-package eulerr
 Version: 0.0.0.9000
 Authors@R: c(person("Johan", "Larsson", email = "johanlarsson@outlook.com",
                     role = c("aut", "cre")),
              person("Peter", "Gustafsson", email = "peter.gustafsson@stat.lu",
-                    role = c("aut")))
-Description: Source Code for a Paper on Eulerr
+                    role = c("aut"), comment = "supervisor")
+             )
+Description: Source Code for a 2017 bachelor's thesis on the R-package eulerr
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
@@ -17,19 +18,17 @@ Imports:
   RConics,
   microbenchmark
 Suggests:
-  komadown,
   tidyverse,
   knitr,
-  rmarkdown,
-  bookdown,
   gridExtra,
   venneuler,
   pBrackets,
   V8,
   processx,
-  Vennerable
-URL: https://github.com/jolars/eulerrPaper
-BugReports: https://github.com/jolars/eulerrPaper/issues
+  Vennerable,
+  tactile
+URL: https://github.com/jolars/eulerr2017bsc
+BugReports: https://github.com/jolars/eulerr2017bsc/issues
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
 Roxygen: list(markdown = TRUE)
