@@ -12,13 +12,16 @@ Description: Source Code for a 2017 bachelor's thesis in statistics
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
+Depends:
+  R (>= 2.10)
 Imports:
   eulerr,
   lattice,
   latticeExtra,
   RConics,
-  microbenchmark
-Suggests:
+  microbenchmark,
+  methods
+Suggests: 
   tidyverse,
   knitr,
   gridExtra,
@@ -27,7 +30,11 @@ Suggests:
   V8,
   processx,
   Vennerable,
-  tactile
+  tactile,
+  testthat,
+  RColorBrewer,
+  sysfonts,
+  directlabels
 URL: https://github.com/jolars/eulerr2017bsc
 BugReports: https://github.com/jolars/eulerr2017bsc/issues
 VignetteBuilder: knitr
