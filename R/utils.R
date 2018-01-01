@@ -63,6 +63,6 @@ prop_test <- function(p0, p1, n0, n1) {
     stop("proportions may not exceed 1")
 
   z <- (p0 - p1)/sqrt(p0*(1 - p0)/n0 + p1*(1 - p1)/n1)
-  p <- 2*pnorm(-abs(z))
+  p <- 2*stats::pnorm(-abs(z))
   p
 }

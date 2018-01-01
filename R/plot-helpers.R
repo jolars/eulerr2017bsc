@@ -16,7 +16,7 @@
 #' @export
 plot_venneuler <- function(x,
                            col,
-                           col.fn = function(col) hcl(col*360, 130, 60),
+                           col.fn = function(col) grDevices::hcl(col*360, 130, 60),
                            alpha = 0.3,
                            edges = 200,
                            border = NA,
@@ -28,19 +28,19 @@ plot_venneuler <- function(x,
   obj$fitted.values <- rep(1, length.out = 2^nrow(x$centers) - 1)
   obj$original.values <- rep(1, length.out = 2^nrow(x$centers) - 1)
 
-  plot(obj, fill = col.fn(x$colors), fill_alpha = alpha, font = 1,
-       border = border, ...)
+  graphics::plot(obj, fill = col.fn(x$colors), fill_alpha = alpha, font = 1,
+                 border = border, ...)
 }
 
 #' Plot venn.js fit
 #'
 #' @param obj An object of class 'vennjs'
 #' @param col color
-#' @param labels a character string of labels
 #' @param alpha Opacity
 #' @param edges Ignored
 #' @param border Border color
 #' @param col.txt ignored
+#' @param fill color for fills
 #' @param ... Passed on to [plot.euler]
 #'
 #' @return Plot a diagram from venn.js
@@ -67,6 +67,6 @@ plot_vennjs <- function(obj,
   obj$fitted.values <- rep(1, length.out = 2^length(x) - 1)
   obj$original.values <- rep(1, length.out = 2^length(x) - 1)
 
-  plot(obj, fill = fill, col = col, fill_alpha = alpha, font = 1,
-       border = border, ...)
+  graphics::plot(obj, fill = fill, col = col, fill_alpha = alpha, font = 1,
+                 border = border, ...)
 }

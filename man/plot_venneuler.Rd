@@ -4,8 +4,8 @@
 \alias{plot_venneuler}
 \title{Hijacks the venneuler plot method}
 \usage{
-plot_venneuler(x, col, col.fn = function(col) hcl(col * 360, 130, 60),
-  alpha = 0.3, edges = 200, border = NA, col.txt = 1, ...)
+plot_venneuler(x, col, col.fn = function(col) grDevices::hcl(col * 360, 130,
+  60), alpha = 0.3, edges = 200, border = NA, col.txt = 1, ...)
 }
 \arguments{
 \item{x}{An object of class 'VennDiagram'}

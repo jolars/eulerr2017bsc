@@ -3,6 +3,7 @@
 #' stress and diagError
 #'
 #' @param obj A fit euler diagram
+#' @param orig original values
 #'
 #' @return Returns a list of goodness-of-fit tests
 #' @export
@@ -18,8 +19,8 @@ gof.VennDrawing <- function(obj, orig) {
   center <- matrix(NA, ncol = 2, nrow = 0)
 
   for (i in seq_along(obj@edgeList)) {
-    if (.hasSlot(obj@edgeList[[i]], "radius")) {
-      r <- c(r, slot(obj@edgeList[[i]], "radius"))
+    if (methods::.hasSlot(obj@edgeList[[i]], "radius")) {
+      r <- c(r, methods::slot(obj@edgeList[[i]], "radius"))
       center <- rbind(center, as.numeric(obj@edgeList[[i]]@centre))
     }
   }

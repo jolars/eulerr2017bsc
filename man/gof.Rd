@@ -20,6 +20,8 @@ gof(obj, orig)
 }
 \arguments{
 \item{obj}{A fit euler diagram}
+
+\item{orig}{original values}
 }
 \value{
 Returns a list of goodness-of-fit tests
