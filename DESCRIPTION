@@ -8,33 +8,33 @@ Authors@R: c(person("Johan", "Larsson", email = "johanlarsson@outlook.com",
                     role = c("aut"), comment = "supervisor")
              )
 Description: Source Code for a 2017 bachelor's thesis in statistics
-  about the R-package eulerr.
+    about the R-package eulerr.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Depends:
-  R (>= 2.10)
+    R (>= 2.10)
 Imports:
-  eulerr,
-  lattice,
-  latticeExtra,
-  RConics,
-  microbenchmark,
-  methods
+    eulerr,
+    lattice,
+    latticeExtra,
+    RConics,
+    microbenchmark,
+    methods
 Suggests: 
-  tidyverse,
-  knitr,
-  gridExtra,
-  venneuler,
-  pBrackets,
-  V8,
-  processx,
-  Vennerable,
-  tactile,
-  testthat,
-  RColorBrewer,
-  sysfonts,
-  directlabels
+    tidyverse,
+    knitr,
+    gridExtra,
+    venneuler,
+    pBrackets,
+    V8,
+    processx,
+    Vennerable,
+    tactile,
+    testthat,
+    RColorBrewer,
+    sysfonts,
+    directlabels
 URL: https://github.com/jolars/eulerr2017bsc
 BugReports: https://github.com/jolars/eulerr2017bsc/issues
 VignetteBuilder: knitr

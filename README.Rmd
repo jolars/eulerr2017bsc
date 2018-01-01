@@ -1,0 +1,37 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+# eulerr: Area-Proportional Euler Diagrams with Ellipses
+
+This is the source code for the bachelor thesis *eulerr: Area-Proportional Euler Diagrams with Ellipses*
+by Johan Larsson, which was supervised by Peter Gustafsson at Lund University.
+
+The thesis is provided as an R-package, which can be reprocuded
+from scratch as long as all the dependencies are install.
+
+## Installation
+
+You can install eulerr2017bsc from github with:
+
+```{r gh-installation, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("jolars/eulerr2017bsc")
+```
+B
+The thesis is then available as a vignette, which is run by calling
+
+```{r thesis, eval = FALSE}
+vignette("eulerr: Area-Proportional Euler Diagrams with Ellipses")
+```
+
