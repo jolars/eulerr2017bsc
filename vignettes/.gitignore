@@ -12,3 +12,5 @@
 *.xml
 *.bcf
 *.pdf
+*.html
+*.R
