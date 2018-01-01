@@ -4,26 +4,21 @@
 \name{data_performance}
 \alias{data_performance}
 \title{Performance data}
-\format{A data frame with 1800 obs of 4 variables.}
+\format{A data frame with 18720 obs of 4 variables.}
 \usage{
 data(data_accuracy)
 }
 \description{
-A dataset of comparisons between venneuler and eulerr in terms of
-accuracy of diagrams constructed from sampling set intersections.
+A dataset of comparisons between software packages in terms of
+computational performance in generating
+diagrams constructed from sampling set intersections.
 }
 \details{
 \describe{
+\item{it}{an integer variable of the number of the iteration}
+\item{software}{The software (method) used. A factor variable.}
 \item{Sets}{The number of sets in the diagram}
-\item{Software}{The software (method) used. A factor variable.}
 \item{Time}{The computing speed in nanoseconds.}
-}
-\itemize{
-\item Sets. A factor of the number of sets used in the diagram
-\item it. An integer variable of the number of the iteration
-\item software. A factor with two levels, signifying which software (eulerr or
-venneuler) that was used.
-\item stress. A double of the stress metric from venneuler.
 }
 }
 \author{

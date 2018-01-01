@@ -4,7 +4,7 @@
 \name{data_consistency}
 \alias{data_consistency}
 \title{Consistency data}
-\format{A data frame with 1800 obs of 4 variables.}
+\format{A data frame with 226336 obs of 6 variables.}
 \usage{
 data(data_consistency)
 }

@@ -4,20 +4,21 @@
 \name{data_accuracy}
 \alias{data_accuracy}
 \title{Accuracy data}
-\format{A data frame with 1800 obs of 4 variables.}
+\format{A data frame with 48000 obs of 5 variables.}
 \usage{
 data(data_accuracy)
 }
 \description{
-A dataset of comparisons between venneuler and eulerr in terms of
+A dataset of comparisons between software in terms of
 accuracy of diagrams constructed from sampling set intersections
 }
 \details{
 \describe{
-\item{Sets}{A factor of the number of sets used in the diagram}
 \item{it}{an integer variable of the number of the iteration}
+\item{Sets}{A factor of the number of sets used in the diagram}
+\item{software}{A factor of the software package}
 \item{Metric}{A factor of the type of loss (diagError or stress)}
-\item{loss}{The loss of the solution}
+\item{Loss}{The loss of the solution}
 }
 }
 \author{
