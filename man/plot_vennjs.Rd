@@ -11,6 +11,8 @@ plot_vennjs(obj, fill = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
 \arguments{
 \item{obj}{An object of class 'vennjs'}
 
+\item{col}{color}
+
 \item{alpha}{Opacity}
 
 \item{edges}{Ignored}
@@ -20,6 +22,8 @@ plot_vennjs(obj, fill = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728",
 \item{col.txt}{ignored}
 
 \item{...}{Passed on to \link{plot.euler}}
+
+\item{labels}{a character string of labels}
 }
 \value{
 Plot a diagram from venn.js

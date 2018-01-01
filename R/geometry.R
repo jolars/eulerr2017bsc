@@ -20,7 +20,6 @@ degenerate_split_conics <- function(C1, C2) {
   ll
 }
 
-
 #' Ellipse arcs
 #'
 #' @param saxes Semi-axes

@@ -35,8 +35,8 @@ plot_venneuler <- function(x,
 #' Plot venn.js fit
 #'
 #' @param obj An object of class 'vennjs'
-#' @param col
-#' @param labels
+#' @param col color
+#' @param labels a character string of labels
 #' @param alpha Opacity
 #' @param edges Ignored
 #' @param border Border color
