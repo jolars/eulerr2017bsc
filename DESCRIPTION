@@ -1,13 +1,14 @@
 Package: eulerr2017bsc
 Type: Package
-Title: Source Code for a 2017 bachelor's thesis on the R-package eulerr
+Title: Source Code for a 2017 Bachelor's Thesis on the R-Package eulerr
 Version: 0.0.0.9000
 Authors@R: c(person("Johan", "Larsson", email = "johanlarsson@outlook.com",
                     role = c("aut", "cre")),
              person("Peter", "Gustafsson", email = "peter.gustafsson@stat.lu",
                     role = c("aut"), comment = "supervisor")
              )
-Description: Source Code for a 2017 bachelor's thesis on the R-package eulerr
+Description: Source Code for a 2017 bachelor's thesis in statistics
+  aboyt the R-package eulerr.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
