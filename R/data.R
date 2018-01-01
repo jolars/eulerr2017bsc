@@ -14,47 +14,42 @@
 #' }
 #'
 #' @author Johan Larsson
-#' @format A data frame with 1800 obs of 4 variables.
+#' @format A data frame with 226336 obs of 6 variables.
 #' @usage data(data_consistency)
-#'
 "data_consistency"
 
 #' Accuracy data
 #'
-#' A dataset of comparisons between venneuler and eulerr in terms of
+#' A dataset of comparisons between software in terms of
 #' accuracy of diagrams constructed from sampling set intersections
 #'
 #' \describe{
-#'   \item{Sets}{A factor of the number of sets used in the diagram}
 #'   \item{it}{an integer variable of the number of the iteration}
+#'   \item{Sets}{A factor of the number of sets used in the diagram}
+#'   \item{software}{A factor of the software package}
 #'   \item{Metric}{A factor of the type of loss (diagError or stress)}
-#'   \item{loss}{The loss of the solution}
+#'   \item{Loss}{The loss of the solution}
 #' }
 #'
 #' @author Johan Larsson
-#' @format A data frame with 1800 obs of 4 variables.
+#' @format A data frame with 48000 obs of 5 variables.
 #' @usage data(data_accuracy)
-#'
 "data_accuracy"
 
 #' Performance data
 #'
-#' A dataset of comparisons between venneuler and eulerr in terms of
-#' accuracy of diagrams constructed from sampling set intersections.
+#' A dataset of comparisons between software packages in terms of
+#' computational performance in generating
+#' diagrams constructed from sampling set intersections.
 #'
 #' \describe{
+#'   \item{it}{an integer variable of the number of the iteration}
+#'   \item{software}{The software (method) used. A factor variable.}
 #'   \item{Sets}{The number of sets in the diagram}
-#'   \item{Software}{The software (method) used. A factor variable.}
 #'   \item{Time}{The computing speed in nanoseconds.}
 #' }
-#' * Sets. A factor of the number of sets used in the diagram
-#' * it. An integer variable of the number of the iteration
-#' * software. A factor with two levels, signifying which software (eulerr or
-#' venneuler) that was used.
-#' * stress. A double of the stress metric from venneuler.
 #'
 #' @author Johan Larsson
-#' @format A data frame with 1800 obs of 4 variables.
+#' @format A data frame with 18720 obs of 4 variables.
 #' @usage data(data_accuracy)
-#'
 "data_performance"
