@@ -36,6 +36,23 @@
 #' @usage data(data_accuracy)
 "data_accuracy"
 
+#' Accuracy data for three-set intersections
+#'
+#' A dataset of comparisons between software packages in terms of
+#' accuracy in reproducing three-sets layouts with all intersections present
+#'
+#' \describe{
+#'   \item{it}{an integer variable of the number of the iteration}
+#'   \item{software}{A factor of the software package}
+#'   \item{Metric}{A factor of the type of loss (diagError or stress)}
+#'   \item{Loss}{The loss of the solution}
+#' }
+#'
+#' @author Johan Larsson
+#' @format A data frame with 14000 obs of 4 variables.
+#' @usage data(data_accuracy_int)
+"data_accuracy_int"
+
 #' Performance data
 #'
 #' A dataset of comparisons between software packages in terms of
@@ -53,3 +70,5 @@
 #' @format A data frame with 18720 obs of 4 variables.
 #' @usage data(data_accuracy)
 "data_performance"
+
+
