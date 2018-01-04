@@ -37,8 +37,42 @@
 }
 \makeatother
 
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
 
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
 
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
 
 \usepackage{alltt}
 
@@ -336,14 +370,35 @@ effective use of ink.
 Data visualizations, however, are only effective when they illustrate
 relationships. Consider, for instance, a disc labelled
 \emph{Men}\footnote{%
-figure/men-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+\includegraphics[width=\maxwidth]{figure/men-1} \hfill{}
+
+
+
+\end{knitrout}
 }---it says nothing by itself; yet if we juxtapose it with another, smaller, disc
 labelled \emph{Children}\footnote{%
-figure/children-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+\includegraphics[width=\maxwidth]{figure/children-1} \hfill{}
+
+
+
+\end{knitrout}
 }, the graphic starts to become informative, now displaying the relative sizes
 of two sets. If next we intersect the two
 discs, producing an overlap\footnote{%
-figure/childrenMen-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+\includegraphics[width=\maxwidth]{figure/childrenMen-1} \hfill{}
+
+
+
+\end{knitrout}
 }, we successfully visualize the
 relative proportions of men and children, as well as their intersection. The diagram
 we have constructed is an \emph{Euler diagram}.
@@ -390,7 +445,17 @@ we can solve this problem since they can both rotate and stretch, enabling
 a perfect fit~(\cref{fig:impossible}).
 
 \begin{marginfigure}
-figure/impossible-1.pdffigure/impossible-2.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/impossible-1} 
+\includegraphics[width=\maxwidth]{figure/impossible-2} 
+
+}
+
+
+
+\end{knitrout}
 \caption{A set relationship depicted erroneously with circles and perfectly with
 ellipses.}
 \label{fig:impossible}
@@ -413,7 +478,16 @@ diagram in~\cref{fig:subset}, for instance, would be impossible
 with \pkg{eulerAPE}.
 
 \begin{marginfigure}
-figure/subset-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/subset-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{An Euler diagram with a subset relationship.}
 \label{fig:subset}
 \end{marginfigure}
@@ -597,7 +671,7 @@ This problem is unfortunately intractable for ellipses, being that there is an
 infinite number of ways by which we can position two ellipses to obtain a given
 overlap. Thus, we restrict ourselves to circles in our initial layout, for which we can use the
 circle--circle overlap formula~\eqref{eq:circleOverlap} to numerically find the
-required distance, $d$, for each pairwise relationship.
+required distance, $d_{ij}$, for each pairwise relationship.
 \begin{fullwidth}
 \begin{multline}
 O_{ij} = r_i^2\arccos\left(\frac{d_{ij}^2 + r_i^2 - r_j^2}{2d_{ij}r_i}\right) +
@@ -610,15 +684,24 @@ where $r_i$ and $r_j$ are the radii of the circles representing the $i$\ts{th} a
 $j$\ts{th} sets respectively, $O_{ij}$ their overlap, and $d_{ij}$ their separation.
 
 \begin{marginfigure}
-figure/circleOverlap-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/circleOverlap-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{The circle--circle overlap is computed as a function of the discs'
 separation ($d_{ij}$), radii ($r_i,r_j$), and area of overlap ($O_{ij}$).}
 \label{fig:circleCircle}
 \end{marginfigure}
 
 Setting $r_i = \sqrt{F_i/\pi}$, where $F_i$ is
-the size of the $i$\ts{th} set, we are able to obtain $d$ numerically using
-the squared difference between $O$ and the desired overlap
+the size of the $i$\ts{th} set, we are able to obtain $d_{ij}$ numerically using
+the squared difference between $O_{ij}$ and the desired overlap
 as loss function~\eqref{eq:dopt},
 \begin{equation}
   \mathcal{L}(d_{ij}) = \left(O_{ij} - (F_i \cap F_j)  \right)^2, \quad \text{for } i <
@@ -632,7 +715,7 @@ search and successive parabolic interpolation.''} from \pkg{stats}.
 For a two-set combination, this is all we need to plot an exact diagram, given
 that we now have the two circles' radii and separation and may place the circles
 arbitrarily as long
-as their separation, $d$, remains the same. This is not, however, the case
+as their separation, $d_{ij}$, remains the same. This is not, however, the case
 with more than two sets.
 
 With three or more sets, the circles need to be arranged so that
@@ -737,8 +820,8 @@ For a family of \emph{N} sets, $F = F_1, F_2, \dots, F_N$, and their $n=2^N-1$
 intersections, we define $\omega$ as the intersections of these sets and their
 relative complements, such that
 \begin{align*}
-  \omega_{1} & = F_1 \setminus \bigcap_{i=2}^N F_i  \\
-  \omega_{2} & = \bigcap_{i=1}^2 F_i \setminus \bigcap_{i=3}^{N} F_i\\
+  \omega_{1} & = F_1 \setminus \bigcup_{i=2}^N F_i  \\
+  \omega_{2} & = \bigcap_{i=1}^2 F_i \setminus \bigcup_{i=3}^{N} F_i\\
              & \vdotswithin{=} \\
     \omega_n & = \bigcap_{i=1}^{N}F_i
 \end{align*}
@@ -781,7 +864,16 @@ semi-major axis $a$, $b$ is the semi-minor axis, and $h, k$ are the x- and
 y-coordinates, respectively, of ellipse's center~(\cref{fig:ellipse}).
 
 \begin{marginfigure}
-figure/ellipse-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/ellipse-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{A rotated ellipse with semimajor axis $a$, semiminor axis $b$, rotation $\phi$, and center $h,k$.\label{fig:ellipse}}
 \end{marginfigure}
 
@@ -811,19 +903,46 @@ which is the form we need to intersect our ellipses. We now proceed to
 
 \begin{figure*}[thbp]
 \begin{subfigure}[t]{0.32\linewidth}
-figure/intersect-1-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/intersect-1-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{Our objective is two intersect these two ellipses.}
 \end{subfigure}
 \hfill
 \begin{subfigure}[t]{0.32\linewidth}
-figure/intersect-2-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/intersect-2-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{Three degenerate conics (\textcolor{orange}{orange},
 \textcolor{Teal}{teal}, and \textcolor{SteelBlue4}{blue}) are formed
 from the linear combination of our two ellipses.}
 \end{subfigure}
 \hfill
 \begin{subfigure}[t]{0.32\linewidth}
-figure/intersect-3-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/intersect-3-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{One of the degenerate conics is split it into two lines and
 intersected with one of the ellipses to yield four intersection
 points.}
@@ -849,7 +968,16 @@ pair of points~(\cref{fig:polyarea}).
 \caption{The overlap area between three ellipses is the sum of a convex
 polygon (in \textcolor{Grey}{grey}) and 2--3 ellipse segments (in
 \textcolor{SteelBlue4}{blue}).\label{fig:polyarea}}
-figure/polyarea-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/polyarea-1} 
+
+}
+
+
+
+\end{knitrout}
 \end{figure}
 
 We continue by ordering the points around their centroid. It is then trivial to
@@ -879,7 +1007,16 @@ situations where this algorithm is altered, such that when the sector angle
 ranges beyond $\pi$---we refer the interested reader to \citet{Eberly_2016}.
 
 \begin{marginfigure}
-figure/ellipsesegment-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/ellipsesegment-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{The elliptical segment in \textcolor{SteelBlue4}{blue} is found by
 first subtracting the elliptical sector from $(a, 0)$ to $\theta_0$ from the one
 from $(a, 0)$ to $\theta_1$ and then subtracting the triangle part
@@ -942,7 +1079,18 @@ where \[\beta = \frac{\sum_{i=1}^n A_i\omega_i}{\sum_{i=1}^n \omega_i^2}.\]
 This is equivalent to linear regression through the origin, where $\beta$ is the
 slope of the regression line~(\cref{fig:origin-regress}).
 
-figure/origin-regress-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{marginfigure}
+
+{\centering \includegraphics[width=\maxwidth]{figure/origin-regress-1} 
+
+}
+
+\caption{Optimizing via stress is analogous to least-squares linear regression through the origin. $\omega$ is the set of unique quantities in the input~(\cref{def:omega}) and $A$ the respective areas in the diagram.}\label{fig:origin-regress}
+\end{marginfigure}
+
+
+\end{knitrout}
 
 \subsection{Last-ditch optimization}
 \label{sec:last-ditch}
@@ -1000,7 +1148,13 @@ $\omega$ to the respective unique area of the diagram.
 \pkg{eulerr} is available as an R package on the CRAN network~\citep{RCT_2017a}
 and is installed by calling
 
-install.packages("eulerr")
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{install.packages}\hlstd{(}\hlstr{"eulerr"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 A development version, along with source code, for the project is maintained in
 a GitHub repository at
@@ -1008,7 +1162,13 @@ a GitHub repository at
 can be installed, provided that the \pkg{devtools} package~\citep{Wickham_2017} is installed,
 by running the following code:
 
-devtools::install_github("jolars/eulerr")
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{devtools}\hlopt{::}\hlkwd{install_github}\hlstd{(}\hlstr{"jolars/eulerr"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We have also developed a \pkg{shiny}~\citep{Chang_2017} web application for
 \pkg{eulerr}, which can be found at \url{http://jolars.co/eulerr}. It features
@@ -1016,7 +1176,8 @@ a slimmed-down version of the package that
 allows the two primary forms of input, offers a little less freedom in customizing the
 diagram, and does not feature the last-ditch optimizer~(\cref{sec:last-ditch}).
 
-Finally, the source code for this thesis has been provided in a GitHub
+Finally, the source code for this thesis has been provided in the form
+of an R-package and is located in a GitHub
 repository at
 \url{https://github.com/jolars/eulerr2017bsc}, which, in addition to the
 text and markup for the thesis, also hosts the code used to generate the
@@ -1088,22 +1249,49 @@ difference is small.
 
 \begin{figure*}[thbp]
 \begin{subfigure}[b]{.3\linewidth}
-figure/venneuler-1-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/venneuler-1-1} 
+
+}
+
+
+
+\end{knitrout}
 \centering
 \subcaption{The diagram from \pkg{venneuler}, with a stress of 0.007
 and diagError of 0.013.\label{fig:venneulerHard1}}
 \end{subfigure}
 \hfill
 \begin{subfigure}[b]{.3\linewidth}
-figure/venneuler-2-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/venneuler-2-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{The circular diagram from \pkg{eulerr}, with a stress of 0.004
 and diagError of 0.011.\label{fig:venneulerHard2}}
 \end{subfigure}
 \hfill
 \begin{subfigure}[b]{.3\linewidth}
-figure/venneuler-3-1.pdf
-\subcaption{The elliptical diagram from \pkg{eulerr}, with a stress of 0
-and diagError of 0.\label{fig:venneulerHard3}}
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/venneuler-3-1} 
+
+}
+
+
+
+\end{knitrout}
+\subcaption{The elliptical diagram from \pkg{eulerr}, with a stress of \ensuremath{2.587\times 10^{-13}}
+and diagError of \ensuremath{9.944\times 10^{-8}}.\label{fig:venneulerHard3}}
 \end{subfigure}
 \caption{A comparison of a Euler diagram generated with \pkg{venneuler} with two
 generated from \pkg{eulerr} with circles and ellipses respectively.\label{fig:venneulerHard}}
@@ -1139,7 +1327,16 @@ which had been added at seemingly arbitrary locations in the original diagram.
 Both diagrams are exact.}
 \label{fig:lenz}
 \begin{subfigure}[b]{.5\linewidth}
-figure/lenz-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=0.9\linewidth]{figure/lenz-1} 
+
+}
+
+
+
+\end{knitrout}
 \centering
 \subcaption{The diagram from \pkg{eulerr}.}
 \end{subfigure}%
@@ -1198,13 +1395,31 @@ diagram~(\cref{fig:netflix-vennjs}).
 \begin{figure*}[hbtp]
 \begin{subfigure}[b]{.45\linewidth}
 \centering
-figure/unnamed-chunk-2-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-2-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{The fit from \pkg{eulerr} with a stress of
 0.003 and diagError of 0.014.\label{fig:netflix-eulerr}}
 \end{subfigure}\hfill%
 \begin{subfigure}[b]{.45\linewidth}
 \centering
-figure/unnamed-chunk-3-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/unnamed-chunk-3-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{The fit from \pkg{venn.js} with a stress of
 0.004 and diagError of 0.015.\label{fig:netflix-vennjs}}
 \end{subfigure}
@@ -1260,7 +1475,7 @@ achieved a 95\% confidence interval around $\hat{p}$, the proportion of
 successful diagrams, no wider than 0, and for a minimum of 1,000 iterations. We
 use the normal approximation interval,
 \begin{equation}
-\mathcal{I}(\hat{p})_{0.95} = \hat{p} \pm z_{0.95}\sqrt{\frac{\hat{p}(\hat{p}-1)}{n}}.
+\mathcal{I}(\hat{p})_{0.025} = \hat{p} \pm z_{0.025}\sqrt{\frac{\hat{p}(\hat{p}-1)}{n}}.
 \label{eq:prop-ci}
 \end{equation}
 The procedure is formalized in~\cref{alg:consistency}. For circular diagrams,
@@ -1276,7 +1491,7 @@ the only packages that successfully fits all of the circular diagrams (although
 \caption{The algorithm used to simulate diagrams of circles or ellipses,
 reverse-engineer set relationships,
 and fit Euler diagrams to these relationships using the different software packages.
-$\mathcal{I}(\hat{p})_{0.95}$ is the binomial proportion confidence
+$\mathcal{I}(\hat{p})_{0.025}$ is the binomial proportion confidence
 interval~\eqref{eq:prop-ci}.\label{alg:consistency}}
 \begin{algorithmic}
 \For{$N \gets 3:8$}
@@ -1298,20 +1513,29 @@ interval~\eqref{eq:prop-ci}.\label{alg:consistency}}
     % \EndIf
     \ForAll{$j \gets$ software}
       \State $\hat{p}_j \gets \text{successes}_j/i$
-      \If{$\mathcal{I}(\hat{p})_{0.95}$ is wider than 0.02 \Or $i \leq 1000$}
+      \If{$\mathcal{I}(\hat{p})_{0.025}$ is wider than 0.02 \Or $i \leq 1000$}
         \State $A_{i_j} \gets \Call{fit diagram}{\omega_i}$
         \If{$\Call{diagError}{A_{i_j}, \omega_i} < 0.01$}
           \State $\text{successes}_j \gets \text{successes}_j + 1$
         \EndIf
       \EndIf
     \EndFor
-  \DoWhile{\All $\mathcal{I}(\hat{p})_{0.95}$ are wider than 0.02 \Or $i \leq 1000$}
+  \DoWhile{\All $\mathcal{I}(\hat{p})_{0.025}$ are wider than 0.02 \Or $i \leq 1000$}
 \EndFor
 \end{algorithmic}
 \end{algorithm}
 
 \begin{figure*}[bhtp]
-figure/consistency-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/consistency-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{Proportions of successfully reproduced Euler diagrams from
 set configurations based on sampled circular and elliptical diagrams generated from the
 distributions in \eqref{eq:consistencyCircles} and \eqref{eq:consistencyEllipses}.
@@ -1365,15 +1589,16 @@ a 95\% confidence interval around the mean diagError no wider than 0.02.
 The confidence level used is based on the
 $t$-distribution,
 \begin{equation}
-\mathcal{I}(\bar{x})_{0.95} = \bar{x} \pm t_{0.95}\frac{s}{\sqrt{n}},
+\mathcal{I}(\bar{x})_{0.025} = \bar{x} \pm t_{0.025,n-1}\frac{s}{\sqrt{n}},
 \label{eq:mean-ci}
 \end{equation}
-where \[s = \sqrt{\frac{1}{N-1}\sum_{i=1}^n (x - \bar{x})^2}.\]
+with \[s = \sqrt{\frac{1}{n-1}\sum_{i=1}^n (x - \bar{x})^2},\]
+where $n$ is the number of iterations.
 The procedure is formalized in~\cref{alg:accuracy}.
 
 \begin{algorithm}[hbtp]
 \caption{The algorithm used to simulate and fit random set relationships to assess
-the accuracy of the various software we are studying. $\mathcal{I}(\bar{x})_{0.95}$
+the accuracy of the various software we are studying. $\mathcal{I}(\bar{x})_{0.025}$
 is the 95\% confidence interval around the mean diagError~\eqref{eq:mean-ci},
 $F$ denotes a set, and
 $\epsilon$ is the square root of the
@@ -1400,7 +1625,7 @@ difference between 1 and the least value greater than 1 on our machine.\label{al
       \State $A_{j_i} \gets \Call{fit diagram}{\omega_i}$
       \State $x_{j_i} \gets \Call{diagError}{A_{j_i},\omega_i}$
     \EndFor
-  \DoWhile{\All $\mathcal{I}(\bar{x})_{0.95}$ are wider than 0.02 \Or $i \leq 1000$}
+  \DoWhile{\All $\mathcal{I}(\bar{x})_{0.025}$ are wider than 0.02 \Or $i \leq 1000$}
 \EndFor
 \end{algorithmic}
 \end{algorithm}
@@ -1420,7 +1645,16 @@ diagError~(\cref{fig:accuracy}) for all set sizes, although the difference is
 relatively more pronounced for set sizes three and four.
 
 \begin{figure*}[hbtp]
-figure/accuracy-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/accuracy-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{Tukey box plots of Euler diagrams based on set relationships that may
 or may not have perfect solutions, generated from~\eqref{eq:consistencyEllipses}.\label{fig:accuracy}}
 \end{figure*}
@@ -1444,7 +1678,16 @@ below $10^{-7}$.
 \caption{Tukey box plots of diagError and stress for Euler diagrams
 based on set relationships of three sets with every
 intersection present.\label{fig:accuracy-int}}
-figure/accuracy-int-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/accuracy-int-1} 
+
+}
+
+
+
+\end{knitrout}
 \end{figure}
 
 For circular diagrams, \pkg{venn.js} achieves the lowest median diagError at
@@ -1490,7 +1733,16 @@ last-ditch optimizer (\cref{sec:last-ditch}) that is activated by default
 if the fit is not error-free after the final optimizer.
 
 \begin{figure*}[hbtp]
-figure/performance-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/performance-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{Violin plot of the performance of \pkg{eulerr}, \pkg{venneuler}, and \pkg{Vennerable} on
 random set relationships of three to eight sets. The density smoother is that of \citet{Sheather_1991}.}
 \label{fig:performance}
@@ -1562,7 +1814,16 @@ Venn diagram in \cref{fig:edwards} that is required to represent
 all the intersections between six sets.
 
 \begin{marginfigure}
-figure/battlement-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/battlement-1} 
+
+}
+
+
+
+\end{knitrout}
 \caption{A six-set Venn diagram using Edward's method~\cite{Edwards_2014};
 this diagram was generated with \pkg{Vennerable}.}
 \label{fig:edwards}
@@ -1787,7 +2048,18 @@ ensure that it converges quickly and that the simplex remains within the
 intersection boundaries (since we want the local maximum). The method is
 visualized in~\cref{fig:vogel}.
 \begin{marginfigure}
-figure/vogel-1.pdffigure/vogel-2.pdffigure/vogel-3.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/vogel-1} 
+\includegraphics[width=\maxwidth]{figure/vogel-2} 
+\includegraphics[width=\maxwidth]{figure/vogel-3} 
+
+}
+
+
+
+\end{knitrout}
 \caption{The method eulerr uses to locate an optimal position for a label in
 three steps from top to bottom: first, we spread sample points on one of the
 ellipses and pick one inside the intersection of interest, then we begin moving
@@ -1838,7 +2110,16 @@ sets. The first eight colors of the pallete are visualized in
 
 \begin{figure}[htbp]
 \caption{The eight first colors of the default color palette.\label{fig:colorexample}}
-figure/colorexamle-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/colorexamle-1} 
+
+}
+
+
+
+\end{knitrout}
 \end{figure}
 
 \section{Normalizing dispered layouts}
@@ -1864,14 +2145,28 @@ we use a diagram from a publication by \citet{Junta_2009} that was also
 tackled by \citet{Wilkinson_2012}. We load the package,
 specify our diagram, and fit it using \code{euler()} as follows.
 
-library(eulerr)junta_2009 <- c("SE" = 13, "Treat" = 28, "Anti-CCP" = 101,
-                "DAS28" = 91, "SE&Treat" = 1, "SE&DAS28" = 14,
-                "Treat&Anti-CCP" = 6, "SE&Anti-CCP&DAS28" = 1)fit1 <- euler(junta_2009)
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(eulerr)}
+\hlstd{junta_2009} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"SE"} \hlstd{=} \hlnum{13}\hlstd{,} \hlstr{"Treat"} \hlstd{=} \hlnum{28}\hlstd{,} \hlstr{"Anti-CCP"} \hlstd{=} \hlnum{101}\hlstd{,}
+                \hlstr{"DAS28"} \hlstd{=} \hlnum{91}\hlstd{,} \hlstr{"SE&Treat"} \hlstd{=} \hlnum{1}\hlstd{,} \hlstr{"SE&DAS28"} \hlstd{=} \hlnum{14}\hlstd{,}
+                \hlstr{"Treat&Anti-CCP"} \hlstd{=} \hlnum{6}\hlstd{,} \hlstr{"SE&Anti-CCP&DAS28"} \hlstd{=} \hlnum{1}\hlstd{)}
+\hlstd{fit1} \hlkwb{<-} \hlkwd{euler}\hlstd{(junta_2009)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Printing the results provides a summary of the fit, including the stress
 and diagError metrics that were introduced in~\cref{sec:gof}.
 
-fit1 # or equivalently print(fit1)##                         original fitted residuals regionError
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit1} \hlcom{# or equivalently print(fit1)}
+\end{alltt}
+\begin{verbatim}
+##                         original fitted residuals regionError
 ## SE                            13 12.780     0.220       0.000
 ## Treat                         28 27.525     0.475       0.000
 ## Anti-CCP                     101 99.287     1.713       0.002
@@ -1890,15 +2185,29 @@ fit1 # or equivalently print(fit1)##                         original fitted res
 ## 
 ## diagError: 0.004 
 ## stress:    0
-
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 The fit is more or less equivalent to that of
 \pkg{venneuler}~\citep{Wilkinson_2012}. There \emph{is} an error but it is
 small at a diagError of 0.004. We could, however, try to
 improve the fit using ellipses:
 
-# Fit the data using ellipses insteadfit2 <- euler(junta_2009, shape = "ellipse")# Compare the fits on diagerrorfit1$diagError - fit2$diagError## [1] 0
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# Fit the data using ellipses instead}
+\hlstd{fit2} \hlkwb{<-} \hlkwd{euler}\hlstd{(junta_2009,} \hlkwc{shape} \hlstd{=} \hlstr{"ellipse"}\hlstd{)}
 
+\hlcom{# Compare the fits on diagerror}
+\hlstd{fit1}\hlopt{$}\hlstd{diagError} \hlopt{-} \hlstd{fit2}\hlopt{$}\hlstd{diagError}
+\end{alltt}
+\begin{verbatim}
+## [1] 0
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 Comparing the two fits in diagError, however, shows that we have not bettered
 the fit in any meaningful way. Our next goal is to visualize the layout, which
@@ -1906,20 +2215,45 @@ we do both using the default options and by customizing the fit, adding
 quantities, replacing the sets' labels with a key, removing lines, and changing the
 fills~(\cref{fig:plotting}) using the \pkg{RColorBrewer} package~\citep{Neuwirth_2014}.
 
-p1 <- plot(fit1)p2 <- plot(fit1,
-           quantities = list(fontface = 3),
-           fill = RColorBrewer::brewer.pal(4, "Set2"),
-           border = "transparent",
-           auto.key = list(space = "right")) # key on the right
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{p1} \hlkwb{<-} \hlkwd{plot}\hlstd{(fit1)}
+\hlstd{p2} \hlkwb{<-} \hlkwd{plot}\hlstd{(fit1,}
+           \hlkwc{quantities} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwc{fontface} \hlstd{=} \hlnum{3}\hlstd{),}
+           \hlkwc{fill} \hlstd{= RColorBrewer}\hlopt{::}\hlkwd{brewer.pal}\hlstd{(}\hlnum{4}\hlstd{,} \hlstr{"Set2"}\hlstd{),}
+           \hlkwc{border} \hlstd{=} \hlstr{"transparent"}\hlstd{,}
+           \hlkwc{auto.key} \hlstd{=} \hlkwd{list}\hlstd{(}\hlkwc{space} \hlstd{=} \hlstr{"right"}\hlstd{))} \hlcom{# key on the right}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \begin{figure}[hbtp]
 \caption{The same fit visualized in two distinct ways.\label{fig:plotting}}
 \begin{subfigure}[b]{.4\linewidth}
-figure/twofits1-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/twofits1-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{The default settings.}
 \end{subfigure}%
 \begin{subfigure}[b]{.6\linewidth}
-figure/twofits2-1.pdf
+\begin{knitrout}\small
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\maxwidth]{figure/twofits2-1} 
+
+}
+
+
+
+\end{knitrout}
 \subcaption{Custom plot settings.}
 \end{subfigure}
 \end{figure}
