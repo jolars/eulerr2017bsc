@@ -1443,12 +1443,12 @@ favorably remodelled using \pkg{eulerAPE}. We will do the same here, using \pkg{
 compare the results of the two packages. The
 data from the original diagram was
 \begin{gather*}
-A = 0.36,\quad B = 0.03,\quad C = 0,\\
-A\&B = 0.41,\quad A\&C = 0.04,\quad B\&C = 0,\quad\text{and}\\
+A = 0.36,\quad B = 0.03,\quad C = \emptyset,\\
+A\&B = 0.41,\quad A\&C = 0.04,\quad B\&C = \emptyset,\quad\text{and}\\
 A\&B\&C = 0.11.
 \end{gather*}
 However, because \pkg{eulerAPE} cannot fit set configurations with empty intersections,
-the authors used 0.00001 in place of 0. Since the diagram was fitted with
+the authors used 0.00001 as a proxy for $\emptyset$. Since the diagram was fitted with
 ellipses, we will do the same with \pkg{eulerr} but keep the
 areas as in the original data.
 
