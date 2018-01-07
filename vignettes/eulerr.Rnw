@@ -322,8 +322,8 @@ require all set relationships to be present and may therefore be area-proportion
 also with subset or disjoint relationships in the input.
 Most Euler diagrams use circles, but circles do not always
 support accurate diagrams. A promising alternative for Euler diagrams is ellipses,
-which, in theory,enable accurate diagrams for a wider range
-of input. Ellipses, however, have not yet
+which enable accurate diagrams for a wider range
+of set combinations. Ellipses, however, have not yet
 been implemented for more than three sets or three-set diagrams where
 there are disjoint or subset relationships. The aim of this thesis is
 to present a method and software for elliptical Euler diagrams for any
@@ -365,9 +365,9 @@ computer graphics, area-proportional, software
 % never can.
 
 Visual displays of data make for clear and compelling presentations,
-utilizing multiple dimensions to inform concisely and intuitively.
+utilizing multiple dimensions to convey information concisely.
 Compared to tables and text,
-visualization possess the potential to convey even intricate relationships with
+visualization possess the potential to display even intricate relationships with
 effective use of ink.
 
 Data visualizations, however, are only effective when they illustrate
@@ -520,8 +520,8 @@ treat this as a minimization problem but their loss functions vary.
 \[
 \sum_{i=1}^n \left( A_i - \omega_i \right)^2,
 \]
-where $n$ is the number of overlaps, $\omega_i$ the size of the $i$\ts{th} intersection
-and its relative complement,
+where $n$ is the number of overlaps, $\omega_i$ the size of the $i$\ts{th} disjoint
+subset,
 and $A_i$ the corresponding area in the diagram.}, \pkg{venneuler}
 uses the \emph{stress} metric\footnote{\pkg{venneuler}'s
 stress metric is defined as
@@ -586,8 +586,7 @@ Euler diagrams present relationships between sets, wherefore the data must
 describe these relationships, either directly or indirectly.
 \pkg{eulerr} allows several alternatives for this data, namely,
 \begin{itemize}
-\item intersections and relative
-complements\footnote{\(A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1\)},
+\item disjoint subsets\footnote{\(A \setminus B = 3 \quad B \setminus A = 2 \quad A \cap B=1\)},
 \item unions and identities\footnote{\(A=4 \quad B=3 \quad A \cap B=1\)},
 \item a matrix of binary (or boolean) indices\footnote{%
   $ \begin{bmatrix}
@@ -621,7 +620,7 @@ which sometimes improves diagrams where the set relationships vary
 across categories.
 
 Whichever type of input is provided, \pkg{eulerr} will translate it to the first
-and second types, \emph{intersections and relative complements} and
+and second types, \emph{disjoint subsets} and
 \emph{unions and identities}, which will be used in the steps to come.
 
 The Euler diagram is then fit in two
@@ -676,7 +675,7 @@ seg <- rbind(ellipse_arc(c(0.7, 0.7), c(1.2, 0), 0, n = 50, c(-pi, phi0)),
 
 ospot <- c(mean(seg[, 1]), mean(seg[, 2]))
 
-xyplot(1~1, xlim = c(-1.1, 2), ylim = c(-1.5, 1.1), asp = "iso",
+xyplot(1~1, xlim = c(-1.1, 2), ylim = c(-1.6, 1.1), asp = "iso",
        xlab = NULL, ylab = NULL,
        scales = list(draw = FALSE),
        par.settings = list(axis.line = list(col = "transparent")),
@@ -695,12 +694,11 @@ xyplot(1~1, xlim = c(-1.1, 2), ylim = c(-1.5, 1.1), asp = "iso",
          panel.text(0.6, unit(-1.3, "native"),
                     labels = expression(italic(d[ij])), pos = 1)
          panel.text(ospot[1], ospot[2], labels = expression(italic(O[ij])))
-         panel.text(-0.5, 0.1, labels = expression(italic(r[i])), pos = 3,
-                    default.units = "native")
-         panel.text(1.55, 0.1, labels = expression(italic(r[j])), pos = 3,
-                    default.units = "native")
+         panel.text(-0.5, 0.1, labels = expression(italic(r[i])), pos = 3)
+         panel.text(1.55, 0.1, labels = expression(italic(r[j])), pos = 3)
          panel.points(c(0, 1.2), c(0, 0), pch = 21, col = 1, cex = 1,
                       fill = "white")
+         panel.points(0.5, -1.55, col = "grey99", cex = 0.1)
        })
 @
 \caption{The circle--circle overlap is computed as a function of the discs'
@@ -782,7 +780,7 @@ release of \pkg{eulerr} instead relies on the numerical approximation of
 the Hessian offered by the optimizer.
 \begin{fullwidth}
 \begin{equation}
-  \bm{H}(h_i,k_i) = \smashoperator[l]{\sum_{1\leq i<j\leq N}}
+  \bm{H}(h,k) = \smashoperator[l]{\sum_{1\leq i<j\leq N}}
   \begin{bsmallmatrix}
     4\left(\left(h_i-h_j\right)^2+\left(k_i-k_j\right)^2-d_{ij}^2\right)+8\left(h_i-h_j\right)^2 &
     \cdots &
@@ -819,39 +817,95 @@ of using ellipses---as we set out to do.
 We now need to account for all the sets' intersections and, consequently,
 all the overlaps in the diagram. The goal is to map each area uniquely
 to a subset of the data from the input and for this purpose we will
-use the sets' intersections and the relative complements of these
-intersections, for which we will use the shorthand $\omega$. We introduced this
-form in \cref{sec:input}, but now define it rigorously in \cref{def:omega}.
+use the sets' disjoint subsets, for which we will use the shorthand $\omega$. We introduced this
+form in \cref{sec:input}, but now define it properly in \cref{def:omega}.
 
 \begin{mydef}
 \label{def:omega}
-For a family of \emph{N} sets, $F = F_1, F_2, \dots, F_N$, and their $n=2^N-1$
-intersections, we define $\omega$ as the intersections of these sets and their
-relative complements, such that
-\begin{align*}
-  \omega_{1} & = F_1 \setminus \bigcup_{i=2}^N F_i  \\
-  \omega_{2} & = \bigcap_{i=1}^2 F_i \setminus \bigcup_{i=3}^{N} F_i\\
-             & \vdotswithin{=} \\
-    \omega_n & = \bigcap_{i=1}^{N}F_i
-\end{align*}
-with
-\[
-  \sum_{i = 1}^n \omega_i =  \bigcup_{j=1}^N F_i.
-\]
-Analogously to $\omega$, we also introduce the $\&$-operator, such that
-\[
-  F_i \& F_j = (F_i \cap F_j)\setminus (F_i \cap F_j)^\textsf{c}.
-\]
+For a family of $N$ sets, $F = F_1, F_2, \dots, F_N$, we form $n=2^N-1$
+combinations of these sets. We proceed by example; for a three-set combination
+of sets $F_1,F_2,F_3$, we establish the following identity matrix:
+\begin{equation*}
+  \begin{array}{r|ccc}
+    &\bm{F}_1  & \bm{F}_2  & \bm{F}_3\\
+    i=1&\bullet & \circ   & \circ\\
+    2&\circ   & \bullet & \circ \\
+    3&\circ   & \circ   & \bullet \\
+    4&\bullet & \bullet & \circ\\
+    5&\bullet & \circ   & \bullet\\
+    6&\circ   & \bullet & \bullet\\
+    n=7&\bullet & \bullet & \bullet
+  \end{array} \quad\text{where } \begin{cases}
+                                    \bullet : \text{ inclusion}\\
+                                    \circ   : \text{ exclusion}\\
+                                  \end{cases}
+\end{equation*}
+Next, we define $\omega_i$ for $i = 1,2,\dots,n$ so that
+each $\omega_i$ is a disjoint subset consisting of the elements that are
+\emph{unique} to the intersection of
+the sets of the $i$\textsuperscript{th} combination. Analogously,
+we also introduce the $\&$-operator. Taken together, we have, for our previous
+combination,
+\begin{alignat*}{3}
+  \omega_1 & = F_1 \setminus (F_2 \cup F_3)&&\\
+  \omega_2 & = F_2 \setminus (F_1 \cup F_3)&&\\
+  \omega_3 & = F_3 \setminus (F_1 \cup F_2)&&\\
+  \omega_4 & = (F_1 \cap F_2) \setminus \omega_7 && = F_1 \& F_2\\
+  \omega_5 & = (F_1 \cap F_3) \setminus \omega_7 && = F_1 \& F_3\\
+  \omega_6 & = (F_2 \cap F_3) \setminus \omega_7 && = F_2 \& F_3\\
+  \omega_7 & = F_1 \cap F_2 \cap F_3 && = F_1 \& F_2 \& F_3
+\end{alignat*}
 \end{mydef}
 
-The fitted diagram's area-equivalents for $\omega$ will be defined as $A$, so that
+\begin{marginfigure}
+<<omega-area, fig.height = 3, fig.width = 3>>=
+set.seed(21)
+f <- euler(c(A = 1, B = 1, C = 1, "A&B" = 0.5, "A&C" = 0.5, "B&C" = 0.5,
+             "A&B&C" = 0.2))
+g <- label(f)
+plot(f, fill = "transparent", border = c("darkorange", "steelblue4", "grey40"),
+     ylim = c(-1.5, 2.5),
+     panel = function(...){
+  grid::grid.roundrect(x = 0.55, y = 2, width = 1.25, height = 0.75,
+                       default.units = "native")
+  panel.euler.ellipses(...)
+  panel.text(x = 0.55, y = 2,
+             label = expression(paste("... ", italic(omega)[5], " ...")),
+             pos = 3)
+  grid::grid.curve(x1 = 0.55, y1 = 2, x2 = g[5, 1] + 0.04, y2 = g[5, 2] + 0.06,
+                   angle = 90, ncp = 10,
+                   square = FALSE,
+                   curvature = -0.15,
+                   arrow = grid::arrow(type = "closed",
+                                       length = grid::unit(0.04, "native")),
+                   gp = grid::gpar(fill = "black"),
+                   shape = 1,
+                   default.units = "native")
+  panel.points(x = 0.55, y = 2, pch = 16, col = 1)
+  panel.text(x = g[, 1], y = g[, 2],
+             label = c(expression(atop(bolditalic(F[1]), A[1])),
+                       expression(atop(bolditalic(F[2]), A[2])),
+                       expression(atop(bolditalic(F[3]), A[3])),
+                       expression(A[4]),
+                       expression(A[5]),
+                       expression(A[6]),
+                       expression(A[7])))
+})
+@
+\caption{Mapping of disjoint subsets, $\omega_i$, to areas in the final
+diagram, $A_i$, for a three set combination of sets $F_1,F_2,$ and $F_3$.}
+\label{fig:omega-area}
+\end{marginfigure}
+
+The objective of our algorithm is to map these $\omega$ to area-equivalents---which
+we will call $A$---in our diagram~(\cref{fig:omega-area}), so that
 an exact diagram requires that $\omega_i = A_i$ for $i=1,2,\dots,2^N-1$,
 where $N$ is the number of sets in the input.
 
 In \cref{sec:initConfig}, we restricted
 ourselves to circles but now extend ourselves also to ellipses. From now on,
-we abandon the practice of treating circles separately---they are only
-a special case of ellipses, and, hence, everything that applies to an ellipse does so
+we abandon the practice of treating circles separately as they are only
+a special case of ellipses---everything that applies to an ellipse does so
 equally for a circle.
 
 \subsection{Intersecting ellipses}
@@ -979,8 +1033,8 @@ xyplot(
   scales = list(draw = FALSE, axes = FALSE),
   par.settings = list(axis.line = list(col = "transparent")),
   panel = function(x, y, ...) {
-    panel.abline(a = a[3], b = b[3], col = "#FEFEFE")
-    panel.abline(a = a[4], b = b[4], col = "#FEFEFE")
+    panel.abline(a = a[3], b = b[3], col = "#FEFEFE", lwd = 0.1)
+    panel.abline(a = a[4], b = b[4], col = "#FEFEFE", lwd = 0.1)
     panel.xyplot(x, y, ..., col = 1)
 })
 @
@@ -1126,55 +1180,107 @@ $\theta_1$ from the semimajor axis), we proceed to find its area by
 \item normalizing its rotation, which is not needed to compute the area,
 \item integrating the ellipse over [$0,\theta_0$] and [$0,\theta_1$], producing
   elliptical sectors $F(\theta_0)$ and $F(\theta_1)$,
-\item subtracting the smaller ($F(\theta_0$)) of these sectors from the larger ($F(\theta_0$), and
+\item subtracting the smaller, $F(\theta_0$), of these sectors from the larger, $F(\theta_0$), and
 \item subtracting the triangle section to finally find the segment area,
   \begin{equation*}
-  F(\theta_1) - F(\theta_0) - \frac{1}{2}\left|x_1y_0 - x_0y_1\right|,
+  \alpha(\theta_0,\theta_1) = F(\theta_1) - F(\theta_0) - \frac{1}{2}\left|x_1y_0 - x_0y_1\right|,\quad\text{ where }
   \label{eq:segmentArea}
   \end{equation*}
-  \[
-  \text{where } F(\theta) = \frac{a}{b}\left[ \theta - \arctan{\left(\frac{(b - a)\sin{2\theta}}{b + a +(b - a )\cos{2\theta}} \right)}\right].
-  \]
+  \begin{equation*}
+  F(\theta_i) =  \frac{a}{b}\left[ \theta_i - \arctan{\left(\frac{(b - a)\sin{2\theta_i}}{b + a +(b - a )\cos{2\theta_i}} \right)}\right]
+  \end{equation*}
 \end{enumerate}
 This procedure is illustrated in~\cref{fig:ellipsesegment}. Note that there are
 situations where this algorithm is altered, such that when the sector angle
 ranges beyond $\pi$---we refer the interested reader to \citet{Eberly_2016}.
 
 \begin{marginfigure}
-<<ellipsesegment>>=
-ellipse <- ellipse(c(1, 0.6), c(0, 0), 0)
-i0 <- 15
-i1 <- 45
+\begin{subfigure}[b]{\linewidth}
+<<ellipsesegment-1>>=
+a <- 1
+b <- 0.6
+ellipse <- RConics::ellipse(c(a, b), c(0, 0), 0)
+i0 <- pi/8
+i1 <- 2*pi/3
 
-tri <- rbind(cbind(0, 0),
-             ellipse[i0, , drop = FALSE],
-             ellipse[i1, , drop = FALSE])
+F0 <- ellipse_arc(c(a, b), rng = c(0, i0))
+F1 <- ellipse_arc(c(a, b), rng = c(i0, i1))
+F0_lab <- ellipse_arc(c(a/1.3, b/1.3), rng = i0/2, n = 1)
+F1_lab <- ellipse_arc(c(a/1.3, b/1.3), rng = i0 + (i1-i0)/2, n = 1)
+xy0 <- ellipse_arc(c(a, b), rng = i0, n = 1)
+xy1 <- ellipse_arc(c(a, b), rng = i1, n = 1)
+ndg <- 1.15
+xy0_lab <- ellipse_arc(c(a*ndg, b*ndg), rng = i0, n = 1)
+xy1_lab <- ellipse_arc(c(a*ndg, b*ndg), rng = i1, n = 1)
 
-xyplot(1~1, xlim = c(-1.2, 1.2), ylim = c(-0.8, 0.8), asp = "iso",
+xyplot(1~1, xlim = c(-0.5, 1.2), ylim = c(-0.1, 0.8), asp = "iso",
        xlab = NULL, ylab = NULL,
        par.settings = list(axis.line = list(col = "transparent")),
        scales = list(draw = FALSE),
        panel = function(x, y, ...) {
-         panel.grid(x = 0, y = 0, h = 1,v = 1)
+         panel.abline(h = 0, col = "grey95")
+         panel.abline(v = 0, col = "grey95")
          panel.lines(ellipse, col = 1)
-         panel.polygon(ellipse[i0:i1, ], col = "steelblue1", alpha = 0.5)
-         panel.polygon(tri, col = "grey95")
-         panel.points(ellipse[c(i0, i1), ], col = 1, pch = 21, fill = "white")
-         panel.text(ellipse[c(i0, i1), ],
-                    adj = c(-0.5, -0.5),
-                    labels = c(expression(italic(theta[0])),
-                               expression(italic(theta[1]))))
-                    pBrackets::grid.brackets(1, 0, 0, 0, h = 0.05,
-                                  type = 1)
-         pBrackets::grid.brackets(0, 0, 0, 0.6, h = 0.04)
-         panel.text(0.5, unit(-0.05, "npc"), labels = "a", font = 3, pos = 1)
-         panel.text(-0.05, unit(0.3, "native"), labels = "b", font = 3, pos = 2)
+         # rotation
+         arc <- ellipse_arc(c(a/4, b/4), rng = c(0, i1))
+         theta0 <- ellipse_arc(c(a/3, b/3), rng = i0/2, n = 1)
+         theta1 <- ellipse_arc(c(a/3, b/3), rng = i0 + (i1-i0)/2, n = 1)
+
+         panel.lines(arc, col = 1)
+         panel.text(rbind(theta0, theta1),
+                    labels = c(expression(italic(theta)[0]),
+                               expression(italic(theta)[1])))
+         panel.lines(rbind(cbind(a, 0), cbind(0, 0), xy0), lty = 2, col = 1)
+         panel.lines(rbind(cbind(0, 0), xy1), lty = 2, col = 1)
+         panel.points(rbind(cbind(a, 0), xy0, xy1),
+                      col = 1, pch = 21, fill = "white")
+         panel.text(rbind(cbind(ndg, 0), xy0_lab, xy1_lab),
+                    labels = c(expression(list(italic(a),0)),
+                               expression(list(italic(x)[0],italic(y)[0])),
+                               expression(list(italic(x)[1],italic(y)[1]))))
+         panel.text(F0_lab, label = expression(italic(F)(theta[0])))
+         panel.text(F1_lab, label = expression(italic(F)(theta[1])-italic(F)(theta[0])))
        })
 @
-\caption{The elliptical segment in \textcolor{SteelBlue4}{blue} is found by
-first subtracting the elliptical sector from $(a, 0)$ to $\theta_0$ from the one
-from $(a, 0)$ to $\theta_1$ and then subtracting the triangle part
-(in \textcolor{Grey}{grey}).}
+\subcaption{We first obtain elliptical sectors $F(\theta_0)$ and $F(\theta_1)$
+and then subtract the smaller sector from the larger.}
+\end{subfigure}
+\begin{subfigure}[b]{\linewidth}
+<<ellipsesegment-2>>=
+pos0 <- ellipse_arc(c(a/2, b/2), rng = i0 + (i1-i0)/2, n = 1)
+pos0[, 1] <- pos0[, 1]*a/b
+pos1 <- ellipse_arc(c(a/1.15, b/1.15), rng = i0 + (i1-i0)/2, n = 1)
+pos1[, 1] <- pos1[, 1]*a/b
+xyplot(1~1, xlim = c(-0.5, 1.2), ylim = c(-0.1, 0.8), asp = "iso",
+       xlab = NULL, ylab = NULL,
+       par.settings = list(axis.line = list(col = "transparent")),
+       scales = list(draw = FALSE),
+       panel = function(x, y, ...) {
+         panel.abline(h = 0, col = "grey95")
+         panel.abline(v = 0, col = "grey95")
+         panel.polygon(F1, col = "steelblue1", alpha = 0.5, border = "transparent")
+         panel.polygon(rbind(cbind(0, 0), xy0, xy1), col = "grey90", border = "transparent",
+                       alpha = 0.5)
+         panel.lines(ellipse, col = 1)
+         panel.lines(rbind(cbind(0, 0), xy0, xy1, cbind(0, 0)), col = 1, lty = 2)
+         panel.text(pos0,
+                    srt = -11,
+                    label = expression(frac(group("|",italic(x)[1]*italic(y)[0]-italic(x)[0]*italic(y)[1],"|"),2)))
+         panel.text(pos1,
+                    srt = -11,
+                    label = expression(alpha(list(theta[0],theta[1]))))
+         panel.points(rbind(xy0, xy1), col = 1, pch = 21, fill = "white")
+         panel.text(rbind(xy0_lab, xy1_lab),
+                    labels = c(expression(list(italic(x)[0],italic(y)[0])),
+                               expression(list(italic(x)[1],italic(y)[1]))))
+       })
+@
+\subcaption{The elliptical segment in \textcolor{SteelBlue1}{blue} is then found by
+subtracting the triangle part (in \textcolor{Grey}{grey}) from
+$F(\theta_1) - F(\theta_0)$.}
+\end{subfigure}
+\caption{Obtaining the elliptical segment between two points $x_0,y_0$ and
+$x_1,y_1$.}
 \label{fig:ellipsesegment}
 \end{marginfigure}
 
@@ -1182,8 +1288,8 @@ Finally, the area of the overlap is then obtained by adding the area of the
 polygon and all the elliptical arcs together.
 
 Note that this does not yet give us
-the areas that we require, namely $A$: the area-equivalents to the set intersections
-and relative complements from~\cref{def:omega}. For this, we must
+the areas that we require, namely $A$: the area-equivalents to the disjoint
+subsets from~\cref{def:omega}. For this, we must
 decompose the overlap areas so that each area maps uniquely
 to a subspace of the set configuration. This, however, is simply a matter of transversing down the
 hierarchy of overlaps and subtracting the higher-order overlaps from the
@@ -1209,8 +1315,8 @@ the area of the involved overlap by
   overlap with the area of the ellipse.
 \end{enumerate}
 
-With this in place, we are now able to compute the areas of all intersections
-and their relative complements, $\omega$, up to numerical precision.
+With this in place, we are now able to compute the areas of all disjoint
+subsets, $\omega$, up to numerical precision.
 
 \subsection{Final optimization}
 \label{sec:final-optimization}
@@ -1388,7 +1494,9 @@ A = 4, \quad B = 6, \quad C = 3, \quad D = 2, \quad E = 7, \quad F = 3,\\
 A\& B = 2, \quad A\&F = 2, \quad B\& C = 2, \quad B\&D = 1,\\
 B\& F = 2, \quad C\&D = 1, \quad D\& E = 1, \quad E\&F = 1,\\
 A\&B\&F = 1,\quad \text{and} \quad B\&C\&D = 1,\end{gather*}
-where we use the $\&$ operator as in~\cref{def:omega}. We fit this
+specified as \emph{disjoint subsets} and using the $\&$-operator
+as in \cref{def:omega}.
+We fit this
 specification with \pkg{venneuler} and \pkg{eulerr}, in the latter case using
 both circles and ellipses.
 
@@ -1441,9 +1549,9 @@ generated from \pkg{eulerr} with circles and ellipses respectively.\label{fig:ve
 \citet{Micallef_2014a} features a diagram from~\citet{Lenz_2006} that they
 favorably remodelled using \pkg{eulerAPE}. We will do the same here, using \pkg{eulerr} and
 compare the results of the two packages. The
-data from the original diagram was
+data from the original diagram (as disjoint subsets~(\cref{def:omega})) was
 \begin{gather*}
-A = 0.36,\quad B = 0.03,\quad C = \emptyset,\\
+A = 0.36, \quad B = 0.03, \quad C = \emptyset,\\
 A\&B = 0.41,\quad A\&C = 0.04,\quad B\&C = \emptyset,\quad\text{and}\\
 A\&B\&C = 0.11.
 \end{gather*}
@@ -1720,6 +1828,7 @@ dd <- data_consistency %>%
   mutate(success_rate = success_rate*100)
 
 p <- xyplot(success_rate ~ sets | shape, data = dd, groups = software,
+            col = trellis.par.get()$superpose.symbol$col[c(3, 1, 4, 5, 7)],
             type = "b", grid = TRUE, xlim = c(2.5, 9), ylim = c(-5, 119),
             ylab = "Successes (%)",
             xlab = "Sets")
@@ -1767,13 +1876,13 @@ software under study. For each $N=3,4,\dots,8$ sets, we initialize
 $N$-set combinations with all items set to 0. For every set relationship, we pick $N$
 elements from the relationship at random---making sure that each set is selected
 at least once---and assign to each a number generated
-from $\mathcal{U}(\epsilon, 1)$, where $\epsilon$ is defined as the square root
+from $\mathcal{U}(\varepsilon, 1)$, where $\varepsilon$ is defined as the square root
 of the current machine's smallest
 representable difference between one and the smallest value greater than
-one\footnote{The R-code used to generate this $\epsilon$ is
+one\footnote{The R-code used to generate this $\varepsilon$ is
 \code{sqrt(.Machine\$double.eps)}}. Next, we draw a sample of a random subset of
 the remaining $2^N-1-N$ set intersections and assign to them a number from
-$\mathcal{U}(\epsilon, 1)$ as before.
+$\mathcal{U}(\varepsilon, 1)$ as before.
 
 We run our simulations for a minimum of 1,000 iterations and until we achieve
 a 95\% confidence interval around the mean diagError no wider than 0.02.
@@ -1792,7 +1901,7 @@ The procedure is formalized in~\cref{alg:accuracy}.
 the accuracy of the various software we are studying. $\mathcal{I}(\bar{x})_{0.025}$
 is the 95\% confidence interval around the mean diagError~\eqref{eq:mean-ci},
 $F$ denotes a set, and
-$\epsilon$ is the square root of the
+$\varepsilon$ is the square root of the
 difference between 1 and the least value greater than 1 on our machine.\label{alg:accuracy}}
 \begin{algorithmic}
 \For{$N \gets 3:8$}
@@ -1802,14 +1911,14 @@ difference between 1 and the least value greater than 1 on our machine.\label{al
     %\State $\omega_i$ so that all $N$ sets are represented
     %\State $\omega_i \gets \{\omega_{i_1},\omega_{i_2},\dots,\omega_{i_{2^N-1}} \}$
     \For{$k \gets 1:N$}
-      \State random element in $\{\omega_i : \omega_i \cap F_k \neq \emptyset\} \gets \mathcal{U}(\epsilon, 1)$
-      %\State $\omega_{i_k} \gets \mathcal{U}(\epsilon, 1)$
+      \State random element in $\{\omega_i : \omega_i \cap F_k \neq \emptyset\} \gets \mathcal{U}(\varepsilon, 1)$
+      %\State $\omega_{i_k} \gets \mathcal{U}(\varepsilon, 1)$
     \EndFor
     % \State $\Omega_i \gets \{\omega_i : \omega_i = 0\}$
     % \For{$l \gets 1,2,\dots$}
     %   \State $w_l \gets \text{Bernoulli}(0.5)$
     %   \If{$w_l$}
-    %     \State $\Omega_{i_l} \gets \mathcal{U}(\epsilon, 1)$
+    %     \State $\Omega_{i_l} \gets \mathcal{U}(\varepsilon, 1)$
     %   \EndIf
     % \EndFor
     \ForAll{$j \gets$ software packages}
@@ -1826,7 +1935,7 @@ of fitting Euler diagrams that feature subset or disjoint relationships, and
 because fully intersecting diagrams are more difficult to fit---at least
 with circles---we run a separate treatment
 in which we modify~\cref{alg:accuracy} so that every intersection
-is initialized to a value in $\mathcal{U}(\epsilon, 1)$.
+is initialized to a value in $\mathcal{U}(\varepsilon, 1)$.
 
 <<>>=
 accuracy_summary <-
@@ -1851,7 +1960,7 @@ bwplot(Loss ~ Sets | Metric, data = dd_acc, groups = software,
        layout = c(1, 2),
        strip.left = TRUE,
        strip = FALSE,
-       fill = trellis.par.get()$superpose.polygon$col,
+       fill = trellis.par.get()$superpose.polygon$col[1:4],
        auto.key = list(rectangles = TRUE, points = FALSE,
                        space = "right"),
        xlab = "Sets",
