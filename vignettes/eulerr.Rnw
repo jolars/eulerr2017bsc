@@ -434,9 +434,11 @@ a perfect fit~(\cref{fig:impossible}).
 
 \begin{marginfigure}
 <<impossible, fig.show = "hold">>=
-plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1)))
+plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1)),
+     quantities = TRUE)
 plot(euler(c(A = 2, B = 2, C = 2, "A&B" = 1, "A&C" = 1, "B&C" = 1),
-           shape = "ellipse"))
+           shape = "ellipse"),
+     quantities = TRUE)
 @
 \caption{A set relationship depicted erroneously with circles and perfectly with
 ellipses.}
@@ -1332,7 +1334,7 @@ the optimizer, the areas of all intersections are analyzed and a measure of loss
 returned. The loss we use is the same as that in \pkg{venneuler}~\cite{Wilkinson_2012},
 namely \emph{stress},
 \begin{equation}
- \frac{\sum_{i=1}^n (A_i - \beta \omega_i)^2}{\sum_{i=1}^n A_i},
+ \frac{\sum_{i=1}^n (A_i - \beta \omega_i)^2}{\sum_{i=1}^n A_i^2},
 \label{eq:stress}
 \end{equation}
 where \[\beta = \frac{\sum_{i=1}^n A_i\omega_i}{\sum_{i=1}^n \omega_i^2}.\]
@@ -1766,7 +1768,7 @@ achieved a 95\% confidence interval around $\hat{p}$, the proportion of
 successful diagrams, no wider than 0, and for a minimum of 1,000 iterations. We
 use the normal approximation interval,
 \begin{equation}
-\mathcal{I}(\hat{p})_{0.025} = \hat{p} \pm z_{0.025}\sqrt{\frac{\hat{p}(\hat{p}-1)}{n}}.
+\mathcal{I}(\hat{p})_{0.95} = \hat{p} \pm z_{0.025}\sqrt{\frac{\hat{p}(\hat{p}-1)}{n}}.
 \label{eq:prop-ci}
 \end{equation}
 The procedure is formalized in~\cref{alg:consistency}. For circular diagrams,
@@ -1782,7 +1784,7 @@ the only packages that successfully fits all of the circular diagrams (although
 \caption{The algorithm used to simulate diagrams of circles or ellipses,
 reverse-engineer set relationships,
 and fit Euler diagrams to these relationships using the different software packages.
-$\mathcal{I}(\hat{p})_{0.025}$ is the binomial proportion confidence
+$\mathcal{I}(\hat{p})_{0.95}$ is the binomial proportion confidence
 interval~\eqref{eq:prop-ci}.\label{alg:consistency}}
 \begin{algorithmic}
 \For{$N \gets 3:8$}
@@ -1804,14 +1806,14 @@ interval~\eqref{eq:prop-ci}.\label{alg:consistency}}
     % \EndIf
     \ForAll{$j \gets$ software}
       \State $\hat{p}_j \gets \text{successes}_j/i$
-      \If{$\mathcal{I}(\hat{p})_{0.025}$ is wider than 0.02 \Or $i \leq 1000$}
+      \If{$\mathcal{I}(\hat{p})_{0.95}$ is wider than 0.02 \Or $i \leq 1000$}
         \State $A_{i_j} \gets \Call{fit diagram}{\omega_i}$
         \If{$\Call{diagError}{A_{i_j}, \omega_i} < 0.01$}
           \State $\text{successes}_j \gets \text{successes}_j + 1$
         \EndIf
       \EndIf
     \EndFor
-  \DoWhile{\All $\mathcal{I}(\hat{p})_{0.025}$ are wider than 0.02 \Or $i \leq 1000$}
+  \DoWhile{\All $\mathcal{I}(\hat{p})_{0.95}$ are wider than 0.02 \Or $i \leq 1000$}
 \EndFor
 \end{algorithmic}
 \end{algorithm}
@@ -1889,7 +1891,7 @@ a 95\% confidence interval around the mean diagError no wider than 0.02.
 The confidence level used is based on the
 $t$-distribution,
 \begin{equation}
-\mathcal{I}(\bar{x})_{0.025} = \bar{x} \pm t_{0.025,n-1}\frac{s}{\sqrt{n}},
+\mathcal{I}(\bar{x})_{0.95} = \bar{x} \pm t_{0.025,n-1}\frac{s}{\sqrt{n}},
 \label{eq:mean-ci}
 \end{equation}
 with \[s = \sqrt{\frac{1}{n-1}\sum_{i=1}^n (x - \bar{x})^2},\]
@@ -1898,7 +1900,7 @@ The procedure is formalized in~\cref{alg:accuracy}.
 
 \begin{algorithm}[hbtp]
 \caption{The algorithm used to simulate and fit random set relationships to assess
-the accuracy of the various software we are studying. $\mathcal{I}(\bar{x})_{0.025}$
+the accuracy of the various software we are studying. $\mathcal{I}(\bar{x})_{0.95}$
 is the 95\% confidence interval around the mean diagError~\eqref{eq:mean-ci},
 $F$ denotes a set, and
 $\varepsilon$ is the square root of the
@@ -1925,7 +1927,7 @@ difference between 1 and the least value greater than 1 on our machine.\label{al
       \State $A_{j_i} \gets \Call{fit diagram}{\omega_i}$
       \State $x_{j_i} \gets \Call{diagError}{A_{j_i},\omega_i}$
     \EndFor
-  \DoWhile{\All $\mathcal{I}(\bar{x})_{0.025}$ are wider than 0.02 \Or $i \leq 1000$}
+  \DoWhile{\All $\mathcal{I}(\bar{x})_{0.95}$ are wider than 0.02 \Or $i \leq 1000$}
 \EndFor
 \end{algorithmic}
 \end{algorithm}
