@@ -269,12 +269,15 @@ knitr::opts_chunk$set(
   fig.align = "center",
   dev = if (capabilities("cairo")) "cairo_pdf" else "pdf",
   dev.args =
-    if (capabilities("cairo") &&
-        any(grepl("LinLibertine_R.otf", sysfonts::font_files(), fixed = TRUE)))
-      list(family = "Linux Libertine O")
-    else
-      list()
-    ,
+    if (capabilities("cairo")) {
+      if (any(grepl("LinLibertine_R.otf", sysfonts::font_files(), fixed = TRUE))) {
+        list(family = "Linux Libertine O")
+      } else if (any(grepl("LinLibertine_Rah.ttf", sysfonts::font_files(), fixed = TRUE))) {
+        list(family = "Linux Libertine")
+      } else {
+        list()
+      }
+    },
   cache = TRUE,
   fig.path = "figure/",
   cache.path = "cache/",
