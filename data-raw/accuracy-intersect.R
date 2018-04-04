@@ -1,9 +1,8 @@
-
 # Accuracy tests for 3 sets that all intersect ----------------------------
 
 library(tidyverse)
 library(eulerr)
-library(eulerrPaper)
+library(eulerr2017bsc)
 library(venneuler)
 library(Vennerable)
 library(V8)
@@ -15,31 +14,25 @@ out <- data.frame(it = integer(),
 
 # JS context for vennjs
 context <- v8()
-context$source(system.file(file.path("js", "venn.js"), package = "eulerrPaper"))
+context$source(system.file(file.path("js", "venn.js"), package = "eulerr2017bsc"))
 
-if (.Platform$OS.type == "windows") {
-  if (!exists("oldwd")) {
-    oldwd <- getwd() # temporaily set the working directory
-    setwd(file.path(oldwd, "data-raw"))
-  }
-}
+oldwd <- getwd() # temporaily set the working directory
+setwd(file.path(oldwd, "data-raw"))
 
-i <- 3
-n_it <- 1000
-
-ids <- eulerr:::bit_indexr(i)
+ids <- eulerr:::bit_indexr(3)
 
 satisfied <- FALSE
-j <- 1
+j <- 1L
+n_it <- 1000L
 
 while (!satisfied) {
   set.seed(j)
-  if (j %% 10 == 0) cat("i=", i,", j=", j, "\n", sep = "")
+  if (j %% 10 == 0) cat("j=", j, "\n", sep = "")
 
-  combinations <- runif(2^i - 1, sqrt(.Machine$double.eps), 1)
+  combinations <- runif(7, sqrt(.Machine$double.eps), 1)
 
   for (k in 1:NROW(ids)) {
-    names(combinations)[k] <- paste0(LETTERS[1:i][ids[k, ]], collapse = "&")
+    names(combinations)[k] <- paste0(LETTERS[1:3][ids[k, ]], collapse = "&")
   }
 
   # eulerr
@@ -49,9 +42,10 @@ while (!satisfied) {
     out,
     data.frame(
       it = j,
-      software = c("eulerr (circles)", "eulerr (ellipses)"),
-      stress = c(eulerr_circles$stress, eulerr_ellipses$stress),
-      diagError = c(eulerr_circles$diagError, eulerr_ellipses$diagError)
+      software = rep(c("eulerr (circles)", "eulerr (ellipses)"), each = 2),
+      Loss = c(eulerr_circles$stress, eulerr_circles$diagError,
+               eulerr_ellipses$stress, eulerr_ellipses$diagError),
+      Metric = c("stress", "diagError")
     )
   )
 
@@ -61,8 +55,9 @@ while (!satisfied) {
   out <- rbind(out,
                data.frame(it = j,
                           software = "venneuler",
-                          stress = venneuler_gof$stress,
-                          diagError = venneuler_gof$diagError))
+                          Loss = c(venneuler_gof$stress,
+                                   venneuler_gof$diagError),
+                          Metric = c("stress", "diagError")))
 
   # vennjs
   input <- setup_vennjs(combinations)
@@ -73,39 +68,39 @@ while (!satisfied) {
 
   out <- rbind(out, data.frame(it = j,
                                software = "venn.js",
-                               stress = vennjs_gof$stress,
-                               diagError = vennjs_gof$diagError))
+                               Loss = c(vennjs_gof$stress,
+                                        vennjs_gof$diagError),
+                               Metric = c("stress", "diagError")))
   # eulerAPE
-  if (.Platform$OS.type == "windows") {
-    input <- paste(combinations, collapse = " | ")
+  input <- paste(combinations, collapse = " | ")
 
-    write.table(input, file = "diagram.els", quote = FALSE,
-                col.names = FALSE, row.names = FALSE)
+  write.table(input, file = "diagram.els", quote = FALSE,
+              col.names = FALSE, row.names = FALSE)
 
-    APEgof <- list("circles" = list(), "ellipses" = list())
+  APEgof <- list("circles" = list(), "ellipses" = list())
 
-    for (shape in c("circles", "ellipses")) {
-      system2("java", c("-jar eulerAPE_3.0.0.jar",
-                        "-i", shQuote("diagram.els"),
-                        "--silent",
-                        "--curves", shape))
-      output <- structure(readLines("diagram.eld"), class = "eulerAPE")
-      APEgof[[shape]] <- gof(output, combinations)
-    }
-
-    out <- rbind(
-      out,
-      data.frame(
-        it = j,
-        software = c("eulerAPE (circles)", "eulerAPE (ellipses)"),
-        stress = c(APEgof$circles$stress, APEgof$ellipses$stress),
-        diagError = c(APEgof$circles$diagError, APEgof$ellipses$diagError)
-      )
-    )
+  for (shape in c("circles", "ellipses")) {
+    system2("java", c("-jar eulerAPE_3.0.0.jar",
+                      "-i", shQuote("diagram.els"),
+                      "--silent",
+                      "--curves", shape))
+    output <- structure(readLines("diagram.eld"), class = "eulerAPE")
+    APEgof[[shape]] <- gof(output, combinations)
   }
 
+  out <- rbind(
+    out,
+    data.frame(
+      it = j,
+      software = rep(c("eulerAPE (circles)", "eulerAPE (ellipses)"), each = 2),
+      Loss = c(APEgof$circles$stress, APEgof$circles$diagError,
+               APEgof$ellipses$stress, APEgof$ellipses$diagError),
+      Metric = c("stress", "diagError")
+    )
+  )
+
   # Vennerable
-  vest <- Vennerable::Venn(SetNames = LETTERS[1:i],
+  vest <- Vennerable::Venn(SetNames = LETTERS[seq_len(3)],
                            Weight = c(0, as.numeric(combinations)))
 
   vennerable_gof <- list(stress = NA, diagError = NA)
@@ -123,13 +118,15 @@ while (!satisfied) {
 
   out <- rbind(out, data.frame(it = j,
                                software = "Vennerable",
-                               stress = vennerable_gof$stress,
-                               diagError = vennerable_gof$diagError))
+                               Loss = c(vennerable_gof$stress,
+                                        vennerable_gof$diagError),
+                               Metric = c("stress", "diagError")))
 
   if (j >= 100) {
     dd <- out %>%
+      filter(Metric == "diagError") %>%
       group_by(software) %>%
-      summarise(ci = qt(0.975, df = n() - 1)*sd(diagError,
+      summarise(ci = qt(0.975, df = n() - 1)*sd(Loss,
                                                 na.rm = TRUE)/sqrt(n()))
     if (j %% 100 == 0)
       print(dd)
@@ -138,15 +135,12 @@ while (!satisfied) {
     if (all(dd$ci*2 < 0.01) && j >= n_it)
       satisfied <- TRUE
   }
-  j <- j + 1
+  j <- j + 1L
 }
 
-
-if (.Platform$OS.type == "windows" && exists("oldwd"))
-  setwd(oldwd)
+setwd(oldwd)
 
 data_accuracy_int <- out %>%
-  mutate(it = as.integer(it)) %>%
-  gather("Metric", "Loss", stress, diagError, factor_key = TRUE)
+  mutate(it = as.integer(it))
 
 devtools::use_data(data_accuracy_int, overwrite = TRUE)
